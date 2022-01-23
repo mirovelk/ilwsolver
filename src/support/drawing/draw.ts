@@ -26,14 +26,21 @@ export function scrollRight() {
 
 const draw = (wrapperRef: React.MutableRefObject<HTMLDivElement | null>) => {
   const inputPath = new Paper.Path();
+  inputPath.strokeColor = new Color(1, 0, 0);
+  inputPath.strokeWidth = 3;
 
-  Paper.view.onMouseDown = (_e: paper.MouseEvent) => {
-    inputPath.strokeColor = new Color(1, 0, 0);
-    inputPath.strokeWidth = 3;
+  Paper.view.onMouseDown = (e: paper.MouseEvent) => {
+    inputPath.selected = false;
+    inputPath.add(e.point);
   };
 
   Paper.view.onMouseDrag = (e: paper.MouseEvent) => {
     inputPath.add(e.point);
+  };
+
+  Paper.view.onMouseUp = (e: paper.MouseEvent) => {
+    inputPath.simplify(0);
+    inputPath.fullySelected = true;
   };
 
   Paper.view.onResize = () => {
@@ -42,8 +49,6 @@ const draw = (wrapperRef: React.MutableRefObject<HTMLDivElement | null>) => {
       var wrapperHeight = wrapperRef.current.clientHeight;
       Paper.view.viewSize.width = wrapperWidth;
       Paper.view.viewSize.height = wrapperHeight;
-      // const center = new Point(wrapperWidth / 2, wrapperHeight / 2);
-      // Paper.view.center = center;
     }
   };
 };
