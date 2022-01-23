@@ -1,7 +1,6 @@
-import React from "react";
-
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
-import { css, Global } from "@emotion/react";
+import { css, Global } from '@emotion/react';
+import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import React from 'react';
 
 interface Props {
   children: JSX.Element;
@@ -20,9 +19,7 @@ function StyleProvider({ children }: Props) {
       <Global
         styles={css`
           html,
-          body {
-            height: 100%;
-          }
+          body,
           #root {
             height: 100%;
           }

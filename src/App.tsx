@@ -1,10 +1,8 @@
-import React from "react";
+import styled from '@emotion/styled';
+import React from 'react';
 
-import styled from "@emotion/styled";
-import { Button } from "@mui/material";
-
-import StyleProvider from "./support/StyleProvider";
-import InputCanvas from "./components/InputCanvas";
+import InputArea from './components/InputArea';
+import StyleProvider from './support/style/StyleProvider';
 
 const Wrapper = styled.div`
   height: 100%;
@@ -15,7 +13,7 @@ function App() {
   return (
     <StyleProvider>
       <Wrapper>
-        <InputCanvas />
+        <InputArea />
       </Wrapper>
     </StyleProvider>
   );
