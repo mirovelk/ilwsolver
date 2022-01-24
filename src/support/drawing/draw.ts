@@ -1,5 +1,11 @@
 import Paper, { Color, Point } from 'paper';
 
+let inputPath: paper.Path;
+
+export function simplify() {
+  inputPath.simplify(10);
+}
+
 export function zoomOut() {
   Paper.view.scale(0.9);
 }
@@ -25,7 +31,7 @@ export function scrollRight() {
 }
 
 const draw = (wrapperRef: React.MutableRefObject<HTMLDivElement | null>) => {
-  const inputPath = new Paper.Path();
+  inputPath = new Paper.Path();
   inputPath.strokeColor = new Color(1, 0, 0);
   inputPath.strokeWidth = 3;
 
@@ -39,7 +45,6 @@ const draw = (wrapperRef: React.MutableRefObject<HTMLDivElement | null>) => {
   };
 
   Paper.view.onMouseUp = (e: paper.MouseEvent) => {
-    inputPath.simplify(0);
     inputPath.fullySelected = true;
   };
 

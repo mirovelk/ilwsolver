@@ -10,7 +10,7 @@ import {
 import { Button, ButtonGroup, Paper as MaterialPaper } from '@mui/material';
 import React, { useRef } from 'react';
 
-import { scrollDown, scrollLeft, scrollRight, scrollUp, zoomIn, zoomOut } from '../../support/drawing/draw';
+import { scrollDown, scrollLeft, scrollRight, scrollUp, simplify, zoomIn, zoomOut } from '../../support/drawing/draw';
 import InputCanvas from '../InputCanvas';
 
 const Wrapper = styled.div`
@@ -37,17 +37,18 @@ function InputArea() {
   return (
     <Wrapper>
       <ControlsWrapper>
+        <Button onClick={simplify}>Simplify</Button>
         <ButtonGroup>
-          <Button onClick={scrollUp}>
+          <Button onClick={scrollDown}>
             <KeyboardArrowUp />
           </Button>
-          <Button onClick={scrollDown}>
+          <Button onClick={scrollUp}>
             <KeyboardArrowDown />
           </Button>
-          <Button onClick={scrollLeft}>
+          <Button onClick={scrollRight}>
             <KeyboardArrowLeft />
           </Button>
-          <Button onClick={scrollRight}>
+          <Button onClick={scrollLeft}>
             <KeyboardArrowRight />
           </Button>
         </ButtonGroup>
