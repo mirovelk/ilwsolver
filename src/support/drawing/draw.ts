@@ -3,7 +3,9 @@ import Paper, { Color, Point } from 'paper';
 let inputPath: paper.Path;
 
 export function simplify() {
-  inputPath.simplify(10);
+  if (inputPath) {
+    inputPath.simplify(10);
+  }
 }
 
 export function zoomOut() {
