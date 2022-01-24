@@ -27,12 +27,10 @@ const OnCanvasControlsWrapper = styled.div`
   padding: 10px 5px;
   display: flex;
   flex-direction: column;
-  border-radius: 4px;
   transition: all 0.3s;
   opacity: 0.3;
   &:hover {
     opacity: 1;
-    background: rgba(0, 0, 0, 0.7);
   }
 `;
 
