@@ -8,8 +8,7 @@ export function simplify() {
   }
 }
 
-const zoomStep = 0.1;
-
+const zoomStep = 0.5;
 export function zoomOut() {
   Paper.view.scale(1 - zoomStep);
 }
@@ -18,32 +17,20 @@ export function zoomIn() {
 }
 
 const scrollStep = 0.1;
-
 export function scrollUp() {
   Paper.view.translate(new Point(0, -scrollStep));
 }
-
 export function scrollDown() {
   Paper.view.translate(new Point(0, scrollStep));
 }
-
 export function scrollLeft() {
   Paper.view.translate(new Point(-scrollStep, 0));
 }
-
 export function scrollRight() {
   Paper.view.translate(new Point(scrollStep, 0));
 }
 
-const draw = (
-  wrapperRef: HTMLDivElement,
-  cursorInfoRef: HTMLDivElement,
-  statusCursorRef: HTMLDivElement,
-  statusCursorXValueRef: HTMLDivElement,
-  statusCursorYValueRef: HTMLDivElement
-) => {
-  Paper.project.currentStyle.strokeScaling = false;
-
+function setupCoordinates() {
   const shorterAxis = Math.min(
     Paper.view.bounds.right,
     Paper.view.bounds.bottom
@@ -59,9 +46,9 @@ const draw = (
       Paper.view.center.y
     )
   );
+}
 
-  //Paper.view.scale(0.9);
-
+function setupAxis() {
   const axisCircle = new Path.Circle(new Point(0, 0), 1);
   axisCircle.strokeColor = new Color(0.2, 0.2, 0.2);
 
@@ -76,6 +63,19 @@ const draw = (
   const axisColor = new Color(0.6, 0.6, 0.6);
   xAxis.strokeColor = axisColor;
   yAxis.strokeColor = axisColor;
+}
+
+const draw = (
+  wrapperRef: HTMLDivElement,
+  cursorInfoRef: HTMLDivElement,
+  statusCursorRef: HTMLDivElement,
+  statusCursorXValueRef: HTMLDivElement,
+  statusCursorYValueRef: HTMLDivElement
+) => {
+  Paper.project.currentStyle.strokeScaling = false;
+
+  setupCoordinates();
+  setupAxis();
 
   inputPath = new Paper.Path();
   inputPath.strokeColor = new Color(1, 0, 0);
