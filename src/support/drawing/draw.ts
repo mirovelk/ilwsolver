@@ -1,4 +1,4 @@
-import Paper, { Color, Matrix, Path, Point } from "paper";
+import Paper, { Color, Matrix, Path, Point, Tool } from "paper";
 
 let inputPath: paper.Path;
 
@@ -30,7 +30,7 @@ export function scrollRight() {
   Paper.view.translate(new Point(scrollStep, 0));
 }
 
-function setupCoordinates() {
+function initCoordinates() {
   const shorterAxis = Math.min(
     Paper.view.bounds.right,
     Paper.view.bounds.bottom
@@ -48,7 +48,7 @@ function setupCoordinates() {
   );
 }
 
-function setupAxis() {
+function initAxis() {
   const axisCircle = new Path.Circle(new Point(0, 0), 1);
   axisCircle.strokeColor = new Color(0.2, 0.2, 0.2);
 
@@ -65,6 +65,32 @@ function setupAxis() {
   yAxis.strokeColor = axisColor;
 }
 
+function initPanning(wrapperRef: HTMLDivElement) {
+  wrapperRef.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  var tool = new Tool();
+
+  tool.onMouseDown = function (e: paper.ToolEvent) {
+    // @ts-ignore
+    if (e.event.buttons === 2) {
+      wrapperRef.style.cursor = "grab";
+    }
+  };
+
+  tool.onMouseDrag = function (e: paper.ToolEvent) {
+    // @ts-ignore
+    if (e.event.buttons === 2) {
+      wrapperRef.style.cursor = "grabbing";
+      var panOffset = e.point.subtract(e.downPoint);
+      Paper.view.center = Paper.view.center.subtract(panOffset);
+    }
+  };
+
+  tool.onMouseUp = function (e: paper.ToolEvent) {
+    wrapperRef.style.cursor = "crosshair";
+  };
+}
+
 const draw = (
   wrapperRef: HTMLDivElement,
   cursorInfoRef: HTMLDivElement,
@@ -74,8 +100,9 @@ const draw = (
 ) => {
   Paper.project.currentStyle.strokeScaling = false;
 
-  setupCoordinates();
-  setupAxis();
+  initCoordinates();
+  initAxis();
+  initPanning(wrapperRef);
 
   inputPath = new Paper.Path();
   inputPath.strokeColor = new Color(1, 0, 0);
@@ -87,13 +114,19 @@ const draw = (
   }
 
   Paper.view.onMouseDown = (e: paper.MouseEvent) => {
-    inputPath.selected = false;
-    inputPath.add(e.point);
+    // @ts-ignore
+    if (e.event.buttons === 1) {
+      inputPath.selected = false;
+      inputPath.add(e.point);
+    }
   };
 
   Paper.view.onMouseDrag = (e: paper.MouseEvent) => {
-    inputPath.add(e.point);
-    updateCursorCoordinatesStatus(e);
+    // @ts-ignore
+    if (e.event.buttons === 1) {
+      inputPath.add(e.point);
+      updateCursorCoordinatesStatus(e);
+    }
   };
 
   Paper.view.onMouseUp = (e: paper.MouseEvent) => {
@@ -101,8 +134,6 @@ const draw = (
   };
 
   Paper.view.onMouseEnter = (e: paper.MouseEvent) => {
-    wrapperRef.style.cursor = "crosshair";
-
     statusCursorXValueRef.innerHTML = e.point.x.toString();
     statusCursorYValueRef.innerHTML = e.point.y.toString();
 
@@ -111,7 +142,6 @@ const draw = (
   };
 
   Paper.view.onMouseLeave = (e: paper.MouseEvent) => {
-    wrapperRef.style.cursor = "default";
     statusCursorRef.style.display = "none";
     cursorInfoRef.style.display = "none";
   };

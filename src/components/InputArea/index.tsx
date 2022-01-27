@@ -85,6 +85,7 @@ const CanvasWrapper = styled(MaterialPaper)`
   min-height: 1px;
   overflow: hidden;
   position: relative;
+  cursor: crosshair;
 `;
 
 const CursorInfo = styled.div`
