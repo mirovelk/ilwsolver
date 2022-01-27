@@ -29,6 +29,7 @@ const OnCanvasControlsWrapper = styled.div`
   flex-direction: column;
   transition: all 0.3s;
   opacity: 0.3;
+  z-index: 1000;
   &:hover {
     opacity: 1;
   }
@@ -75,10 +76,21 @@ const CanvasWrapper = styled(MaterialPaper)`
   flex: 0 1 100%;
   min-height: 1px;
   overflow: hidden;
+  position: relative;
+`;
+
+const CursorInfo = styled.div`
+  position: absolute;
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
 `;
 
 function InputArea() {
   const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
+  const cursorInfoRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <Wrapper>
@@ -117,7 +129,11 @@ function InputArea() {
         <Button onClick={simplify}>Simplify</Button>
       </ControlsWrapper>
       <CanvasWrapper ref={canvasWrapperRef}>
-        <InputCanvas wrapperRef={canvasWrapperRef} />
+        <CursorInfo ref={cursorInfoRef} />
+        <InputCanvas
+          wrapperRef={canvasWrapperRef}
+          cursorInfoRef={cursorInfoRef}
+        />
       </CanvasWrapper>
     </Wrapper>
   );

@@ -11,9 +11,10 @@ const Canvas = styled.canvas`
 
 interface Props {
   wrapperRef: React.MutableRefObject<HTMLDivElement | null>;
+  cursorInfoRef: React.MutableRefObject<HTMLDivElement | null>;
 }
 
-function InputCanvas({ wrapperRef }: Props) {
+function InputCanvas({ wrapperRef, cursorInfoRef }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // init paper.js
@@ -21,7 +22,7 @@ function InputCanvas({ wrapperRef }: Props) {
     const canvas = canvasRef.current;
     if (canvas) {
       Paper.setup(canvas);
-      draw(wrapperRef);
+      draw(wrapperRef, cursorInfoRef);
     }
   }, []);
 
