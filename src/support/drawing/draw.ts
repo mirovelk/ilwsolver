@@ -112,11 +112,13 @@ function initZooming(wrapperRef: HTMLDivElement) {
 
     const viewPosition = Paper.view.viewToProject(mousePosition);
 
-    const mpos = viewPosition;
-    const ctr = Paper.view.center;
+    const mouseProjectPosition = viewPosition;
+    const center = Paper.view.center;
 
-    const pc = mpos.subtract(ctr);
-    const offset = mpos.subtract(pc.multiply(beta)).subtract(ctr);
+    const pc = mouseProjectPosition.subtract(center);
+    const offset = mouseProjectPosition
+      .subtract(pc.multiply(beta))
+      .subtract(center);
 
     Paper.view.zoom = newZoom;
     Paper.view.center = Paper.view.center.add(offset);
