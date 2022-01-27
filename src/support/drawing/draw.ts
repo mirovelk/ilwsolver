@@ -30,6 +30,10 @@ export function scrollRight() {
   Paper.view.translate(new Point(scrollStep, 0));
 }
 
+function flipY(point: paper.Point) {
+  return new Point(point.x, -point.y);
+}
+
 function initCoordinates() {
   const shorterAxis = Math.min(
     Paper.view.bounds.right,
@@ -41,7 +45,7 @@ function initCoordinates() {
       (defaultScaleDownFactor * shorterAxis) / 2,
       0,
       0,
-      (-defaultScaleDownFactor * shorterAxis) / 2,
+      (defaultScaleDownFactor * shorterAxis) / 2, // iverting breaks zoom and other utilities!
       Paper.view.center.x,
       Paper.view.center.y
     )
@@ -68,7 +72,7 @@ function initAxis() {
 function initPanning(wrapperRef: HTMLDivElement) {
   wrapperRef.addEventListener("contextmenu", (e) => e.preventDefault());
 
-  var tool = new Tool();
+  const tool = new Tool();
 
   tool.onMouseDown = function (e: paper.ToolEvent) {
     // @ts-ignore
@@ -81,14 +85,44 @@ function initPanning(wrapperRef: HTMLDivElement) {
     // @ts-ignore
     if (e.event.buttons === 2) {
       wrapperRef.style.cursor = "grabbing";
-      var panOffset = e.point.subtract(e.downPoint);
-      Paper.view.center = Paper.view.center.subtract(panOffset);
+      const delta = e.point.subtract(e.downPoint);
+      Paper.view.center = Paper.view.center.subtract(delta);
     }
   };
 
   tool.onMouseUp = function (e: paper.ToolEvent) {
     wrapperRef.style.cursor = "crosshair";
   };
+}
+
+function initZooming(wrapperRef: HTMLDivElement) {
+  wrapperRef.addEventListener("wheel", (e: WheelEvent) => {
+    let newZoom = Paper.view.zoom;
+    let oldZoom = Paper.view.zoom;
+
+    if (e.deltaY > 0) {
+      newZoom = Paper.view.zoom * 1.05;
+    } else {
+      newZoom = Paper.view.zoom * 0.95;
+    }
+
+    const beta = oldZoom / newZoom;
+
+    const mousePosition = new Paper.Point(e.offsetX, e.offsetY);
+
+    const viewPosition = Paper.view.viewToProject(mousePosition);
+
+    const mpos = viewPosition;
+    const ctr = Paper.view.center;
+
+    const pc = mpos.subtract(ctr);
+    const offset = mpos.subtract(pc.multiply(beta)).subtract(ctr);
+
+    Paper.view.zoom = newZoom;
+    Paper.view.center = Paper.view.center.add(offset);
+
+    e.preventDefault();
+  });
 }
 
 const draw = (
@@ -98,18 +132,21 @@ const draw = (
   statusCursorXValueRef: HTMLDivElement,
   statusCursorYValueRef: HTMLDivElement
 ) => {
+  console.log("Calling draw!");
+
   Paper.project.currentStyle.strokeScaling = false;
 
   initCoordinates();
   initAxis();
   initPanning(wrapperRef);
+  initZooming(wrapperRef);
 
   inputPath = new Paper.Path();
   inputPath.strokeColor = new Color(1, 0, 0);
   inputPath.strokeWidth = 3;
 
   function updateCursorCoordinatesStatus(e: paper.MouseEvent) {
-    statusCursorXValueRef.innerHTML = e.point.y.toString();
+    statusCursorXValueRef.innerHTML = (-e.point.y).toString(); // render flipped
     statusCursorYValueRef.innerHTML = e.point.x.toString();
   }
 
@@ -151,8 +188,8 @@ const draw = (
   };
 
   Paper.view.onResize = () => {
-    var wrapperWidth = wrapperRef.clientWidth;
-    var wrapperHeight = wrapperRef.clientHeight;
+    const wrapperWidth = wrapperRef.clientWidth;
+    const wrapperHeight = wrapperRef.clientHeight;
     Paper.view.viewSize.width = wrapperWidth;
     Paper.view.viewSize.height = wrapperHeight;
   };
