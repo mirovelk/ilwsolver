@@ -36,8 +36,8 @@ export function scrollRight() {
 }
 
 const draw = (
-  wrapperRef: React.MutableRefObject<HTMLDivElement | null>,
-  cursorInfoRef: React.MutableRefObject<HTMLDivElement | null>
+  wrapperRef: HTMLDivElement,
+  cursorInfoRef: HTMLDivElement
 ) => {
   Paper.project.currentStyle.strokeScaling = false;
 
@@ -79,13 +79,10 @@ const draw = (
   inputPath.strokeWidth = 3;
 
   function updateCursorCoordinatesLabel(e: paper.MouseEvent) {
-    if (cursorInfoRef.current) {
       const projectCoordinates = Paper.view.projectToView(e.point);
-
-      cursorInfoRef.current.innerHTML = `${e.point.x}, ${e.point.y}`;
-      cursorInfoRef.current.style.top = `${projectCoordinates.y - 35}px`;
-      cursorInfoRef.current.style.left = `${projectCoordinates.x + 10}px`;
-    }
+      cursorInfoRef.innerHTML = `${e.point.x}, ${e.point.y}`;
+      cursorInfoRef.style.top = `${projectCoordinates.y - 35}px`;
+      cursorInfoRef.style.left = `${projectCoordinates.x + 10}px`;
   }
 
   Paper.view.onMouseDown = (e: paper.MouseEvent) => {
@@ -103,21 +100,15 @@ const draw = (
   };
 
   Paper.view.onMouseEnter = (e: paper.MouseEvent) => {
-    if (wrapperRef.current) {
-      wrapperRef.current.style.cursor = "crosshair";
-    }
-    if (cursorInfoRef.current) {
-      cursorInfoRef.current.style.display = "inline-block";
-    }
+      wrapperRef.style.cursor = "crosshair";
+    
+      cursorInfoRef.style.display = "inline-block";
+    
   };
 
   Paper.view.onMouseLeave = (e: paper.MouseEvent) => {
-    if (wrapperRef.current) {
-      wrapperRef.current.style.cursor = "default";
-    }
-    if (cursorInfoRef.current) {
-      cursorInfoRef.current.style.display = "none";
-    }
+      wrapperRef.style.cursor = "default";
+      cursorInfoRef.style.display = "none";
   };
 
   Paper.view.onMouseMove = (e: paper.MouseEvent) => {
@@ -125,12 +116,10 @@ const draw = (
   };
 
   Paper.view.onResize = () => {
-    if (wrapperRef.current) {
-      var wrapperWidth = wrapperRef.current.clientWidth;
-      var wrapperHeight = wrapperRef.current.clientHeight;
+      var wrapperWidth = wrapperRef.clientWidth;
+      var wrapperHeight = wrapperRef.clientHeight;
       Paper.view.viewSize.width = wrapperWidth;
       Paper.view.viewSize.height = wrapperHeight;
-    }
   };
 };
 

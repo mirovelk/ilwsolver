@@ -22,9 +22,11 @@ function InputCanvas({ wrapperRef, cursorInfoRef }: Props) {
     const canvas = canvasRef.current;
     if (canvas) {
       Paper.setup(canvas);
-      draw(wrapperRef, cursorInfoRef);
+      if(wrapperRef.current && cursorInfoRef.current) {
+        draw(wrapperRef.current, cursorInfoRef.current);
+      }
     }
-  }, []);
+  }, [wrapperRef, cursorInfoRef]);
 
   return <Canvas ref={canvasRef} id="canvas" data-paper-resize="true" />;
 }
