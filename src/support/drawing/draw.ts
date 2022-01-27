@@ -77,21 +77,21 @@ function initPanning(wrapperRef: HTMLDivElement) {
   tool.onMouseDown = function (e: paper.ToolEvent) {
     // @ts-ignore
     if (e.event.buttons === 2) {
-      wrapperRef.style.cursor = "grab";
+      Paper.view.element.style.cursor = "grab";
     }
   };
 
   tool.onMouseDrag = function (e: paper.ToolEvent) {
     // @ts-ignore
     if (e.event.buttons === 2) {
-      wrapperRef.style.cursor = "grabbing";
+      Paper.view.element.style.cursor = "grabbing";
       const delta = e.point.subtract(e.downPoint);
       Paper.view.center = Paper.view.center.subtract(delta);
     }
   };
 
   tool.onMouseUp = function (e: paper.ToolEvent) {
-    wrapperRef.style.cursor = "crosshair";
+    Paper.view.element.style.cursor = "crosshair";
   };
 }
 

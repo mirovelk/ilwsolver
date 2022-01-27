@@ -1,3 +1,4 @@
+import React, { useRef } from "react";
 import styled from "@emotion/styled";
 import {
   KeyboardArrowDown,
@@ -8,7 +9,6 @@ import {
   ZoomOut,
 } from "@mui/icons-material";
 import { Button, IconButton, Paper as MaterialPaper } from "@mui/material";
-import React, { useRef } from "react";
 
 import {
   scrollDown,
@@ -30,9 +30,9 @@ const Wrapper = styled.div`
 
 const OnCanvasControlsWrapper = styled.div`
   position: absolute;
-  top: 50px;
-  right: 8px;
-  padding: 10px 5px;
+  top: 10px;
+  right: 10px;
+  padding: 5px;
   display: flex;
   flex-direction: column;
   transition: all 0.3s;
@@ -85,7 +85,6 @@ const CanvasWrapper = styled(MaterialPaper)`
   min-height: 1px;
   overflow: hidden;
   position: relative;
-  cursor: crosshair;
 `;
 
 const CursorInfo = styled.div`
@@ -137,42 +136,41 @@ function InputArea() {
 
   return (
     <Wrapper>
-      <OnCanvasControlsWrapper>
-        <ScrollButtonsWrapper>
-          <SingleScrollButtonWrapper>
-            <ScrollButton onClick={scrollDown}>
-              <KeyboardArrowUp />
-            </ScrollButton>
-          </SingleScrollButtonWrapper>
-          <DoubleScrollButtonWrapper>
-            <ScrollButton onClick={scrollRight}>
-              <KeyboardArrowLeft />
-            </ScrollButton>
-            <ScrollButton onClick={scrollLeft}>
-              <KeyboardArrowRight />
-            </ScrollButton>
-          </DoubleScrollButtonWrapper>
-          <SingleScrollButtonWrapper>
-            <ScrollButton onClick={scrollUp}>
-              <KeyboardArrowDown />
-            </ScrollButton>
-          </SingleScrollButtonWrapper>
-        </ScrollButtonsWrapper>
-        <ZoomButtonsWrapper>
-          <ZoomButton onClick={zoomOut}>
-            <ZoomOut />
-          </ZoomButton>
-          <ZoomButton onClick={zoomIn}>
-            <ZoomIn />
-          </ZoomButton>
-        </ZoomButtonsWrapper>
-      </OnCanvasControlsWrapper>
-
       <ControlsWrapper>
         <Button onClick={simplify}>Simplify</Button>
       </ControlsWrapper>
       <CanvasWrapper ref={canvasWrapperRef}>
         <CursorInfo ref={cursorInfoRef} />
+        <OnCanvasControlsWrapper>
+          <ScrollButtonsWrapper>
+            <SingleScrollButtonWrapper>
+              <ScrollButton onClick={scrollDown}>
+                <KeyboardArrowUp />
+              </ScrollButton>
+            </SingleScrollButtonWrapper>
+            <DoubleScrollButtonWrapper>
+              <ScrollButton onClick={scrollRight}>
+                <KeyboardArrowLeft />
+              </ScrollButton>
+              <ScrollButton onClick={scrollLeft}>
+                <KeyboardArrowRight />
+              </ScrollButton>
+            </DoubleScrollButtonWrapper>
+            <SingleScrollButtonWrapper>
+              <ScrollButton onClick={scrollUp}>
+                <KeyboardArrowDown />
+              </ScrollButton>
+            </SingleScrollButtonWrapper>
+          </ScrollButtonsWrapper>
+          <ZoomButtonsWrapper>
+            <ZoomButton onClick={zoomOut}>
+              <ZoomOut />
+            </ZoomButton>
+            <ZoomButton onClick={zoomIn}>
+              <ZoomIn />
+            </ZoomButton>
+          </ZoomButtonsWrapper>
+        </OnCanvasControlsWrapper>
         <StatusLine>
           <StatusCursor ref={statusCursorRef}>
             <StatusCursorX>

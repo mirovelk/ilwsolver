@@ -1,12 +1,13 @@
+import React, { useEffect, useRef } from "react";
 import styled from "@emotion/styled";
 import Paper from "paper";
-import React, { useEffect, useRef } from "react";
 
 import draw from "../../support/drawing/draw";
 
-const Canvas = styled.canvas`
+const StyledCanvas = styled.canvas`
   width: 100%;
   height: 100%;
+  cursor: crosshair;
 `;
 
 interface Props {
@@ -20,9 +21,7 @@ interface Props {
 function InputCanvas({
   wrapperRef,
   cursorInfoRef,
-
   statusCursorRef,
-
   statusCursorXValueRef,
   statusCursorYValueRef,
 }: Props) {
@@ -57,7 +56,7 @@ function InputCanvas({
     statusCursorYValueRef,
   ]);
 
-  return <Canvas ref={canvasRef} id="canvas" data-paper-resize="true" />;
+  return <StyledCanvas ref={canvasRef} id="canvas" data-paper-resize="true" />;
 }
 
 export default InputCanvas;
