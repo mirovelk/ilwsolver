@@ -1,4 +1,4 @@
-import Paper, { Color, Matrix, Path, Point } from 'paper';
+import Paper, { Color, Matrix, Path, Point } from "paper";
 
 let inputPath: paper.Path;
 
@@ -37,7 +37,10 @@ export function scrollRight() {
 
 const draw = (
   wrapperRef: HTMLDivElement,
-  cursorInfoRef: HTMLDivElement
+  cursorInfoRef: HTMLDivElement,
+  statusCursorRef: HTMLDivElement,
+  statusCursorXValueRef: HTMLDivElement,
+  statusCursorYValueRef: HTMLDivElement
 ) => {
   Paper.project.currentStyle.strokeScaling = false;
 
@@ -45,13 +48,13 @@ const draw = (
     Paper.view.bounds.right,
     Paper.view.bounds.bottom
   );
-  const defaultScaleDownFactor= 0.9;
+  const defaultScaleDownFactor = 0.9;
   Paper.view.transform(
     new Matrix(
-      defaultScaleDownFactor * shorterAxis / 2,
+      (defaultScaleDownFactor * shorterAxis) / 2,
       0,
       0,
-      -defaultScaleDownFactor * shorterAxis / 2,
+      (-defaultScaleDownFactor * shorterAxis) / 2,
       Paper.view.center.x,
       Paper.view.center.y
     )
@@ -78,11 +81,9 @@ const draw = (
   inputPath.strokeColor = new Color(1, 0, 0);
   inputPath.strokeWidth = 3;
 
-  function updateCursorCoordinatesLabel(e: paper.MouseEvent) {
-      const projectCoordinates = Paper.view.projectToView(e.point);
-      cursorInfoRef.innerHTML = `${e.point.x}, ${e.point.y}`;
-      cursorInfoRef.style.top = `${projectCoordinates.y - 35}px`;
-      cursorInfoRef.style.left = `${projectCoordinates.x + 10}px`;
+  function updateCursorCoordinatesStatus(e: paper.MouseEvent) {
+    statusCursorXValueRef.innerHTML = e.point.y.toString();
+    statusCursorYValueRef.innerHTML = e.point.x.toString();
   }
 
   Paper.view.onMouseDown = (e: paper.MouseEvent) => {
@@ -92,7 +93,7 @@ const draw = (
 
   Paper.view.onMouseDrag = (e: paper.MouseEvent) => {
     inputPath.add(e.point);
-    updateCursorCoordinatesLabel(e);
+    updateCursorCoordinatesStatus(e);
   };
 
   Paper.view.onMouseUp = (e: paper.MouseEvent) => {
@@ -100,26 +101,30 @@ const draw = (
   };
 
   Paper.view.onMouseEnter = (e: paper.MouseEvent) => {
-      wrapperRef.style.cursor = "crosshair";
-    
-      cursorInfoRef.style.display = "inline-block";
-    
+    wrapperRef.style.cursor = "crosshair";
+
+    statusCursorXValueRef.innerHTML = e.point.x.toString();
+    statusCursorYValueRef.innerHTML = e.point.y.toString();
+
+    statusCursorRef.style.display = "inline-block";
+    cursorInfoRef.style.display = "inline-block";
   };
 
   Paper.view.onMouseLeave = (e: paper.MouseEvent) => {
-      wrapperRef.style.cursor = "default";
-      cursorInfoRef.style.display = "none";
+    wrapperRef.style.cursor = "default";
+    statusCursorRef.style.display = "none";
+    cursorInfoRef.style.display = "none";
   };
 
   Paper.view.onMouseMove = (e: paper.MouseEvent) => {
-    updateCursorCoordinatesLabel(e);
+    updateCursorCoordinatesStatus(e);
   };
 
   Paper.view.onResize = () => {
-      var wrapperWidth = wrapperRef.clientWidth;
-      var wrapperHeight = wrapperRef.clientHeight;
-      Paper.view.viewSize.width = wrapperWidth;
-      Paper.view.viewSize.height = wrapperHeight;
+    var wrapperWidth = wrapperRef.clientWidth;
+    var wrapperHeight = wrapperRef.clientHeight;
+    Paper.view.viewSize.width = wrapperWidth;
+    Paper.view.viewSize.height = wrapperHeight;
   };
 };
 

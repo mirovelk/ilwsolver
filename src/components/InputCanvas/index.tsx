@@ -1,8 +1,8 @@
-import styled from '@emotion/styled';
-import Paper from 'paper';
-import React, { useEffect, useRef } from 'react';
+import styled from "@emotion/styled";
+import Paper from "paper";
+import React, { useEffect, useRef } from "react";
 
-import draw from '../../support/drawing/draw';
+import draw from "../../support/drawing/draw";
 
 const Canvas = styled.canvas`
   width: 100%;
@@ -12,9 +12,20 @@ const Canvas = styled.canvas`
 interface Props {
   wrapperRef: React.MutableRefObject<HTMLDivElement | null>;
   cursorInfoRef: React.MutableRefObject<HTMLDivElement | null>;
+  statusCursorRef: React.MutableRefObject<HTMLDivElement | null>;
+  statusCursorXValueRef: React.MutableRefObject<HTMLDivElement | null>;
+  statusCursorYValueRef: React.MutableRefObject<HTMLDivElement | null>;
 }
 
-function InputCanvas({ wrapperRef, cursorInfoRef }: Props) {
+function InputCanvas({
+  wrapperRef,
+  cursorInfoRef,
+
+  statusCursorRef,
+
+  statusCursorXValueRef,
+  statusCursorYValueRef,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // init paper.js
@@ -22,11 +33,29 @@ function InputCanvas({ wrapperRef, cursorInfoRef }: Props) {
     const canvas = canvasRef.current;
     if (canvas) {
       Paper.setup(canvas);
-      if(wrapperRef.current && cursorInfoRef.current) {
-        draw(wrapperRef.current, cursorInfoRef.current);
+      if (
+        wrapperRef.current &&
+        cursorInfoRef.current &&
+        statusCursorRef.current &&
+        statusCursorXValueRef.current &&
+        statusCursorYValueRef.current
+      ) {
+        draw(
+          wrapperRef.current,
+          cursorInfoRef.current,
+          statusCursorRef.current,
+          statusCursorXValueRef.current,
+          statusCursorYValueRef.current
+        );
       }
     }
-  }, [wrapperRef, cursorInfoRef]);
+  }, [
+    wrapperRef,
+    cursorInfoRef,
+    statusCursorRef,
+    statusCursorXValueRef,
+    statusCursorYValueRef,
+  ]);
 
   return <Canvas ref={canvasRef} id="canvas" data-paper-resize="true" />;
 }

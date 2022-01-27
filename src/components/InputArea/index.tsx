@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 import {
   KeyboardArrowDown,
   KeyboardArrowLeft,
@@ -6,12 +6,20 @@ import {
   KeyboardArrowUp,
   ZoomIn,
   ZoomOut,
-} from '@mui/icons-material';
-import { Button, IconButton, Paper as MaterialPaper } from '@mui/material';
-import React, { useRef } from 'react';
+} from "@mui/icons-material";
+import { Button, IconButton, Paper as MaterialPaper } from "@mui/material";
+import React, { useRef } from "react";
 
-import { scrollDown, scrollLeft, scrollRight, scrollUp, simplify, zoomIn, zoomOut } from '../../support/drawing/draw';
-import InputCanvas from '../InputCanvas';
+import {
+  scrollDown,
+  scrollLeft,
+  scrollRight,
+  scrollUp,
+  simplify,
+  zoomIn,
+  zoomOut,
+} from "../../support/drawing/draw";
+import InputCanvas from "../InputCanvas";
 
 const Wrapper = styled.div`
   height: 100%;
@@ -82,15 +90,49 @@ const CanvasWrapper = styled(MaterialPaper)`
 const CursorInfo = styled.div`
   position: absolute;
   display: inline-block;
-  background: rgba(0, 0, 0, 0.7);
   border-radius: 4px;
   padding: 2px 6px;
   white-space: nowrap;
 `;
 
+const StatusLine = styled.div`
+  position: absolute;
+  bottom: 15px;
+  left: 20px;
+`;
+
+const StatusCursor = styled.div``;
+
+const StatusCursorRow = styled.div`
+  display: flex;
+  &:not(:last-child) {
+    margin-bottom: 5px;
+  }
+`;
+
+const StatusCursorX = styled(StatusCursorRow)``;
+const StatusCursorY = styled(StatusCursorRow)``;
+
+const StatusCursorValue = styled.div`
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  padding: 0 5px;
+`;
+
+const StatusCursorLabel = styled.div`
+  color: rgba(200, 200, 200, 1);
+  width: 20px;
+`;
+
+const StatusCursorXValue = styled(StatusCursorValue)``;
+const StatusCursorYValue = styled(StatusCursorValue)``;
+
 function InputArea() {
   const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
   const cursorInfoRef = useRef<HTMLDivElement | null>(null);
+  const statusCursorRef = useRef<HTMLDivElement | null>(null);
+  const statusCursorXValueRef = useRef<HTMLDivElement | null>(null);
+  const statusCursorYValueRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <Wrapper>
@@ -130,9 +172,24 @@ function InputArea() {
       </ControlsWrapper>
       <CanvasWrapper ref={canvasWrapperRef}>
         <CursorInfo ref={cursorInfoRef} />
+        <StatusLine>
+          <StatusCursor ref={statusCursorRef}>
+            <StatusCursorX>
+              <StatusCursorLabel>x: </StatusCursorLabel>
+              <StatusCursorXValue ref={statusCursorXValueRef} />
+            </StatusCursorX>
+            <StatusCursorY>
+              <StatusCursorLabel>y: </StatusCursorLabel>
+              <StatusCursorYValue ref={statusCursorYValueRef} />
+            </StatusCursorY>
+          </StatusCursor>
+        </StatusLine>
         <InputCanvas
           wrapperRef={canvasWrapperRef}
           cursorInfoRef={cursorInfoRef}
+          statusCursorRef={statusCursorRef}
+          statusCursorYValueRef={statusCursorXValueRef}
+          statusCursorXValueRef={statusCursorYValueRef}
         />
       </CanvasWrapper>
     </Wrapper>
