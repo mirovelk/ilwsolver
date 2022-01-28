@@ -1,4 +1,5 @@
 import Paper, { Color, Matrix, Path, Point, Tool } from "paper";
+import { calc, Complex, eqns, eqnsd } from "../calc/calc";
 
 let inputPath: paper.Path;
 
@@ -8,12 +9,12 @@ export function simplify() {
   }
 }
 
-const zoomStep = 0.5;
+const zoomStep = 0.8;
 export function zoomOut() {
-  Paper.view.scale(1 - zoomStep);
+  Paper.view.zoom *= zoomStep;
 }
 export function zoomIn() {
-  Paper.view.scale(1 + zoomStep);
+  Paper.view.zoom /= zoomStep;
 }
 
 const scrollStep = 0.1;
@@ -136,6 +137,21 @@ const draw = (
 ) => {
   console.log("Calling draw!");
 
+  // console.log(
+  //   "eqns :>> ",
+  //   eqns([new Complex(0.5, 0.25)], new Complex(0.5, 0.25))
+  // );
+
+  // console.log(
+  //   "eqnsd :>> ",
+  //   eqnsd([new Complex(0.5, 0.25)], new Complex(0.5, 0.25))
+  // );
+
+  console.log(
+    "calc :>> ",
+    calc([new Complex(0.5, 0.25)], new Complex(0.5, 0.25))
+  );
+
   Paper.project.currentStyle.strokeScaling = false;
 
   initCoordinates();
@@ -148,8 +164,8 @@ const draw = (
   inputPath.strokeWidth = 3;
 
   function updateCursorCoordinatesStatus(e: paper.MouseEvent) {
-    statusCursorXValueRef.innerHTML = (-e.point.y).toString(); // render flipped
-    statusCursorYValueRef.innerHTML = e.point.x.toString();
+    statusCursorXValueRef.innerHTML = e.point.x.toString();
+    statusCursorYValueRef.innerHTML = (-e.point.y).toString(); // render flipped
   }
 
   Paper.view.onMouseDown = (e: paper.MouseEvent) => {

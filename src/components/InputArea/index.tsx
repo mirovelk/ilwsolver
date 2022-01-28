@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import styled from "@emotion/styled";
 import {
   KeyboardArrowDown,
@@ -9,8 +9,9 @@ import {
   ZoomOut,
 } from "@mui/icons-material";
 import { Button, IconButton, Paper as MaterialPaper } from "@mui/material";
+import Paper from "paper";
 
-import {
+import draw, {
   scrollDown,
   scrollLeft,
   scrollRight,
@@ -19,7 +20,12 @@ import {
   zoomIn,
   zoomOut,
 } from "../../support/drawing/draw";
-import InputCanvas from "../InputCanvas";
+
+const StyledCanvas = styled.canvas`
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+`;
 
 const Wrapper = styled.div`
   height: 100%;
@@ -98,7 +104,7 @@ const CursorInfo = styled.div`
 const StatusLine = styled.div`
   position: absolute;
   bottom: 15px;
-  left: 20px;
+  left: calc(100% - 250px);
 `;
 
 const StatusCursor = styled.div``;
@@ -128,11 +134,42 @@ const StatusCursorXValue = styled(StatusCursorValue)``;
 const StatusCursorYValue = styled(StatusCursorValue)``;
 
 function InputArea() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
   const cursorInfoRef = useRef<HTMLDivElement | null>(null);
   const statusCursorRef = useRef<HTMLDivElement | null>(null);
   const statusCursorXValueRef = useRef<HTMLDivElement | null>(null);
   const statusCursorYValueRef = useRef<HTMLDivElement | null>(null);
+
+  // init paper.js
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      Paper.setup(canvas);
+      if (
+        canvasWrapperRef.current &&
+        cursorInfoRef.current &&
+        statusCursorRef.current &&
+        statusCursorXValueRef.current &&
+        statusCursorYValueRef.current
+      ) {
+        draw(
+          canvasWrapperRef.current,
+          cursorInfoRef.current,
+          statusCursorRef.current,
+          statusCursorXValueRef.current,
+          statusCursorYValueRef.current
+        );
+      }
+    }
+  }, [
+    canvasWrapperRef,
+    cursorInfoRef,
+    statusCursorRef,
+    statusCursorXValueRef,
+    statusCursorYValueRef,
+  ]);
 
   return (
     <Wrapper>
@@ -183,13 +220,7 @@ function InputArea() {
             </StatusCursorY>
           </StatusCursor>
         </StatusLine>
-        <InputCanvas
-          wrapperRef={canvasWrapperRef}
-          cursorInfoRef={cursorInfoRef}
-          statusCursorRef={statusCursorRef}
-          statusCursorYValueRef={statusCursorXValueRef}
-          statusCursorXValueRef={statusCursorYValueRef}
-        />
+        <StyledCanvas ref={canvasRef} id="canvas" data-paper-resize="true" />
       </CanvasWrapper>
     </Wrapper>
   );
