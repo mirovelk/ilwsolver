@@ -1,233 +1,89 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
+import { Color, Path } from "paper";
+
+import InteractiveCanvas from "../InteractiveCanvas";
+import { Button } from "@mui/material";
 import styled from "@emotion/styled";
-import {
-  KeyboardArrowDown,
-  KeyboardArrowLeft,
-  KeyboardArrowRight,
-  KeyboardArrowUp,
-  ZoomIn,
-  ZoomOut,
-} from "@mui/icons-material";
-import { Button, IconButton, Paper as MaterialPaper } from "@mui/material";
-import Paper from "paper";
-
-import draw, {
-  scrollDown,
-  scrollLeft,
-  scrollRight,
-  scrollUp,
-  simplify,
-  zoomIn,
-  zoomOut,
-} from "../../support/drawing/draw";
-
-const Title = styled.h2`
-  margin: 0;
-`;
-
-const StyledCanvas = styled.canvas`
-  width: 100%;
-  height: 100%;
-  cursor: crosshair;
-`;
-
-const Wrapper = styled.div`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-`;
-
-const OnCanvasControlsWrapper = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s;
-  opacity: 0.3;
-  z-index: 1000;
-  &:hover {
-    opacity: 1;
-  }
-`;
-
-const ZoomButtonsWrapper = styled.div`
-  display: flex;
-  justify-content: space-around;
-`;
-
-const ZoomButton = styled(IconButton)`
-  min-width: auto;
-  flex: 0 0 auto;
-`;
-
-const ScrollButtonsWrapper = styled.div`
-  margin-bottom: 10px;
-`;
-
-const ScrollButtonWrapper = styled.div`
-  display: flex;
-  width: 120px;
-`;
-
-const SingleScrollButtonWrapper = styled(ScrollButtonWrapper)`
-  justify-content: center;
-`;
-
-const DoubleScrollButtonWrapper = styled(ScrollButtonWrapper)`
-  justify-content: space-between;
-`;
-
-const ScrollButton = styled(IconButton)`
-  min-width: initial;
-`;
+import { AutoFixHigh, Delete } from "@mui/icons-material";
 
 const ControlsWrapper = styled.div`
-  margin-bottom: 5px;
+  width: 100%;
   display: flex;
   justify-content: space-between;
 `;
 
-const CanvasWrapper = styled(MaterialPaper)`
-  flex: 0 1 100%;
-  min-height: 1px;
-  overflow: hidden;
-  position: relative;
-`;
-
-const CursorInfo = styled.div`
-  position: absolute;
-  display: inline-block;
-  border-radius: 4px;
-  padding: 2px 6px;
-  white-space: nowrap;
-`;
-
-const StatusLine = styled.div`
-  position: absolute;
-  bottom: 15px;
-  left: calc(100% - 250px);
-`;
-
-const StatusCursor = styled.div``;
-
-const StatusCursorRow = styled.div`
-  display: flex;
-  &:not(:last-child) {
-    margin-bottom: 5px;
+function simplify(
+  inputPathRef: React.MutableRefObject<paper.Path | undefined>
+) {
+  if (inputPathRef.current) {
+    inputPathRef.current.simplify(0.0001);
   }
-`;
+}
 
-const StatusCursorX = styled(StatusCursorRow)``;
-const StatusCursorY = styled(StatusCursorRow)``;
+function clear(inputPathRef: React.MutableRefObject<paper.Path | undefined>) {
+  if (inputPathRef.current) {
+    inputPathRef.current.removeSegments(
+      0,
+      inputPathRef.current.segments.length
+    );
+  }
+}
 
-const StatusCursorValue = styled.div`
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 4px;
-  padding: 0 5px;
-`;
-
-const StatusCursorLabel = styled.div`
-  color: rgba(200, 200, 200, 1);
-  width: 20px;
-`;
-
-const StatusCursorXValue = styled(StatusCursorValue)``;
-const StatusCursorYValue = styled(StatusCursorValue)``;
-
-function InputArea() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
-  const cursorInfoRef = useRef<HTMLDivElement | null>(null);
-  const statusCursorRef = useRef<HTMLDivElement | null>(null);
-  const statusCursorXValueRef = useRef<HTMLDivElement | null>(null);
-  const statusCursorYValueRef = useRef<HTMLDivElement | null>(null);
-
-  // init paper.js
+function InputArea({
+  paper,
+  inputPathRef,
+}: {
+  paper: paper.PaperScope;
+  inputPathRef: React.MutableRefObject<paper.Path | undefined>;
+}) {
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      Paper.setup(canvas);
-      if (
-        canvasWrapperRef.current &&
-        cursorInfoRef.current &&
-        statusCursorRef.current &&
-        statusCursorXValueRef.current &&
-        statusCursorYValueRef.current
-      ) {
-        draw(
-          canvasWrapperRef.current,
-          cursorInfoRef.current,
-          statusCursorRef.current,
-          statusCursorXValueRef.current,
-          statusCursorYValueRef.current
-        );
-      }
+    console.log("useEffect :>> ");
+    if (inputPathRef) {
+      inputPathRef.current = new Path();
+      inputPathRef.current.strokeColor = new Color(1, 0, 0);
+      inputPathRef.current.strokeWidth = 3;
+
+      paper.view.onMouseDown = (e: paper.MouseEvent) => {
+        // @ts-ignore
+        if (inputPathRef.current && e.event.buttons === 1) {
+          inputPathRef.current.selected = false;
+          inputPathRef.current.add(e.point);
+        }
+      };
+
+      paper.view.onMouseDrag = (e: paper.MouseEvent) => {
+        // @ts-ignore
+        if (inputPathRef.current && e.event.buttons === 1) {
+          inputPathRef.current.add(e.point);
+        }
+      };
+
+      paper.view.onMouseUp = (e: paper.MouseEvent) => {
+        if (inputPathRef.current) inputPathRef.current.fullySelected = true;
+      };
     }
-  }, [
-    canvasWrapperRef,
-    cursorInfoRef,
-    statusCursorRef,
-    statusCursorXValueRef,
-    statusCursorYValueRef,
-  ]);
+  }, [paper, inputPathRef]);
 
   return (
-    <Wrapper>
-      <ControlsWrapper>
-        <Title>Input</Title>
-        <Button onClick={simplify}>Simplify</Button>
-      </ControlsWrapper>
-      <CanvasWrapper ref={canvasWrapperRef}>
-        <CursorInfo ref={cursorInfoRef} />
-        <OnCanvasControlsWrapper>
-          <ScrollButtonsWrapper>
-            <SingleScrollButtonWrapper>
-              <ScrollButton onClick={scrollDown}>
-                <KeyboardArrowUp />
-              </ScrollButton>
-            </SingleScrollButtonWrapper>
-            <DoubleScrollButtonWrapper>
-              <ScrollButton onClick={scrollRight}>
-                <KeyboardArrowLeft />
-              </ScrollButton>
-              <ScrollButton onClick={scrollLeft}>
-                <KeyboardArrowRight />
-              </ScrollButton>
-            </DoubleScrollButtonWrapper>
-            <SingleScrollButtonWrapper>
-              <ScrollButton onClick={scrollUp}>
-                <KeyboardArrowDown />
-              </ScrollButton>
-            </SingleScrollButtonWrapper>
-          </ScrollButtonsWrapper>
-          <ZoomButtonsWrapper>
-            <ZoomButton onClick={zoomOut}>
-              <ZoomOut />
-            </ZoomButton>
-            <ZoomButton onClick={zoomIn}>
-              <ZoomIn />
-            </ZoomButton>
-          </ZoomButtonsWrapper>
-        </OnCanvasControlsWrapper>
-        <StatusLine>
-          <StatusCursor ref={statusCursorRef}>
-            <StatusCursorX>
-              <StatusCursorLabel>x: </StatusCursorLabel>
-              <StatusCursorXValue ref={statusCursorXValueRef} />
-            </StatusCursorX>
-            <StatusCursorY>
-              <StatusCursorLabel>y: </StatusCursorLabel>
-              <StatusCursorYValue ref={statusCursorYValueRef} />
-            </StatusCursorY>
-          </StatusCursor>
-        </StatusLine>
-        <StyledCanvas ref={canvasRef} id="canvas" data-paper-resize="true" />
-      </CanvasWrapper>
-    </Wrapper>
+    <InteractiveCanvas
+      paper={paper}
+      id="input"
+      title="Input"
+      controls={
+        <ControlsWrapper>
+          <Button
+            onClick={() => simplify(inputPathRef)}
+            startIcon={<AutoFixHigh />}
+          >
+            Simplify
+          </Button>
+
+          <Button onClick={() => clear(inputPathRef)} startIcon={<Delete />}>
+            Clear
+          </Button>
+        </ControlsWrapper>
+      }
+    />
   );
 }
 
