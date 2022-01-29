@@ -5,10 +5,11 @@ import Paper, { Color } from "paper";
 import StyleProvider from "./support/style/StyleProvider";
 import InputArea from "./components/InputArea";
 import OutputArea from "./components/OutputArea";
-import { IconButton } from "@mui/material";
-import { PlayArrow } from "@mui/icons-material";
+import { Button, IconButton } from "@mui/material";
+import { Delete, PlayArrow } from "@mui/icons-material";
 import { Complex } from "./util/complex";
 import { calc } from "./support/calc/calc";
+import { sleep } from "./util/sleep";
 
 const Wrapper = styled.div`
   position: realtive;
@@ -30,13 +31,24 @@ const AreaWrapper = styled.div`
   }
 `;
 
-const RunButtonWrapper = styled.div`
-  display: inline-block;
+const CenterControlsWrapper = styled.div`
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   z-index: 1000;
   top: 80px;
   left: 50%;
   transform: translate(-50%, 0);
+`;
+
+const RunButtonWrapper = styled.div`
+  display: inline-flex;
+`;
+
+const ClearButtonWrapper = styled.div`
+  margin-top: 5px;
 `;
 
 const StyledPlayArrow = styled(PlayArrow)`
@@ -54,6 +66,21 @@ const RunButton = styled(IconButton)`
     background-color: rgb(30, 30, 30);
 `;
 
+const ClearButton = styled(IconButton)`
+  background: rgb(18, 18, 18);
+  border: 10px solid rgb(18, 18, 18);
+  &:hover {
+    background-color: rgb(244, 67, 54);
+  }
+
+  &:disabled {
+    background-color: rgb(30, 30, 30);
+`;
+
+const StyledDelete = styled(Delete)`
+  color: white;
+`;
+
 function getInput(
   inputPathRef: React.MutableRefObject<paper.Path | undefined>
 ): Complex[] {
@@ -68,15 +95,19 @@ function getInput(
   return inputPoints.map((point) => [point.x, -point.y]);
 }
 
-function drawOutputPoints(
+async function drawOutputPoints(
   output: Complex[],
-  outputPaperRef: React.MutableRefObject<paper.PaperScope | undefined>
+  outputPathRef: React.MutableRefObject<paper.Path | undefined>
 ) {
-  if (outputPaperRef.current) {
-    const outputPath = new outputPaperRef.current.Path(output);
-    outputPath.strokeColor = new Color(0, 1, 0);
-    outputPath.strokeWidth = 3;
-    outputPaperRef.current.project.activeLayer.addChild(outputPath);
+  if (outputPathRef.current) {
+    outputPathRef.current.removeSegments(
+      0,
+      outputPathRef.current.segments.length
+    );
+    for (let i = 0; i < output.length - 1; i++) {
+      await sleep(1);
+      outputPathRef.current.add(output[i]);
+    }
   }
 }
 
@@ -94,6 +125,7 @@ function compute(input: Complex[]): Complex[] {
 
 function process(
   inputPathRef: React.MutableRefObject<paper.Path | undefined>,
+  outputPathRef: React.MutableRefObject<paper.Path | undefined>,
   outputPaperRef: React.MutableRefObject<paper.PaperScope | undefined>
 ) {
   const input = getInput(inputPathRef);
@@ -102,7 +134,48 @@ function process(
   const output = compute(input);
   console.log(JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}"));
 
-  drawOutputPoints(output, outputPaperRef);
+  viewFitBounds(outputPaperRef, new Paper.Path(output.map(([x, y]) => [x, y])));
+
+  drawOutputPoints(output, outputPathRef);
+}
+
+function clear(
+  inputPathRef: React.MutableRefObject<paper.Path | undefined>,
+  outputPathRef: React.MutableRefObject<paper.Path | undefined>
+) {
+  if (inputPathRef.current) {
+    inputPathRef.current.removeSegments(
+      0,
+      inputPathRef.current.segments.length
+    );
+  }
+
+  if (outputPathRef.current) {
+    outputPathRef.current.removeSegments(
+      0,
+      outputPathRef.current.segments.length
+    );
+  }
+}
+
+function viewFitBounds(
+  paperRef: React.MutableRefObject<paper.PaperScope | undefined>,
+  path: paper.Path
+) {
+  if (paperRef.current) {
+    const viewBounds = paperRef.current.view.bounds;
+    const scaleRatio = Math.min(
+      viewBounds.width / path.bounds.width,
+      viewBounds.height / path.bounds.height
+    );
+    paperRef.current.view.translate(
+      new Paper.Point(
+        viewBounds.center.x - path.bounds.center.x,
+        viewBounds.center.y - path.bounds.center.y
+      )
+    );
+    paperRef.current.view.scale(scaleRatio * 0.8);
+  }
 }
 
 function App() {
@@ -110,19 +183,32 @@ function App() {
   const outputPaperRef = useRef(new Paper.PaperScope());
 
   const inputPathRef = useRef<paper.Path>();
+  const outputPathRef = useRef<paper.Path>();
 
   return (
     <StyleProvider>
       <Wrapper>
-        <RunButtonWrapper>
-          <RunButton
-            size="large"
-            color="inherit"
-            onClick={() => process(inputPathRef, outputPaperRef)}
-          >
-            <StyledPlayArrow fontSize="inherit" />
-          </RunButton>
-        </RunButtonWrapper>
+        <CenterControlsWrapper>
+          <RunButtonWrapper>
+            <RunButton
+              size="large"
+              color="inherit"
+              onClick={() =>
+                process(inputPathRef, outputPathRef, outputPaperRef)
+              }
+            >
+              <StyledPlayArrow fontSize="inherit" />
+            </RunButton>
+          </RunButtonWrapper>
+          <ClearButtonWrapper>
+            <ClearButton
+              onClick={() => clear(inputPathRef, outputPathRef)}
+              size="small"
+            >
+              <StyledDelete fontSize="inherit" />
+            </ClearButton>
+          </ClearButtonWrapper>
+        </CenterControlsWrapper>
         <AreasWrapper>
           <AreaWrapper>
             <InputArea
@@ -131,7 +217,10 @@ function App() {
             />
           </AreaWrapper>
           <AreaWrapper>
-            <OutputArea paper={outputPaperRef.current} />
+            <OutputArea
+              paper={outputPaperRef.current}
+              outputPathRef={outputPathRef}
+            />
           </AreaWrapper>
         </AreasWrapper>
       </Wrapper>

@@ -4,7 +4,7 @@ import { Color, Path } from "paper";
 import InteractiveCanvas from "../InteractiveCanvas";
 import { Button } from "@mui/material";
 import styled from "@emotion/styled";
-import { AutoFixHigh, Delete } from "@mui/icons-material";
+import { AutoFixHigh } from "@mui/icons-material";
 
 const ControlsWrapper = styled.div`
   width: 100%;
@@ -17,15 +17,6 @@ function simplify(
 ) {
   if (inputPathRef.current) {
     inputPathRef.current.simplify(0.0001);
-  }
-}
-
-function clear(inputPathRef: React.MutableRefObject<paper.Path | undefined>) {
-  if (inputPathRef.current) {
-    inputPathRef.current.removeSegments(
-      0,
-      inputPathRef.current.segments.length
-    );
   }
 }
 
@@ -75,10 +66,6 @@ function InputArea({
             startIcon={<AutoFixHigh />}
           >
             Simplify
-          </Button>
-
-          <Button onClick={() => clear(inputPathRef)} startIcon={<Delete />}>
-            Clear
           </Button>
         </ControlsWrapper>
       }
