@@ -37,7 +37,6 @@ function InputArea({
   inputPathRef: React.MutableRefObject<paper.Path | undefined>;
 }) {
   useEffect(() => {
-    console.log("useEffect :>> ");
     if (inputPathRef) {
       inputPathRef.current = new Path();
       inputPathRef.current.strokeColor = new Color(1, 0, 0);

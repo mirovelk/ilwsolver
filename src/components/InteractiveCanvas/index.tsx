@@ -174,8 +174,6 @@ function InteractiveCanvas({
     if (canvas && canvasWrapperRef.current && statusCursorRef.current) {
       paper.setup(canvas);
 
-      console.log("Calling draw!");
-
       paper.project.currentStyle.strokeScaling = false;
 
       initCoordinates(paper);
