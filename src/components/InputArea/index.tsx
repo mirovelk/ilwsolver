@@ -21,6 +21,10 @@ import draw, {
   zoomOut,
 } from "../../support/drawing/draw";
 
+const Title = styled.h2`
+  margin: 0;
+`;
+
 const StyledCanvas = styled.canvas`
   width: 100%;
   height: 100%;
@@ -174,6 +178,7 @@ function InputArea() {
   return (
     <Wrapper>
       <ControlsWrapper>
+        <Title>Input</Title>
         <Button onClick={simplify}>Simplify</Button>
       </ControlsWrapper>
       <CanvasWrapper ref={canvasWrapperRef}>

@@ -1,5 +1,4 @@
 import Paper, { Color, Matrix, Path, Point, Tool } from "paper";
-import { calc, Complex, eqns, eqnsd } from "../calc/calc";
 
 let inputPath: paper.Path;
 
@@ -136,21 +135,6 @@ const draw = (
   statusCursorYValueRef: HTMLDivElement
 ) => {
   console.log("Calling draw!");
-
-  // console.log(
-  //   "eqns :>> ",
-  //   eqns([new Complex(0.5, 0.25)], new Complex(0.5, 0.25))
-  // );
-
-  // console.log(
-  //   "eqnsd :>> ",
-  //   eqnsd([new Complex(0.5, 0.25)], new Complex(0.5, 0.25))
-  // );
-
-  console.log(
-    "calc :>> ",
-    calc([new Complex(0.5, 0.25)], new Complex(0.5, 0.25))
-  );
 
   Paper.project.currentStyle.strokeScaling = false;
 
