@@ -8,6 +8,7 @@ import OutputArea from "./components/OutputArea";
 import { IconButton } from "@mui/material";
 import { PlayArrow } from "@mui/icons-material";
 import { Complex } from "./util/complex";
+import { calc } from "./support/calc/calc";
 
 const Wrapper = styled.div`
   position: realtive;
@@ -64,7 +65,7 @@ function getInput(
       inputPoints.push(inputPathRef.current?.getPointAt(i));
     }
   }
-  return inputPoints.map((point) => [point.x, point.y]);
+  return inputPoints.map((point) => [point.x, -point.y]);
 }
 
 function drawOutputPoints(
@@ -80,8 +81,15 @@ function drawOutputPoints(
 }
 
 function compute(input: Complex[]): Complex[] {
-  const output: Complex[] = input.map(([x, y]) => [x, -y]);
-  return output;
+  // const output: Complex[] = input.map(([x, y]) => [x, -y]);
+
+  const output: Complex[] = [[0, 0]]; // initial value
+
+  for (let i = 0; i < input.length; i++) {
+    output.push(calc([output[output.length - 1]], input[i])[0]); // for now returning for M === 1
+  }
+
+  return output.slice(1).map(([x, y]) => [x, -y]);
 }
 
 function process(
@@ -89,7 +97,10 @@ function process(
   outputPaperRef: React.MutableRefObject<paper.PaperScope | undefined>
 ) {
   const input = getInput(inputPathRef);
+
+  console.log(JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}"));
   const output = compute(input);
+  console.log(JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}"));
 
   drawOutputPoints(output, outputPaperRef);
 }
