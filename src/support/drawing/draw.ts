@@ -53,6 +53,9 @@ function initCoordinates() {
 }
 
 function initAxis() {
+  const axisSqare = new Path.Rectangle(new Point(1, -1), new Point(-1, 1));
+  axisSqare.strokeColor = new Color(0.15, 0.15, 0.15);
+
   const axisCircle = new Path.Circle(new Point(0, 0), 1);
   axisCircle.strokeColor = new Color(0.2, 0.2, 0.2);
 
@@ -173,9 +176,6 @@ const draw = (
   };
 
   Paper.view.onMouseEnter = (e: paper.MouseEvent) => {
-    statusCursorXValueRef.innerHTML = e.point.x.toString();
-    statusCursorYValueRef.innerHTML = e.point.y.toString();
-
     statusCursorRef.style.display = "inline-block";
     cursorInfoRef.style.display = "inline-block";
   };
