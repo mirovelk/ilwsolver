@@ -45,7 +45,7 @@ const OnCanvasControlsWrapper = styled.div`
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 5px;
+  padding: 15px;
   flex-direction: column;
   transition: all 0.3s;
   opacity: 0.3;

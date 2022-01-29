@@ -31,12 +31,12 @@ const AreaWrapper = styled.div`
 `;
 
 const RunButtonWrapper = styled.div`
-  display: flex;
+  display: inline-block;
   position: absolute;
+  z-index: 1000;
   top: 80px;
-  z-index: 10000;
-  width: 100%;
-  justify-content: center;
+  left: 50%;
+  transform: translate(-50%, 0);
 `;
 
 const StyledPlayArrow = styled(PlayArrow)`
