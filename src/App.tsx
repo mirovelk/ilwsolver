@@ -87,10 +87,12 @@ const StyledDelete = styled(Delete)`
   color: white;
 `;
 
+const INPUT_STEP = 1000;
+
 function getInput(inputLayer: paper.Layer): Complex[] {
   const inputPath = inputLayer.lastChild as paper.Path;
   const inputPoints: paper.Point[] = [];
-  const steps = 1000;
+  const steps = INPUT_STEP;
   const step = inputPath.length / steps;
   for (let i = 0; i < inputPath.length; i += step) {
     inputPoints.push(inputPath.getPointAt(i));
@@ -100,15 +102,26 @@ function getInput(inputLayer: paper.Layer): Complex[] {
 
 async function drawOutputPoints(output: Complex[], outputLayer: paper.Layer) {
   outputLayer.removeChildren();
-  const outputPath = new Paper.Path(output.map(([x, y]) => [x, -y]));
+  const outputSegments = output.map(([x, y]) => new Paper.Segment([x, -y]));
+  const outputPath = new Paper.Path();
   outputPath.strokeColor = new Paper.Color(0, 1, 0);
   outputPath.strokeWidth = ouputStrokeWidth;
   outputLayer.addChild(outputPath);
 
-  // for (let i = 0; i < output.length - 1; i++) {
-  //   await sleep(1);
-  //   outputPath.add(output[i]);
-  // }
+  const animationDurationInS = 0.5;
+  const drawBatchSize = Math.ceil(INPUT_STEP / (animationDurationInS * 60));
+
+  console.log("drawBatchSize :>> ", drawBatchSize);
+
+  outputLayer.onFrame = (e: { count: number; time: number; delta: number }) => {
+    if (outputSegments.length > 0) {
+      const segments = outputSegments.splice(
+        0,
+        drawBatchSize
+      ) as paper.Segment[];
+      outputPath.addSegments(segments);
+    }
+  };
 }
 
 function compute(input: Complex[]): Complex[] {
