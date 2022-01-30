@@ -4,17 +4,15 @@ import InteractiveCanvas from "../InteractiveCanvas";
 
 function OutputArea({
   paper,
-  outputLayerName,
+  outputLayerRef,
 }: {
   paper: paper.PaperScope;
-  outputLayerName: string;
+  outputLayerRef: React.MutableRefObject<paper.Layer | undefined>;
 }) {
   useEffect(() => {
-    const outputLayer = new paper.Layer();
-    outputLayer.name = outputLayerName;
-    paper.project.addLayer(outputLayer);
-    outputLayer.activate();
-  }, [paper, outputLayerName]);
+    outputLayerRef.current = new paper.Layer();
+    paper.project.addLayer(outputLayerRef.current);
+  }, [paper, outputLayerRef]);
 
   return (
     <InteractiveCanvas

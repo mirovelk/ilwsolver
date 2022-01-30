@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Paper from "paper";
 
 import StyleProvider from "./support/style/StyleProvider";
@@ -11,12 +11,8 @@ import { Complex } from "./util/complex";
 import { calc } from "./support/calc/calc";
 import {
   defaultScaleDownFactor,
-  drawingLayerName,
-  getDrawingLayer,
-  inputLayerName,
   inputPaper,
   ouputStrokeWidth,
-  outputLayerName,
   outputPaper,
 } from "./papers";
 
@@ -91,8 +87,8 @@ const StyledDelete = styled(Delete)`
   color: white;
 `;
 
-function getInput(inputPaper: paper.PaperScope): Complex[] {
-  const inputPath = inputPaper.project.activeLayer.lastChild as paper.Path;
+function getInput(inputLayer: paper.Layer): Complex[] {
+  const inputPath = inputLayer.lastChild as paper.Path;
   const inputPoints: paper.Point[] = [];
   const steps = 1000;
   const step = inputPath.length / steps;
@@ -102,15 +98,12 @@ function getInput(inputPaper: paper.PaperScope): Complex[] {
   return inputPoints.map((point) => [point.x, -point.y]);
 }
 
-async function drawOutputPoints(
-  output: Complex[],
-  outputPaper: paper.PaperScope
-) {
-  outputPaper.project.activeLayer.removeChildren();
+async function drawOutputPoints(output: Complex[], outputLayer: paper.Layer) {
+  outputLayer.removeChildren();
   const outputPath = new Paper.Path(output.map(([x, y]) => [x, -y]));
   outputPath.strokeColor = new Paper.Color(0, 1, 0);
   outputPath.strokeWidth = ouputStrokeWidth;
-  outputPaper.project.activeLayer.addChild(outputPath);
+  outputLayer.addChild(outputPath);
 
   // for (let i = 0; i < output.length - 1; i++) {
   //   await sleep(1);
@@ -128,39 +121,6 @@ function compute(input: Complex[]): Complex[] {
   return output.slice(1);
 }
 
-function process() {
-  const input = getInput(inputPaper);
-
-  console.log(JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}"));
-  const output = compute(input);
-  console.log(JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}"));
-
-  viewFitBounds(outputPaper, new Paper.Path(output.map(([x, y]) => [x, -y])));
-
-  drawOutputPoints(output, outputPaper);
-}
-
-function clear(setRunDisabled: (disabled: boolean) => void) {
-  inputPaper.project.activeLayer.removeChildren();
-  getDrawingLayer().removeChildren();
-  outputPaper.project.activeLayer.removeChildren();
-
-  inputPaper.view.center = new Paper.Point(0, 0);
-  outputPaper.view.center = new Paper.Point(0, 0);
-
-  inputPaper.view.scale(
-    defaultScaleDownFactor *
-      Math.min(inputPaper.view.bounds.right, inputPaper.view.bounds.bottom)
-  );
-
-  outputPaper.view.scale(
-    defaultScaleDownFactor *
-      Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
-  );
-
-  setRunDisabled(true);
-}
-
 function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
   const viewBounds = paper.view.bounds;
   const scaleRatio = Math.min(
@@ -176,8 +136,64 @@ function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
   paper.view.scale(scaleRatio * 0.8);
 }
 
+function process(
+  inputLayerRef: React.MutableRefObject<paper.Layer | undefined>,
+  outputLayerRef: React.MutableRefObject<paper.Layer | undefined>
+) {
+  if (inputLayerRef.current && outputLayerRef.current) {
+    const input = getInput(inputLayerRef.current);
+
+    console.log(
+      JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")
+    );
+    const output = compute(input);
+    console.log(
+      JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}")
+    );
+
+    viewFitBounds(outputPaper, new Paper.Path(output.map(([x, y]) => [x, -y])));
+    drawOutputPoints(output, outputLayerRef.current);
+  }
+}
+
+function clear(
+  drawingLayerRef: React.MutableRefObject<paper.Layer | undefined>,
+  inputLayerRef: React.MutableRefObject<paper.Layer | undefined>,
+  outputLayerRef: React.MutableRefObject<paper.Layer | undefined>,
+  setRunDisabled: (disabled: boolean) => void
+) {
+  if (
+    drawingLayerRef.current &&
+    inputLayerRef.current &&
+    outputLayerRef.current
+  ) {
+    drawingLayerRef.current.removeChildren();
+    inputLayerRef.current.removeChildren();
+    outputLayerRef.current.removeChildren();
+
+    inputPaper.view.center = new Paper.Point(0, 0);
+    outputPaper.view.center = new Paper.Point(0, 0);
+
+    inputPaper.view.scale(
+      defaultScaleDownFactor *
+        Math.min(inputPaper.view.bounds.right, inputPaper.view.bounds.bottom)
+    );
+
+    outputPaper.view.scale(
+      defaultScaleDownFactor *
+        Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
+    );
+
+    setRunDisabled(true);
+  }
+}
+
 function App() {
   const [runDisabled, setRunDisabled] = useState(true);
+
+  const drawingLayerRef = useRef<paper.Layer>();
+  const inputLayerRef = useRef<paper.Layer>();
+  const outputLayerRef = useRef<paper.Layer>();
 
   return (
     <StyleProvider>
@@ -187,14 +203,23 @@ function App() {
             <RunButton
               size="large"
               color="inherit"
-              onClick={process}
+              onClick={() => process(inputLayerRef, outputLayerRef)}
               disabled={runDisabled}
             >
               <StyledFunctions fontSize="inherit" />
             </RunButton>
           </RunButtonWrapper>
           <ClearButtonWrapper>
-            <ClearButton onClick={clear.bind(null, setRunDisabled)}>
+            <ClearButton
+              onClick={() =>
+                clear(
+                  drawingLayerRef,
+                  inputLayerRef,
+                  outputLayerRef,
+                  setRunDisabled
+                )
+              }
+            >
               <StyledDelete />
             </ClearButton>
           </ClearButtonWrapper>
@@ -203,13 +228,13 @@ function App() {
           <AreaWrapper>
             <InputArea
               paper={inputPaper}
-              inputLayerName={inputLayerName}
-              drawingLayerName={drawingLayerName}
+              inputLayerRef={inputLayerRef}
+              drawingLayerRef={drawingLayerRef}
               setRunDisabled={setRunDisabled}
             />
           </AreaWrapper>
           <AreaWrapper>
-            <OutputArea paper={outputPaper} outputLayerName={outputLayerName} />
+            <OutputArea paper={outputPaper} outputLayerRef={outputLayerRef} />
           </AreaWrapper>
         </AreasWrapper>
       </Wrapper>
