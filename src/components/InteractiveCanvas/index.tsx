@@ -171,15 +171,18 @@ function InteractiveCanvas({
   // init paper.js
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas && canvasWrapperRef.current && statusCursorRef.current) {
+    if (canvas && canvasWrapperRef.current) {
       paper.setup(canvas);
 
       paper.project.currentStyle.strokeScaling = false;
 
       initCoordinates(paper);
-      initAxis();
       initPanning(paper, canvasWrapperRef.current);
       initZooming(paper, canvasWrapperRef.current);
+
+      const backgroundLayer = new paper.Layer();
+      initAxis(backgroundLayer);
+      paper.project.addLayer(backgroundLayer);
 
       paper.view.onMouseDrag = (e: paper.MouseEvent) => {
         if (

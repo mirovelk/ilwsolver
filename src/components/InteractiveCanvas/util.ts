@@ -40,12 +40,14 @@ export function initCoordinates(paper: paper.PaperScope) {
   );
 }
 
-export function initAxis() {
+export function initAxis(backgroundLayer: paper.Layer) {
   const axisSqare = new Path.Rectangle(new Point(1, -1), new Point(-1, 1));
   axisSqare.strokeColor = new Color(0.15, 0.15, 0.15);
+  backgroundLayer.addChild(axisSqare);
 
   const axisCircle = new Path.Circle(new Point(0, 0), 1);
   axisCircle.strokeColor = new Color(0.2, 0.2, 0.2);
+  backgroundLayer.addChild(axisCircle);
 
   const xAxis = new Path.Line(
     new Point(-99999999999, 0),
@@ -58,6 +60,9 @@ export function initAxis() {
   const axisColor = new Color(0.6, 0.6, 0.6);
   xAxis.strokeColor = axisColor;
   yAxis.strokeColor = axisColor;
+
+  backgroundLayer.addChild(xAxis);
+  backgroundLayer.addChild(yAxis);
 }
 
 export function initPanning(
