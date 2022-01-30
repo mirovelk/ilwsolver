@@ -6,7 +6,7 @@ import StyleProvider from "./support/style/StyleProvider";
 import InputArea from "./components/InputArea";
 import OutputArea from "./components/OutputArea";
 import { IconButton } from "@mui/material";
-import { Calculate, Delete, PlayArrow } from "@mui/icons-material";
+import { Calculate, Delete, Functions, PlayArrow } from "@mui/icons-material";
 import { Complex } from "./util/complex";
 import { calc } from "./support/calc/calc";
 import {
@@ -61,8 +61,9 @@ const ClearButtonWrapper = styled.div`
   margin-top: 5px;
 `;
 
-const StyledCalculateArrow = styled(Calculate)`
+const StyledFunctions = styled(Functions)`
   color: rgb(18, 18, 18);
+  font-size: 1.3em;
 `;
 
 const RunButton = styled(IconButton)`
@@ -190,7 +191,7 @@ function App() {
               onClick={process}
               disabled={runDisabled}
             >
-              <StyledCalculateArrow fontSize="inherit" />
+              <StyledFunctions fontSize="inherit" />
             </RunButton>
           </RunButtonWrapper>
           <ClearButtonWrapper>
