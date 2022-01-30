@@ -1,19 +1,18 @@
 import styled from "@emotion/styled";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Paper from "paper";
 
 import StyleProvider from "./support/style/StyleProvider";
 import InputArea from "./components/InputArea";
 import OutputArea from "./components/OutputArea";
 import { IconButton } from "@mui/material";
-import { Calculate, Delete, Functions, PlayArrow } from "@mui/icons-material";
+import { Delete, Functions } from "@mui/icons-material";
 import { Complex } from "./util/complex";
 import { calc } from "./support/calc/calc";
 import {
   defaultScaleDownFactor,
   drawingLayerName,
   getDrawingLayer,
-  getInputLayer,
   inputLayerName,
   inputPaper,
   ouputStrokeWidth,
