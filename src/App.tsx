@@ -9,8 +9,8 @@ import { IconButton } from "@mui/material";
 import { Delete, PlayArrow } from "@mui/icons-material";
 import { Complex } from "./util/complex";
 import { calc } from "./support/calc/calc";
-import { sleep } from "./util/sleep";
 import {
+  defaultScaleDownFactor,
   drawingLayerName,
   getDrawingLayer,
   inputLayerName,
@@ -106,7 +106,7 @@ async function drawOutputPoints(
   outputPaper: paper.PaperScope
 ) {
   outputPaper.project.activeLayer.removeChildren();
-  const outputPath = new Paper.Path(output);
+  const outputPath = new Paper.Path(output.map(([x, y]) => [x, -y]));
   outputPath.strokeColor = new Paper.Color(0, 1, 0);
   outputPath.strokeWidth = ouputStrokeWidth;
   outputPaper.project.activeLayer.addChild(outputPath);
@@ -124,7 +124,7 @@ function compute(input: Complex[]): Complex[] {
     output.push(calc([output[output.length - 1]], input[i])[0]); // for now returning for M === 1
   }
 
-  return output.slice(1).map(([x, y]) => [x, -y]);
+  return output.slice(1);
 }
 
 function process() {
@@ -134,7 +134,7 @@ function process() {
   const output = compute(input);
   console.log(JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}"));
 
-  viewFitBounds(outputPaper, new Paper.Path(output.map(([x, y]) => [x, y])));
+  viewFitBounds(outputPaper, new Paper.Path(output.map(([x, y]) => [x, -y])));
 
   drawOutputPoints(output, outputPaper);
 }
@@ -143,6 +143,19 @@ function clear() {
   inputPaper.project.activeLayer.removeChildren();
   getDrawingLayer().removeChildren();
   outputPaper.project.activeLayer.removeChildren();
+
+  inputPaper.view.center = new Paper.Point(0, 0);
+  outputPaper.view.center = new Paper.Point(0, 0);
+
+  inputPaper.view.scale(
+    defaultScaleDownFactor *
+      Math.min(inputPaper.view.bounds.right, inputPaper.view.bounds.bottom)
+  );
+
+  outputPaper.view.scale(
+    defaultScaleDownFactor *
+      Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
+  );
 }
 
 function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {

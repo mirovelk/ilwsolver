@@ -13,6 +13,8 @@ export const outputLayerName = "ouputLayer";
 export const inputStrokeWidth = 3;
 export const ouputStrokeWidth = 3;
 
+export const defaultScaleDownFactor = 0.9;
+
 export function getDrawingLayer(): paper.Layer {
   return inputPaper.project.layers.find(
     (layer) => layer.name === drawingLayerName

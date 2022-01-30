@@ -44,6 +44,7 @@ function InputArea({
     paper.view.onMouseDown = (e: paper.MouseEvent) => {
       // @ts-ignore
       if (e.event.buttons === 1) {
+        inputLayer.visible = false;
         if (!drawingLayer.hasChildren()) {
           const roughInputPath = new Paper.Path();
           roughInputPath.strokeColor = roughPathDrawingColor;
@@ -53,6 +54,8 @@ function InputArea({
           drawingLayer.addChild(roughInputPath);
         } else {
           const roughInputPath = drawingLayer.lastChild as paper.Path;
+          roughInputPath.strokeColor = roughPathDrawingColor;
+          roughInputPath.strokeWidth = inputStrokeWidth;
           //roughInputPath.selected = false;
           roughInputPath.add(e.point);
         }
@@ -68,21 +71,25 @@ function InputArea({
     };
 
     paper.view.onMouseUp = (e: paper.MouseEvent) => {
-      const roughInputPath = drawingLayer.lastChild as paper.Path;
+      // @ts-ignore
+      if (e.event.button === 0) {
+        const roughInputPath = drawingLayer.lastChild as paper.Path;
 
-      //roughInputPath.fullySelected = true;
+        //roughInputPath.fullySelected = true;
 
-      inputLayer.removeChildren();
+        inputLayer.removeChildren();
 
-      const inputPath = new Paper.Path(roughInputPath.segments);
-      inputPath.strokeColor = new Color(1, 0, 0);
-      inputPath.strokeWidth = inputStrokeWidth;
-      inputPath.simplify(0.0001);
-      inputPath.fullySelected = true;
-      inputLayer.addChild(inputPath);
+        const inputPath = new Paper.Path(roughInputPath.segments);
+        inputPath.strokeColor = new Color(1, 0, 0);
+        inputPath.strokeWidth = inputStrokeWidth;
+        inputPath.simplify(0.0001);
+        inputPath.fullySelected = true;
+        inputLayer.addChild(inputPath);
 
-      roughInputPath.strokeColor = roughPathRestingColor;
-      roughInputPath.strokeWidth = roughPathRestingWidth;
+        roughInputPath.strokeColor = roughPathRestingColor;
+        roughInputPath.strokeWidth = roughPathRestingWidth;
+        inputLayer.visible = true;
+      }
     };
   }, [paper, inputLayerName, drawingLayerName]);
 

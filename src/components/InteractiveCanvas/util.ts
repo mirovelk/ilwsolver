@@ -1,4 +1,5 @@
 import { Color, Matrix, Path, Point, Tool } from "paper";
+import { defaultScaleDownFactor } from "../../papers";
 
 const zoomStep = 0.8;
 export function zoomOut(paper: paper.PaperScope) {
@@ -27,7 +28,6 @@ export function initCoordinates(paper: paper.PaperScope) {
     paper.view.bounds.right,
     paper.view.bounds.bottom
   );
-  const defaultScaleDownFactor = 0.9;
   paper.view.transform(
     new Matrix(
       (defaultScaleDownFactor * shorterAxis) / 2,
