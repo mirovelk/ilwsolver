@@ -21,10 +21,12 @@ function InputArea({
   paper,
   drawingLayerName,
   inputLayerName,
+  setRunDisabled,
 }: {
   paper: paper.PaperScope;
   drawingLayerName: string;
   inputLayerName: string;
+  setRunDisabled: (disabled: boolean) => void;
 }) {
   // const [simplifyEnabled, setSimplifyEnabeld] = useState(true);
   useEffect(() => {
@@ -89,9 +91,10 @@ function InputArea({
         roughInputPath.strokeColor = roughPathRestingColor;
         roughInputPath.strokeWidth = roughPathRestingWidth;
         inputLayer.visible = true;
+        setRunDisabled(false);
       }
     };
-  }, [paper, inputLayerName, drawingLayerName]);
+  }, [paper, inputLayerName, drawingLayerName, setRunDisabled]);
 
   return (
     <InteractiveCanvas

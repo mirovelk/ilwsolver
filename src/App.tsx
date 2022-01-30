@@ -1,18 +1,19 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Paper from "paper";
 
 import StyleProvider from "./support/style/StyleProvider";
 import InputArea from "./components/InputArea";
 import OutputArea from "./components/OutputArea";
 import { IconButton } from "@mui/material";
-import { Delete, PlayArrow } from "@mui/icons-material";
+import { Calculate, Delete, PlayArrow } from "@mui/icons-material";
 import { Complex } from "./util/complex";
 import { calc } from "./support/calc/calc";
 import {
   defaultScaleDownFactor,
   drawingLayerName,
   getDrawingLayer,
+  getInputLayer,
   inputLayerName,
   inputPaper,
   ouputStrokeWidth,
@@ -60,15 +61,15 @@ const ClearButtonWrapper = styled.div`
   margin-top: 5px;
 `;
 
-const StyledPlayArrow = styled(PlayArrow)`
+const StyledCalculateArrow = styled(Calculate)`
   color: rgb(18, 18, 18);
 `;
 
 const RunButton = styled(IconButton)`
-  background: rgb(144, 202, 249);
+  background: rgb(102, 187, 106);
   border: 10px solid rgb(18, 18, 18);
   &:hover {
-    background-color: rgb(66, 165, 245);
+    background-color: rgb(56, 142, 60);;
   }
 
   &:disabled {
@@ -139,7 +140,7 @@ function process() {
   drawOutputPoints(output, outputPaper);
 }
 
-function clear() {
+function clear(setRunDisabled: (disabled: boolean) => void) {
   inputPaper.project.activeLayer.removeChildren();
   getDrawingLayer().removeChildren();
   outputPaper.project.activeLayer.removeChildren();
@@ -156,6 +157,8 @@ function clear() {
     defaultScaleDownFactor *
       Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
   );
+
+  setRunDisabled(true);
 }
 
 function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
@@ -174,17 +177,24 @@ function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
 }
 
 function App() {
+  const [runDisabled, setRunDisabled] = useState(true);
+
   return (
     <StyleProvider>
       <Wrapper>
         <CenterControlsWrapper>
           <RunButtonWrapper>
-            <RunButton size="large" color="inherit" onClick={process}>
-              <StyledPlayArrow fontSize="inherit" />
+            <RunButton
+              size="large"
+              color="inherit"
+              onClick={process}
+              disabled={runDisabled}
+            >
+              <StyledCalculateArrow fontSize="inherit" />
             </RunButton>
           </RunButtonWrapper>
           <ClearButtonWrapper>
-            <ClearButton onClick={clear}>
+            <ClearButton onClick={clear.bind(null, setRunDisabled)}>
               <StyledDelete />
             </ClearButton>
           </ClearButtonWrapper>
@@ -195,6 +205,7 @@ function App() {
               paper={inputPaper}
               inputLayerName={inputLayerName}
               drawingLayerName={drawingLayerName}
+              setRunDisabled={setRunDisabled}
             />
           </AreaWrapper>
           <AreaWrapper>
