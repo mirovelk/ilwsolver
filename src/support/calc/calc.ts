@@ -4,6 +4,7 @@ import {
   complex,
   copy,
   divide,
+  minus,
   multiply,
   subtract,
 } from "../../util/complex";
@@ -40,7 +41,7 @@ export function eqns(input: Complex[], q: Complex): Complex[] {
       }
     }
 
-    result = [...result, subtract(tmp1, tmp2)];
+    result = [...result, subtract(tmp1, tmp2)]; // TODO do not create new array
   }
 
   return result;
@@ -48,21 +49,98 @@ export function eqns(input: Complex[], q: Complex): Complex[] {
 
 // input vector M, output matrix MxM
 export function eqnsd(input: Complex[], q: Complex): Complex[][] {
-  let tmp = complex(0);
-  for (let j = 0; j < AL.length; j++) {
-    let tmp1 = copy(q);
-    let tmp2 = complex(1);
+  // empty matrix M*M
+  let result: Complex[][] = new Array(input.length)
+    .fill(undefined)
+    .map(() => new Array(input.length).fill(undefined));
 
-    for (let i = 0; i < AL.length; i++) {
+  console.log("result :>> ", JSON.stringify(result));
+
+  for (let i = 0; i < input.length; i++) {
+    for (let j = 0; j < input.length; j++) {
+      let tmp1 = minus(q);
+      let tmp2 = complex(-1);
       if (i !== j) {
-        tmp1 = multiply(tmp1, subtract(input[0], AL[i]));
-        tmp2 = multiply(tmp2, subtract(input[0], AR[i]));
+        for (let k = 0; k < AL.length; k++) {
+          tmp1 = multiply(tmp1, subtract(input[i], AL[k]));
+          tmp2 = multiply(tmp2, subtract(input[i], AR[k]));
+        }
+
+        for (let k = 0; k < input.length; k++) {
+          if (k !== i && k !== j) {
+            tmp1 = multiply(tmp1, add(subtract(input[i], input[k]), E1));
+            tmp2 = multiply(tmp2, subtract(subtract(input[i], input[k]), E1));
+
+            tmp1 = multiply(tmp1, add(subtract(input[i], input[k]), E2));
+            tmp2 = multiply(tmp2, subtract(subtract(input[i], input[k]), E2));
+
+            tmp1 = multiply(tmp1, add(subtract(input[i], input[k]), E3));
+            tmp2 = multiply(tmp2, subtract(subtract(input[i], input[k]), E3));
+          }
+        }
+
+        tmp1 = multiply(
+          tmp1,
+          add(
+            add(
+              multiply(
+                add(subtract(input[i], input[j]), E1),
+                add(subtract(input[i], input[j]), E2)
+              ),
+              multiply(
+                add(subtract(input[i], input[j]), E1),
+                add(subtract(input[i], input[j]), E3)
+              )
+            ),
+            multiply(
+              add(subtract(input[i], input[j]), E2),
+              add(subtract(input[i], input[j]), E3)
+            )
+          )
+        );
+
+        tmp2 = multiply(
+          tmp2,
+          add(
+            add(
+              multiply(
+                subtract(subtract(input[i], input[j]), E1),
+                subtract(subtract(input[i], input[j]), E2)
+              ),
+              multiply(
+                subtract(subtract(input[i], input[j]), E1),
+                subtract(subtract(input[i], input[j]), E3)
+              )
+            ),
+            multiply(
+              subtract(subtract(input[i], input[j]), E2),
+              subtract(subtract(input[i], input[j]), E3)
+            )
+          )
+        );
+      } else {
       }
+      result[i][j] = subtract(tmp1, tmp2);
     }
-    tmp = subtract(add(tmp, tmp1), tmp2);
   }
 
-  return [[tmp]];
+  return result;
+
+  // let tmp = complex(0);
+  // for (let j = 0; j < AL.length; j++) {
+  //   let tmp1 = copy(q);
+  //   let tmp2 = complex(1);
+
+  //   for (let i = 0; i < AL.length; i++) {
+  //     if (i !== j) {
+  //       tmp1 = multiply(tmp1, subtract(input[0], AL[i]));
+  //       tmp2 = multiply(tmp2, subtract(input[0], AR[i]));
+  //     }
+  //   }
+  //   tmp = subtract(add(tmp, tmp1), tmp2);
+  // }
+
+  // return [[tmp]];
 }
 
 // xSeed.length === M

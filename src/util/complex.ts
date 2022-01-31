@@ -30,3 +30,7 @@ export function inverse(a: Complex): Complex {
 export function divide(a: Complex, b: Complex): Complex {
   return multiply(a, inverse(b));
 }
+
+export function minus(a: Complex): Complex {
+  return complex(-a[0], -a[1]);
+}
