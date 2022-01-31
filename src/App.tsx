@@ -124,11 +124,13 @@ async function drawOutputPoints(output: Complex[], outputLayer: paper.Layer) {
   };
 }
 
-function compute(input: Complex[]): Complex[] {
-  const output: Complex[] = [[0, 0]]; // initial value
+function compute(qInput: Complex[], xSeed: Complex[] = [[0, 0]]): Complex[][] {
+  const output: Complex[][] = [];
 
-  for (let i = 0; i < input.length; i++) {
-    output.push(calc([output[output.length - 1]], input[i])[0]); // for now returning for M === 1
+  output.push(xSeed); // initial value = xSeed
+
+  for (let i = 0; i < qInput.length; i++) {
+    output.push(calc(output[output.length - 1], qInput[i]));
   }
 
   return output.slice(1);
@@ -159,7 +161,7 @@ function process(
     console.log(
       JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")
     );
-    const output = compute(input);
+    const output = compute(input).map((result) => result[0]); // eventually multiple
     console.log(
       JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}")
     );
