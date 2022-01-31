@@ -154,11 +154,13 @@ function InteractiveCanvas({
   id,
   title,
   controls,
+  children,
 }: {
   paper: paper.PaperScope;
   id: string;
   title: string;
   controls: JSX.Element;
+  children?: React.ReactNode;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -275,6 +277,7 @@ function InteractiveCanvas({
           id={`canvas-${id}`}
           data-paper-resize="true"
         />
+        {children}
       </CanvasWrapper>
     </Wrapper>
   );

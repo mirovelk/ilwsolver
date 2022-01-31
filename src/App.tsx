@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import Paper from "paper";
 
 import StyleProvider from "./support/style/StyleProvider";
@@ -9,12 +9,7 @@ import { IconButton } from "@mui/material";
 import { Delete, Functions } from "@mui/icons-material";
 import { Complex } from "./util/complex";
 import { calc } from "./support/calc/calc";
-import {
-  defaultScaleDownFactor,
-  inputPaper,
-  ouputStrokeWidth,
-  outputPaper,
-} from "./papers";
+import { defaultScaleDownFactor, inputPaper, outputPaper } from "./papers";
 
 const Wrapper = styled.div`
   position: realtive;
@@ -87,42 +82,7 @@ const StyledDelete = styled(Delete)`
   color: white;
 `;
 
-const INPUT_STEP = 1000;
-
-function getInput(inputLayer: paper.Layer): Complex[] {
-  const inputPath = inputLayer.lastChild as paper.Path;
-  const inputPoints: paper.Point[] = [];
-  const steps = INPUT_STEP;
-  const step = inputPath.length / steps;
-  for (let i = 0; i < inputPath.length; i += step) {
-    inputPoints.push(inputPath.getPointAt(i));
-  }
-  return inputPoints.map((point) => [point.x, -point.y]);
-}
-
-async function drawOutputPoints(output: Complex[], outputLayer: paper.Layer) {
-  outputLayer.removeChildren();
-  const outputSegments = output.map(([x, y]) => new Paper.Segment([x, -y]));
-  const outputPath = new Paper.Path();
-  outputPath.strokeColor = new Paper.Color(0, 1, 0);
-  outputPath.strokeWidth = ouputStrokeWidth;
-  outputLayer.addChild(outputPath);
-
-  const animationDurationInS = 0.5;
-  const drawBatchSize = Math.ceil(INPUT_STEP / (animationDurationInS * 60));
-
-  console.log("drawBatchSize :>> ", drawBatchSize);
-
-  outputLayer.onFrame = (e: { count: number; time: number; delta: number }) => {
-    if (outputSegments.length > 0) {
-      const segments = outputSegments.splice(
-        0,
-        drawBatchSize
-      ) as paper.Segment[];
-      outputPath.addSegments(segments);
-    }
-  };
-}
+const INPUT_STEPS = 1000;
 
 function compute(qInput: Complex[], xSeed: Complex[] = [[0, 0]]): Complex[][] {
   const output: Complex[][] = [];
@@ -136,55 +96,27 @@ function compute(qInput: Complex[], xSeed: Complex[] = [[0, 0]]): Complex[][] {
   return output.slice(1);
 }
 
-function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
-  const viewBounds = paper.view.bounds;
-  const scaleRatio = Math.min(
-    viewBounds.width / path.bounds.width,
-    viewBounds.height / path.bounds.height
-  );
-  paper.view.translate(
-    new Paper.Point(
-      viewBounds.center.x - path.bounds.center.x,
-      viewBounds.center.y - path.bounds.center.y
-    )
-  );
-  paper.view.scale(scaleRatio * 0.8);
+function process(input: Complex[], setOutput: (output: Complex[]) => void) {
+  const output = compute(input).map((result) => result[0]); // eventually multiple
+
+  console.log(JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}"));
+  console.log(JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}"));
+
+  setOutput(output);
 }
 
-function process(
-  inputLayerRef: React.MutableRefObject<paper.Layer | undefined>,
-  outputLayerRef: React.MutableRefObject<paper.Layer | undefined>
-) {
-  if (inputLayerRef.current && outputLayerRef.current) {
-    const input = getInput(inputLayerRef.current);
+function App() {
+  const [input, setInput] = useState<Complex[]>([]);
+  const [output, setOutput] = useState<Complex[]>([]);
 
-    console.log(
-      JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")
-    );
-    const output = compute(input).map((result) => result[0]); // eventually multiple
-    console.log(
-      JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}")
-    );
+  const clearInputAreaPaths = useRef<() => void>();
 
-    viewFitBounds(outputPaper, new Paper.Path(output.map(([x, y]) => [x, -y])));
-    drawOutputPoints(output, outputLayerRef.current);
-  }
-}
+  const clear = useCallback(() => {
+    setInput([]);
+    setOutput([]);
 
-function clear(
-  drawingLayerRef: React.MutableRefObject<paper.Layer | undefined>,
-  inputLayerRef: React.MutableRefObject<paper.Layer | undefined>,
-  outputLayerRef: React.MutableRefObject<paper.Layer | undefined>,
-  setRunDisabled: (disabled: boolean) => void
-) {
-  if (
-    drawingLayerRef.current &&
-    inputLayerRef.current &&
-    outputLayerRef.current
-  ) {
-    drawingLayerRef.current.removeChildren();
-    inputLayerRef.current.removeChildren();
-    outputLayerRef.current.removeChildren();
+    if (typeof clearInputAreaPaths.current === "function")
+      clearInputAreaPaths.current();
 
     inputPaper.view.center = new Paper.Point(0, 0);
     outputPaper.view.center = new Paper.Point(0, 0);
@@ -198,17 +130,7 @@ function clear(
       defaultScaleDownFactor *
         Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
     );
-
-    setRunDisabled(true);
-  }
-}
-
-function App() {
-  const [runDisabled, setRunDisabled] = useState(true);
-
-  const drawingLayerRef = useRef<paper.Layer>();
-  const inputLayerRef = useRef<paper.Layer>();
-  const outputLayerRef = useRef<paper.Layer>();
+  }, [setInput, setOutput]);
 
   return (
     <StyleProvider>
@@ -218,23 +140,14 @@ function App() {
             <RunButton
               size="large"
               color="inherit"
-              onClick={() => process(inputLayerRef, outputLayerRef)}
-              disabled={runDisabled}
+              onClick={() => process(input, setOutput)}
+              disabled={input.length === 0}
             >
               <StyledFunctions fontSize="inherit" />
             </RunButton>
           </RunButtonWrapper>
           <ClearButtonWrapper>
-            <ClearButton
-              onClick={() =>
-                clear(
-                  drawingLayerRef,
-                  inputLayerRef,
-                  outputLayerRef,
-                  setRunDisabled
-                )
-              }
-            >
+            <ClearButton onClick={clear}>
               <StyledDelete />
             </ClearButton>
           </ClearButtonWrapper>
@@ -243,13 +156,13 @@ function App() {
           <AreaWrapper>
             <InputArea
               paper={inputPaper}
-              inputLayerRef={inputLayerRef}
-              drawingLayerRef={drawingLayerRef}
-              setRunDisabled={setRunDisabled}
+              setInput={setInput}
+              inputSteps={INPUT_STEPS}
+              clearInputAreaPathsRef={clearInputAreaPaths}
             />
           </AreaWrapper>
           <AreaWrapper>
-            <OutputArea paper={outputPaper} outputLayerRef={outputLayerRef} />
+            <OutputArea paper={outputPaper} output={output} />
           </AreaWrapper>
         </AreasWrapper>
       </Wrapper>
