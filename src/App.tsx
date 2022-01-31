@@ -96,20 +96,24 @@ function compute(qInput: Complex[], xSeed: Complex[] = [[0, 0]]): Complex[][] {
   return output.slice(1);
 }
 
-function process(input: Complex[], setOutput: (output: Complex[]) => void) {
-  const output = compute(input).map((result) => result[0]); // eventually multiple
-
-  console.log(JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}"));
-  console.log(JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}"));
-
-  setOutput(output);
-}
-
 function App() {
   const [input, setInput] = useState<Complex[]>([]);
   const [output, setOutput] = useState<Complex[]>([]);
 
   const clearInputAreaPaths = useRef<() => void>();
+
+  const process = useCallback(() => {
+    const output = compute(input).map((result) => result[0]); // eventually multiple
+
+    console.log(
+      JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")
+    );
+    console.log(
+      JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}")
+    );
+
+    setOutput(output);
+  }, [input]);
 
   const clear = useCallback(() => {
     setInput([]);
@@ -140,7 +144,7 @@ function App() {
             <RunButton
               size="large"
               color="inherit"
-              onClick={() => process(input, setOutput)}
+              onClick={process}
               disabled={input.length === 0}
             >
               <StyledFunctions fontSize="inherit" />
