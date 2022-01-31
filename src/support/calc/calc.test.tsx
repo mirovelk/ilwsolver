@@ -1,4 +1,12 @@
-import { calc, eqns, eqnsd } from "./calc";
+import { complex } from "../../util/complex";
+import {
+  calc,
+  matrixComplexToReal,
+  eqns,
+  eqnsd,
+  vectorComplexToReal,
+  vectorRealToComplex,
+} from "./calc";
 
 test("eqns returns correct value for M=1", () => {
   expect(eqns([[0.5, 0.25]], [0.5, 0.25])).toEqual([[9.28125, 5.921875]]);
@@ -64,8 +72,50 @@ test("eqnsd returns correct value for M=1", () => {
   expect(eqnsd([[0.5, 0.25]], [0.5, 0.25])).toEqual([[[-1.125, -2.75]]]);
 });
 
-test("calc returns correct value", () => {
+test("calc returns correct value for M=1", () => {
   expect(calc([[0.5, 0.25]], [0.5, 0.25])).toEqual([
     [3.804535746476545, 0.15110607406879045],
   ]);
+});
+
+test("calc returns correct value for M=2", () => {
+  expect(
+    calc(
+      [
+        [3.8, 0.18],
+        [-3.4, -4.2],
+      ],
+      [0.5, 0.25]
+    )
+  ).toEqual([
+    [3.8146494871248335, 0.1866977852491028],
+    [-3.3764468715330658, -4.159428721334355],
+  ]);
+});
+
+test("converts complex matrix to real", () => {
+  expect(
+    matrixComplexToReal([
+      [complex(1, 2), complex(3, 4)],
+      [complex(5, 6), complex(7, 8)],
+    ])
+  ).toEqual([
+    [1, 3, -2, -4],
+    [5, 7, -6, -8],
+    [2, 4, 1, 3],
+    [6, 8, 5, 7],
+  ]);
+});
+
+test("converts complex vector to real", () => {
+  expect(vectorComplexToReal([complex(1, 2), complex(3, 4)])).toEqual([
+    1, 3, 2, 4,
+  ]);
+});
+
+test("converts rela vector to complex", () => {
+  const complexVector = [complex(1, 2), complex(3, 4), complex(5, 6)];
+  expect(vectorRealToComplex(vectorComplexToReal(complexVector))).toEqual(
+    complexVector
+  );
 });

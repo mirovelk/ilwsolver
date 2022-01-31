@@ -1,9 +1,10 @@
+import { lusolve } from "mathjs";
+
 import {
   add,
   Complex,
   complex,
   copy,
-  divide,
   minus,
   multiply,
   subtract,
@@ -227,13 +228,40 @@ export function eqnsd(input: Complex[], q: Complex): Complex[][] {
   return result;
 }
 
+export function matrixComplexToReal(matrix: Complex[][]): number[][] {
+  return [
+    ...matrix.map((row) => [...row.map((c) => c[0]), ...row.map((c) => -c[1])]),
+    ...matrix.map((row) => [...row.map((c) => c[1]), ...row.map((c) => c[0])]),
+  ];
+}
+
+export function vectorComplexToReal(vector: Complex[]): number[] {
+  return [...vector.map((c) => c[0]), ...vector.map((c) => c[1])];
+}
+
+export function vectorRealToComplex(vector: number[]): Complex[] {
+  const firstHalf = vector.slice(0, vector.length / 2);
+  const secondHalf = vector.slice(vector.length / 2, vector.length);
+  return firstHalf.map((r, index) => complex(r, secondHalf[index]));
+}
+
+export function subtractComplexVectors(a: Complex[], b: Complex[]): Complex[] {
+  return a.map((ai, i) => subtract(ai, b[i]));
+}
+
 // xSeed.length === M
 export function calc(xSeeds: Complex[], q: Complex) {
   let tmp = xSeeds.map((xSeed) => copy(xSeed));
 
   // count iterations
   for (let i = 0; i < 20; i++) {
-    tmp[0] = subtract(tmp[0], divide(eqns(tmp, q)[0], eqnsd(tmp, q)[0][0]));
+    const A = matrixComplexToReal(eqnsd(tmp, q));
+    const b = vectorComplexToReal(eqns(tmp, q));
+
+    const solvedRealX = lusolve(A, b) as number[];
+    const x = vectorRealToComplex(solvedRealX);
+
+    tmp = subtractComplexVectors(tmp, x);
   }
 
   return tmp;
