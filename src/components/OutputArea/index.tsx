@@ -28,15 +28,20 @@ function OutputArea({
   output,
 }: {
   paper: paper.PaperScope;
-  output: Complex[];
+  output: Complex[][];
 }) {
-  const [outputPathPoints, setOutputPathPoints] = useState<paper.Point[]>([]);
+  const [outputPathsPoints, setOutputPathsPoints] = useState<
+    Array<paper.Point[]>
+  >([]);
 
   // convert ouput Complex array to Path points and add with animation
   useEffect(() => {
-    const points = output.map(([x, y]) => new Paper.Point(x, -y));
-    if (points.length > 0) viewFitBounds(paper, new Paper.Path(points));
-    setOutputPathPoints(points);
+    const paths = output.map((path) =>
+      path.map(([x, y]) => new Paper.Point(x, -y))
+    );
+    if (paths.length > 0)
+      viewFitBounds(paper, new Paper.Path(paths.flatMap((path) => path)));
+    setOutputPathsPoints(paths);
 
     // animation below loses points !!!
     // const animationDurationInS = 0.5;
@@ -68,13 +73,16 @@ function OutputArea({
         title="Output"
         controls={<></>}
       />
-      <Path
-        paper={paper}
-        points={outputPathPoints}
-        strokeColor={OUTPUT_PATH_COLOR}
-        strokeWidth={OUTPUT_PATH_WIDTH}
-        fullySelected={true}
-      />
+      {outputPathsPoints.map((outputPathPoints, index) => (
+        <Path
+          key={index}
+          paper={paper}
+          points={outputPathPoints}
+          strokeColor={OUTPUT_PATH_COLOR}
+          strokeWidth={OUTPUT_PATH_WIDTH}
+          fullySelected={false}
+        />
+      ))}
     </>
   );
 }

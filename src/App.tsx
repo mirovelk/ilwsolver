@@ -8,7 +8,7 @@ import OutputArea from "./components/OutputArea";
 import { IconButton } from "@mui/material";
 import { Delete, Functions } from "@mui/icons-material";
 import { Complex } from "./util/complex";
-import { calc } from "./support/calc/calc";
+import { compute } from "./support/calc/calc";
 import { defaultScaleDownFactor, inputPaper, outputPaper } from "./papers";
 
 const Wrapper = styled.div`
@@ -84,26 +84,14 @@ const StyledDelete = styled(Delete)`
 
 const INPUT_STEPS = 1000;
 
-function compute(qInput: Complex[], xSeed: Complex[] = [[0, 0]]): Complex[][] {
-  const output: Complex[][] = [];
-
-  output.push(xSeed); // initial value = xSeed
-
-  for (let i = 0; i < qInput.length; i++) {
-    output.push(calc(output[output.length - 1], qInput[i]));
-  }
-
-  return output.slice(1);
-}
-
 function App() {
   const [input, setInput] = useState<Complex[]>([]);
-  const [output, setOutput] = useState<Complex[]>([]);
+  const [output, setOutput] = useState<Complex[][]>([]);
 
   const clearInputAreaPaths = useRef<() => void>();
 
   const process = useCallback(() => {
-    const output = compute(input).map((result) => result[0]); // eventually multiple
+    const output = compute(input);
 
     console.log(
       JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")

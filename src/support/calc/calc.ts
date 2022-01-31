@@ -266,3 +266,25 @@ export function calc(xSeeds: Complex[], q: Complex) {
 
   return tmp;
 }
+
+export function transpose(matrix: any[][]) {
+  return matrix[0].map((_col, i) => matrix.map((row) => row[i]));
+}
+
+export function compute(
+  qInput: Complex[],
+  xSeed: Complex[] = [
+    [2, 0],
+    [3, 0],
+  ]
+): Complex[][] {
+  const output: Complex[][] = [];
+
+  output.push(xSeed); // initial value = xSeed
+
+  for (let i = 0; i < qInput.length; i++) {
+    output.push(calc(output[output.length - 1], qInput[i]));
+  }
+
+  return transpose(output.slice(1));
+}

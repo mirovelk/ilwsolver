@@ -6,6 +6,7 @@ import {
   eqnsd,
   vectorComplexToReal,
   vectorRealToComplex,
+  transpose,
 } from "./calc";
 
 test("eqns returns correct value for M=1", () => {
@@ -135,4 +136,17 @@ test("converts rela vector to complex", () => {
   expect(vectorRealToComplex(vectorComplexToReal(complexVector))).toEqual(
     complexVector
   );
+});
+
+test("transposes matrix", () => {
+  expect(
+    transpose([
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ])
+  ).toEqual([
+    [1, 3, 5],
+    [2, 4, 6],
+  ]);
 });
