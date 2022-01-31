@@ -26,6 +26,10 @@ function Path({
   useEffect(() => {
     pathRef.current = new Paper.Path();
     paper.project.activeLayer.addChild(pathRef.current);
+
+    return () => {
+      if (pathRef.current) pathRef.current.remove();
+    };
   }, [paper]);
 
   // main updating function
