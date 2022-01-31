@@ -271,13 +271,7 @@ export function transpose(matrix: any[][]) {
   return matrix[0].map((_col, i) => matrix.map((row) => row[i]));
 }
 
-export function compute(
-  qInput: Complex[],
-  xSeed: Complex[] = [
-    [2, 0],
-    [3, 0],
-  ]
-): Complex[][] {
+export function compute(qInput: Complex[], xSeed: Complex[]): Complex[][] {
   const output: Complex[][] = [];
 
   output.push(xSeed); // initial value = xSeed

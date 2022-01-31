@@ -1,13 +1,13 @@
 import styled from "@emotion/styled";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Paper from "paper";
 
 import StyleProvider from "./support/style/StyleProvider";
 import InputArea from "./components/InputArea";
 import OutputArea from "./components/OutputArea";
-import { IconButton } from "@mui/material";
+import { IconButton, TextField } from "@mui/material";
 import { Delete, Functions } from "@mui/icons-material";
-import { Complex } from "./util/complex";
+import { complex, Complex } from "./util/complex";
 import { compute } from "./support/calc/calc";
 import { defaultScaleDownFactor, inputPaper, outputPaper } from "./papers";
 
@@ -41,6 +41,14 @@ const CenterControlsWrapper = styled.div`
   top: 80px;
   left: 50%;
   transform: translate(-50%, 0);
+`;
+
+const LeftCenterControlsWrapper = styled.div`
+  display: inline-flex;
+  position: absolute;
+  z-index: 1000;
+  top: 80px;
+  left: 40px;
 `;
 
 const RunButtonWrapper = styled.div`
@@ -85,13 +93,40 @@ const StyledDelete = styled(Delete)`
 const INPUT_STEPS = 1000;
 
 function App() {
+  const [xSeed, setXSeed] = useState<Complex[]>([complex(1, 2), complex(3, 4)]);
+  const [xSeedInput, setXSeedInput] = useState(JSON.stringify(xSeed));
+  const [xSeedInputError, setXSeedInputError] = useState(false);
   const [input, setInput] = useState<Complex[]>([]);
   const [output, setOutput] = useState<Complex[][]>([]);
 
   const clearInputAreaPaths = useRef<() => void>();
 
+  useEffect(() => {
+    try {
+      const parsedInputValue = JSON.parse(xSeedInput);
+
+      if (
+        Array.isArray(parsedInputValue) &&
+        parsedInputValue.every(
+          (item) =>
+            Array.isArray(item) &&
+            item.length === 2 &&
+            typeof item[0] === "number" &&
+            typeof item[1] === "number"
+        )
+      ) {
+        setXSeedInputError(false);
+        setXSeed(parsedInputValue);
+      } else {
+        throw new Error("invalid input");
+      }
+    } catch {
+      setXSeedInputError(true);
+    }
+  }, [xSeedInput]);
+
   const process = useCallback(() => {
-    const output = compute(input);
+    const output = compute(input, xSeed);
 
     console.log(
       JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")
@@ -101,7 +136,11 @@ function App() {
     );
 
     setOutput(output);
-  }, [input]);
+  }, [input, xSeed]);
+
+  const setXSeedOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setXSeedInput(e.currentTarget.value);
+  };
 
   const clear = useCallback(() => {
     setInput([]);
@@ -127,6 +166,15 @@ function App() {
   return (
     <StyleProvider>
       <Wrapper>
+        <LeftCenterControlsWrapper>
+          <TextField
+            label="xSeed"
+            value={xSeedInput}
+            error={xSeedInputError}
+            onChange={setXSeedOnChange}
+            helperText={xSeedInputError ? "Invalid input" : ""}
+          />
+        </LeftCenterControlsWrapper>
         <CenterControlsWrapper>
           <RunButtonWrapper>
             <RunButton
