@@ -31,6 +31,7 @@ function Path({
   // main updating function
   useEffect(() => {
     if (pathRef.current) {
+      pathRef.current.removeSegments(0, pathRef.current.segments.length);
       // preffer segments before points
       if (typeof segments !== "undefined") {
         pathRef.current.segments = segments;

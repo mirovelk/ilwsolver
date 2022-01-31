@@ -30,13 +30,13 @@ function OutputArea({
   paper: paper.PaperScope;
   output: Complex[];
 }) {
-  const [outputPathPoints, setOutptuPathPoints] = useState<paper.Point[]>([]);
+  const [outputPathPoints, setOutputPathPoints] = useState<paper.Point[]>([]);
 
   // convert ouput Complex array to Path points and add with animation
   useEffect(() => {
     const points = output.map(([x, y]) => new Paper.Point(x, -y));
     if (points.length > 0) viewFitBounds(paper, new Paper.Path(points));
-    setOutptuPathPoints(points);
+    setOutputPathPoints(points);
 
     // animation below loses points !!!
     // const animationDurationInS = 0.5;
