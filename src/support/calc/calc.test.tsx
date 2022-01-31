@@ -93,6 +93,23 @@ test("calc returns correct value for M=2", () => {
   ]);
 });
 
+test("calc returns correct value for M=3", () => {
+  expect(
+    calc(
+      [
+        [1.1, -0.5],
+        [6, 0.4],
+        [2.9, 0.4],
+      ],
+      [0.5, 0.25]
+    )
+  ).toEqual([
+    [1.0740858432655949, -0.4934167579564011],
+    [5.998287899119128, 0.4320125413242801],
+    [2.886920021420952, 0.42132987446173686],
+  ]);
+});
+
 test("converts complex matrix to real", () => {
   expect(
     matrixComplexToReal([
