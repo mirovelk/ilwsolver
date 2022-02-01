@@ -249,9 +249,16 @@ export function subtractComplexVectors(a: Complex[], b: Complex[]): Complex[] {
   return a.map((ai, i) => subtract(ai, b[i]));
 }
 
+export function transpose(matrix: any[][]) {
+  return matrix[0].map((_col, i) => matrix.map((row) => row[i]));
+}
+
+export type ResultInQ = Complex[]; // length = M
+export type ResultInQArray = ResultInQ[];
+
 // xSeed.length === M
-export function calc(xSeeds: Complex[], q: Complex) {
-  let tmp = xSeeds.map((xSeed) => copy(xSeed));
+export function solveInQ(xSeed: Complex[], q: Complex): ResultInQ {
+  let tmp = xSeed.map((xSeed) => copy(xSeed));
 
   // count iterations
   for (let i = 0; i < 20; i++) {
@@ -267,17 +274,16 @@ export function calc(xSeeds: Complex[], q: Complex) {
   return tmp;
 }
 
-export function transpose(matrix: any[][]) {
-  return matrix[0].map((_col, i) => matrix.map((row) => row[i]));
-}
-
-export function compute(qInput: Complex[], xSeed: Complex[]): Complex[][] {
+export function solveInQArray(
+  xSeed: Complex[],
+  qArray: Complex[]
+): ResultInQArray {
   const output: Complex[][] = [];
 
   output.push(xSeed); // initial value = xSeed
 
-  for (let i = 0; i < qInput.length; i++) {
-    output.push(calc(output[output.length - 1], qInput[i]));
+  for (let i = 0; i < qArray.length; i++) {
+    output.push(solveInQ(output[output.length - 1], qArray[i]));
   }
 
   return transpose(output.slice(1));

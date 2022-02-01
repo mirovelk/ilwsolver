@@ -1,6 +1,6 @@
 import { complex } from "../../util/complex";
 import {
-  calc,
+  solveInQ,
   matrixComplexToReal,
   eqns,
   eqnsd,
@@ -73,15 +73,15 @@ test("eqnsd returns correct value for M=1", () => {
   expect(eqnsd([[0.5, 0.25]], [0.5, 0.25])).toEqual([[[-1.125, -2.75]]]);
 });
 
-test("calc returns correct value for M=1", () => {
-  expect(calc([[0.5, 0.25]], [0.5, 0.25])).toEqual([
+test("solveInQ returns correct value for M=1", () => {
+  expect(solveInQ([[0.5, 0.25]], [0.5, 0.25])).toEqual([
     [3.804535746476545, 0.15110607406879045],
   ]);
 });
 
-test("calc returns correct value for M=2", () => {
+test("solveInQ returns correct value for M=2", () => {
   expect(
-    calc(
+    solveInQ(
       [
         [3.8, 0.18],
         [-3.4, -4.2],
@@ -94,9 +94,9 @@ test("calc returns correct value for M=2", () => {
   ]);
 });
 
-test("calc returns correct value for M=3", () => {
+test("solveInQ returns correct value for M=3", () => {
   expect(
-    calc(
+    solveInQ(
       [
         [1.1, -0.5],
         [6, 0.4],

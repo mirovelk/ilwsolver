@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Paper from "paper";
-import { Complex } from "../../util/complex";
 
 import InteractiveCanvas from "../InteractiveCanvas";
 import Path from "../paper/Path";
+import { ResultInQArray } from "../../support/calc/calc";
 
-const OUTPUT_PATH_COLOR = new Paper.Color(0, 1, 0);
 const OUTPUT_PATH_WIDTH = 3;
 
 function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
@@ -23,25 +22,46 @@ function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
   paper.view.scale(scaleRatio * 0.8);
 }
 
+export interface Output {
+  result: ResultInQArray;
+  color: paper.Color;
+}
+
+interface OutputPaths {
+  paths: Array<paper.Point[]>;
+  color: paper.Color;
+}
+
+type OutputsPaths = OutputPaths[];
+
 function OutputArea({
   paper,
-  output,
+  outputs,
 }: {
   paper: paper.PaperScope;
-  output: Complex[][];
+  outputs: Output[];
 }) {
-  const [outputPathsPoints, setOutputPathsPoints] = useState<
-    Array<paper.Point[]>
-  >([]);
+  const [points, setPoints] = useState<OutputsPaths>([]);
 
-  // convert ouput Complex array to Path points and add with animation
+  // convert ouput Complex array to Path points
   useEffect(() => {
-    const paths = output.map((path) =>
-      path.map(([x, y]) => new Paper.Point(x, -y))
-    );
-    if (paths.length > 0)
-      viewFitBounds(paper, new Paper.Path(paths.flatMap((path) => path)));
-    setOutputPathsPoints(paths);
+    const outputsPaths = outputs.map((output) => ({
+      paths: output.result.map((path) =>
+        path.map(([x, y]) => new Paper.Point(x, -y))
+      ),
+      color: output.color,
+    }));
+    if (
+      outputsPaths.some((outputPaths) =>
+        outputPaths.paths.some((path) => path.length > 0)
+      )
+    ) {
+      const allPaths = outputsPaths.flatMap((outputPaths) =>
+        outputPaths.paths.flatMap((points) => points)
+      );
+      viewFitBounds(paper, new Paper.Path(allPaths));
+    }
+    setPoints(outputsPaths);
 
     // animation below loses points !!!
     // const animationDurationInS = 0.5;
@@ -63,7 +83,7 @@ function OutputArea({
     //     ]);
     //   }
     // };
-  }, [paper, output]);
+  }, [paper, outputs]);
 
   return (
     <>
@@ -73,16 +93,20 @@ function OutputArea({
         title="Output"
         controls={<></>}
       />
-      {outputPathsPoints.map((outputPathPoints, index) => (
-        <Path
-          key={index}
-          paper={paper}
-          points={outputPathPoints}
-          strokeColor={OUTPUT_PATH_COLOR}
-          strokeWidth={OUTPUT_PATH_WIDTH}
-          fullySelected={false}
-        />
-      ))}
+      {points.map((outputPathsPoints, outputPathsPointsIndex) =>
+        outputPathsPoints.paths.map(
+          (outputPathPoints, outputPathPointsIndex) => (
+            <Path
+              key={`${outputPathsPointsIndex}-${outputPathPointsIndex}`}
+              paper={paper}
+              points={outputPathPoints}
+              strokeColor={outputPathsPoints.color}
+              strokeWidth={OUTPUT_PATH_WIDTH}
+              fullySelected={false}
+            />
+          )
+        )
+      )}
     </>
   );
 }

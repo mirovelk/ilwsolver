@@ -4,12 +4,13 @@ import Paper from "paper";
 
 import StyleProvider from "./support/style/StyleProvider";
 import InputArea from "./components/InputArea";
-import OutputArea from "./components/OutputArea";
+import OutputArea, { Output } from "./components/OutputArea";
 import { IconButton, TextField } from "@mui/material";
 import { Delete, Functions } from "@mui/icons-material";
 import { complex, Complex } from "./util/complex";
-import { compute } from "./support/calc/calc";
+import { solveInQArray } from "./support/calc/calc";
 import { defaultScaleDownFactor, inputPaper, outputPaper } from "./papers";
+import { getColorForIndex } from "./util/color";
 
 const Wrapper = styled.div`
   position: realtive;
@@ -93,58 +94,73 @@ const StyledDelete = styled(Delete)`
 const INPUT_STEPS = 1000;
 
 function App() {
-  const [xSeed, setXSeed] = useState<Complex[]>([complex(1, 2), complex(3, 4)]);
-  const [xSeedInput, setXSeedInput] = useState(JSON.stringify(xSeed));
-  const [xSeedInputError, setXSeedInputError] = useState(false);
+  const [xSeeds, setXSeeds] = useState<Complex[][]>([[[2, 0]], [[3, 0]]]);
+  const [xSeedsInput, setXSeedsInput] = useState(JSON.stringify(xSeeds));
+  const [xSeedsInputError, setXSeedsInputError] = useState(false);
   const [input, setInput] = useState<Complex[]>([]);
-  const [output, setOutput] = useState<Complex[][]>([]);
+  const [outputs, setOutputs] = useState<Output[]>([]);
 
   const clearInputAreaPaths = useRef<() => void>();
 
   useEffect(() => {
     try {
-      const parsedInputValue = JSON.parse(xSeedInput);
+      const xSeeds = JSON.parse(xSeedsInput);
 
       if (
-        Array.isArray(parsedInputValue) &&
-        parsedInputValue.every(
-          (item) =>
-            Array.isArray(item) &&
-            item.length === 2 &&
-            typeof item[0] === "number" &&
-            typeof item[1] === "number"
+        Array.isArray(xSeeds) &&
+        xSeeds.length > 0 && // at least one xSeed
+        xSeeds.every(
+          (xSeed) =>
+            Array.isArray(xSeed) &&
+            xSeed.length > 0 && // at least one point in xSeed
+            xSeed.length === xSeeds[0].length && // all xSeeds same length
+            xSeed.every(
+              (c) =>
+                c.length === 2 &&
+                typeof c[0] === "number" &&
+                typeof c[1] === "number"
+            )
         )
       ) {
-        setXSeedInputError(false);
-        setXSeed(parsedInputValue);
+        setXSeedsInputError(false);
+        setXSeeds(xSeeds);
       } else {
         throw new Error("invalid input");
       }
     } catch {
-      setXSeedInputError(true);
+      setXSeedsInputError(true);
     }
-  }, [xSeedInput]);
+  }, [xSeedsInput]);
 
   const process = useCallback(() => {
-    const output = compute(input, xSeed);
+    const results = xSeeds.map((xSeed) => solveInQArray(xSeed, input));
 
     console.log(
       JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")
     );
     console.log(
-      JSON.stringify(output).replaceAll("[", "{").replaceAll("]", "}")
+      JSON.stringify(results).replaceAll("[", "{").replaceAll("]", "}")
     );
 
-    setOutput(output);
-  }, [input, xSeed]);
+    const outputs = results.map((result, i) => ({
+      result,
+      color: getColorForIndex(i),
+    }));
+
+    setOutputs(outputs);
+    console.log(
+      "results :>> ",
+      outputs.map((outputs) => outputs.color)
+    );
+  }, [input, xSeeds]);
 
   const setXSeedOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setXSeedInput(e.currentTarget.value);
+    setXSeedsInput(e.currentTarget.value);
   };
 
   const clear = useCallback(() => {
     setInput([]);
-    setOutput([]);
+    setOutputs([]);
 
     if (typeof clearInputAreaPaths.current === "function")
       clearInputAreaPaths.current();
@@ -161,7 +177,7 @@ function App() {
       defaultScaleDownFactor *
         Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
     );
-  }, [setInput, setOutput]);
+  }, [setInput, setOutputs]);
 
   return (
     <StyleProvider>
@@ -169,10 +185,10 @@ function App() {
         <LeftCenterControlsWrapper>
           <TextField
             label="xSeed"
-            value={xSeedInput}
-            error={xSeedInputError}
+            value={xSeedsInput}
+            error={xSeedsInputError}
             onChange={setXSeedOnChange}
-            helperText={xSeedInputError ? "Invalid input" : ""}
+            helperText={xSeedsInputError ? "Invalid input" : ""}
           />
         </LeftCenterControlsWrapper>
         <CenterControlsWrapper>
@@ -202,7 +218,7 @@ function App() {
             />
           </AreaWrapper>
           <AreaWrapper>
-            <OutputArea paper={outputPaper} output={output} />
+            <OutputArea paper={outputPaper} outputs={outputs} />
           </AreaWrapper>
         </AreasWrapper>
       </Wrapper>
