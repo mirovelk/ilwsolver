@@ -24,7 +24,7 @@ import {
 } from "./util";
 
 const Title = styled.h2`
-  margin: 0 60px 0 0;
+  margin: 0 20px 5px 0;
 `;
 
 const StyledCanvas = styled.canvas`
