@@ -42,7 +42,7 @@ export function eqns(input: Complex[], q: Complex): Complex[] {
       }
     }
 
-    result = [...result, subtract(tmp1, tmp2)]; // TODO do not create new array
+    result.push(subtract(tmp1, tmp2));
   }
 
   return result;
