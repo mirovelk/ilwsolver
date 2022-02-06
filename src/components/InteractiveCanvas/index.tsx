@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react";
-import styled from "@emotion/styled/macro";
+import styled from '@emotion/styled/macro';
 import {
   KeyboardArrowDown,
   KeyboardArrowLeft,
@@ -7,8 +6,10 @@ import {
   KeyboardArrowUp,
   ZoomIn,
   ZoomOut,
-} from "@mui/icons-material";
-import { IconButton, Paper as MaterialPaper } from "@mui/material";
+} from '@mui/icons-material';
+import { IconButton, Paper as MaterialPaper } from '@mui/material';
+import React, { useEffect, useRef } from 'react';
+
 import {
   initAxis,
   initCoordinates,
@@ -21,7 +22,7 @@ import {
   updateCursorCoordinatesStatus,
   zoomIn,
   zoomOut,
-} from "./util";
+} from './util';
 
 const Title = styled.h2`
   margin: 0 20px 5px 0;
@@ -44,9 +45,7 @@ const OnCanvasControlsWrapper = styled.div`
   display: none;
   position: absolute;
   top: 10px;
-  right: 10px;
-  padding: 15px;
-  flex-direction: column;
+  right: 30px;
   transition: all 0.3s;
   opacity: 0.3;
   z-index: 1000;
@@ -57,7 +56,6 @@ const OnCanvasControlsWrapper = styled.div`
 
 const ZoomButtonsWrapper = styled.div`
   display: flex;
-  justify-content: space-around;
 `;
 
 const ZoomButton = styled(IconButton)`
@@ -66,20 +64,12 @@ const ZoomButton = styled(IconButton)`
 `;
 
 const ScrollButtonsWrapper = styled.div`
-  margin-bottom: 10px;
-`;
-
-const ScrollButtonWrapper = styled.div`
   display: flex;
-  width: 120px;
 `;
 
-const SingleScrollButtonWrapper = styled(ScrollButtonWrapper)`
-  justify-content: center;
-`;
-
-const DoubleScrollButtonWrapper = styled(ScrollButtonWrapper)`
-  justify-content: space-between;
+const DoubleScrollButtonWrapper = styled.div`
+  display: flex;
+  margin-right: 10px;
 `;
 
 const ScrollButton = styled(IconButton)`
@@ -232,11 +222,6 @@ function InteractiveCanvas({
         <CursorInfo ref={cursorInfoRef} />
         <OnCanvasControlsWrapper>
           <ScrollButtonsWrapper>
-            <SingleScrollButtonWrapper>
-              <ScrollButton onClick={() => scrollDown(paper)}>
-                <KeyboardArrowUp />
-              </ScrollButton>
-            </SingleScrollButtonWrapper>
             <DoubleScrollButtonWrapper>
               <ScrollButton onClick={() => scrollRight(paper)}>
                 <KeyboardArrowLeft />
@@ -245,11 +230,14 @@ function InteractiveCanvas({
                 <KeyboardArrowRight />
               </ScrollButton>
             </DoubleScrollButtonWrapper>
-            <SingleScrollButtonWrapper>
+            <DoubleScrollButtonWrapper>
               <ScrollButton onClick={() => scrollUp(paper)}>
                 <KeyboardArrowDown />
               </ScrollButton>
-            </SingleScrollButtonWrapper>
+              <ScrollButton onClick={() => scrollDown(paper)}>
+                <KeyboardArrowUp />
+              </ScrollButton>
+            </DoubleScrollButtonWrapper>
           </ScrollButtonsWrapper>
           <ZoomButtonsWrapper>
             <ZoomButton onClick={() => zoomOut(paper)}>
