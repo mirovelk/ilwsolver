@@ -7,7 +7,9 @@ import {
   Typography,
 } from "@mui/material";
 import produce from "immer";
+import Paper from "paper";
 import React, { useCallback, useEffect, useState } from "react";
+import { SketchPicker } from "react-color";
 
 import { getColorForIndex } from "../../util/color";
 import { Complex, getRandomComplexNumber } from "../../util/complex";
@@ -91,6 +93,7 @@ const XSeedRemoveWrapper = styled.div`
 `;
 
 const XSeedColorWrapper = styled.div`
+  position: relative;
   margin-right: 8px;
   display: flex;
   align-items: center;
@@ -102,6 +105,15 @@ const XSeedColor = styled.div<{ seedColor: paper.Color }>`
   width: 30px;
   border-radius: 4px;
   background: ${({ seedColor }) => seedColor.toCSS(true)};
+  cursor: pointer;
+`;
+
+const XSeedColorPickerWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  left: 40px;
+  margin-top: 15;
+  z-index: 4000;
 `;
 
 type XSeedValue = Complex[];
@@ -158,6 +170,10 @@ function XSeedsEditor({
   const [xSeedsInput, setXSeedsInput] = useState(stringifyXSeeds(xSeeds));
   const [xSeedsInputError, setXSeedsInputError] = useState(false);
   const [xSeedsM, setXSeedsM] = useState(xSeeds[0].seed.length);
+
+  const [visibleColorPickerIndex, setVisibleColorPickerIndex] = useState<
+    number | null
+  >(null);
 
   // process xSeeds input
   useEffect(() => {
@@ -310,7 +326,40 @@ function XSeedsEditor({
               </IconButton>
             </XSeedRemoveWrapper>
             <XSeedColorWrapper>
-              <XSeedColor seedColor={xSeed.color} />
+              <XSeedColor
+                seedColor={xSeed.color}
+                onClick={() =>
+                  setVisibleColorPickerIndex(
+                    (previousVisibleColorPickerIndex) =>
+                      previousVisibleColorPickerIndex !== xSeedIndex
+                        ? xSeedIndex
+                        : null
+                  )
+                }
+              />
+              <XSeedColorPickerWrapper>
+                {visibleColorPickerIndex === xSeedIndex && (
+                  <SketchPicker
+                    color={xSeed.color.toCSS(true)}
+                    disableAlpha
+                    styles={{
+                      default: {
+                        picker: {
+                          background: "#ababab",
+                        },
+                      },
+                    }}
+                    onChange={(color) => {
+                      setXSeeds((previousXSeeds) =>
+                        produce(previousXSeeds, (draft) => {
+                          draft[xSeedIndex].color = new Paper.Color(color.hex);
+                        })
+                      );
+                      //
+                    }}
+                  />
+                )}
+              </XSeedColorPickerWrapper>
             </XSeedColorWrapper>
             <XSeedContent elevation={0} key={xSeedIndex}>
               {xSeed.seed.map((c, cIndex) => (

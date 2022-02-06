@@ -1,17 +1,17 @@
-import styled from '@emotion/styled';
-import { Delete, Functions } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
-import Paper from 'paper';
-import { useCallback, useRef, useState } from 'react';
+import styled from "@emotion/styled";
+import { Delete, Functions } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
+import Paper from "paper";
+import { useCallback, useRef, useState } from "react";
 
-import InputArea from './components/InputArea';
-import OutputArea, { Output } from './components/OutputArea';
-import { XSeeds } from './components/XSeedsEditor';
-import { defaultScaleDownFactor, inputPaper, outputPaper } from './papers';
-import { solveInQArray } from './support/calc/calc';
-import StyleProvider from './support/style/StyleProvider';
-import { getColorForIndex } from './util/color';
-import { Complex } from './util/complex';
+import InputArea from "./components/InputArea";
+import OutputArea, { Output } from "./components/OutputArea";
+import { XSeeds } from "./components/XSeedsEditor";
+import { defaultScaleDownFactor, inputPaper, outputPaper } from "./papers";
+import { solveInQArray } from "./support/calc/calc";
+import StyleProvider from "./support/style/StyleProvider";
+import { getColorForIndex } from "./util/color";
+import { Complex } from "./util/complex";
 
 const Wrapper = styled.div`
   position: realtive;
@@ -183,7 +183,7 @@ function App() {
             />
           </AreaWrapper>
           <AreaWrapper>
-            <OutputArea paper={outputPaper} outputs={outputs} />
+            <OutputArea paper={outputPaper} outputs={outputs} xSeeds={xSeeds} />
           </AreaWrapper>
         </AreasWrapper>
       </Wrapper>

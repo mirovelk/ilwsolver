@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
 import Paper from "paper";
+import React, { useEffect, useState } from "react";
 
+import { ResultInQArray } from "../../support/calc/calc";
 import InteractiveCanvas from "../InteractiveCanvas";
 import Path from "../paper/Path";
-import { ResultInQArray } from "../../support/calc/calc";
+import { XSeeds } from "../XSeedsEditor";
 
 const OUTPUT_PATH_WIDTH = 3;
 
@@ -24,7 +25,6 @@ function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
 
 export interface Output {
   result: ResultInQArray;
-  color: paper.Color;
 }
 
 interface OutputPaths {
@@ -37,19 +37,21 @@ type OutputsPaths = OutputPaths[];
 function OutputArea({
   paper,
   outputs,
+  xSeeds,
 }: {
   paper: paper.PaperScope;
   outputs: Output[];
+  xSeeds: XSeeds;
 }) {
   const [points, setPoints] = useState<OutputsPaths>([]);
 
   // convert ouput Complex array to Path points
   useEffect(() => {
-    const outputsPaths = outputs.map((output) => ({
+    const outputsPaths = outputs.map((output, outputIndex) => ({
       paths: output.result.map((path) =>
         path.map(([x, y]) => new Paper.Point(x, -y))
       ),
-      color: output.color,
+      color: xSeeds[outputIndex]?.color ?? new Paper.Color(0, 0, 0, 0),
     }));
     if (
       outputsPaths.some((outputPaths) =>
@@ -83,7 +85,7 @@ function OutputArea({
     //     ]);
     //   }
     // };
-  }, [paper, outputs]);
+  }, [paper, outputs, xSeeds]);
 
   return (
     <>
