@@ -322,32 +322,38 @@ function InputArea({
     setXSeedsInput(stringifyXSeeds(xSeeds));
   }, [xSeeds]);
 
-  const setXSeedOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setXSeedsInput(e.currentTarget.value);
-  };
+  const setXSeedOnChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setXSeedsInput(e.currentTarget.value);
+    },
+    []
+  );
 
-  const xSeedsMInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newM = parseInt(e.currentTarget.value);
-    if (typeof newM === "number" && !isNaN(newM) && newM > 0) {
-      setXSeedsM(newM);
-      setXSeeds((previousXSeeds: XSeeds) => {
-        // assuming there's always at least one xSeed
-        if (previousXSeeds[0].length < newM) {
-          return previousXSeeds.map((xSeed) => [
-            ...xSeed,
-            getRandomXSeedNumber(),
-          ]);
-        } else if (previousXSeeds[0].length > newM) {
-          return previousXSeeds.map((xSeed) =>
-            xSeed.slice(0, xSeed.length - 1)
-          );
-        }
-        return previousXSeeds;
-      });
-    }
-  };
+  const xSeedsMInputOnChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newM = parseInt(e.currentTarget.value);
+      if (typeof newM === "number" && !isNaN(newM) && newM > 0) {
+        setXSeedsM(newM);
+        setXSeeds((previousXSeeds: XSeeds) => {
+          // assuming there's always at least one xSeed
+          if (previousXSeeds[0].length < newM) {
+            return previousXSeeds.map((xSeed) => [
+              ...xSeed,
+              getRandomXSeedNumber(),
+            ]);
+          } else if (previousXSeeds[0].length > newM) {
+            return previousXSeeds.map((xSeed) =>
+              xSeed.slice(0, xSeed.length - 1)
+            );
+          }
+          return previousXSeeds;
+        });
+      }
+    },
+    [setXSeeds]
+  );
 
-  const addXSeedOnClick = () => {
+  const addXSeedOnClick = useCallback(() => {
     setXSeeds((previousXSeeds: XSeeds) => {
       // assuming there's always at least one xSeed
       const M = xSeeds[0].length;
@@ -356,38 +362,44 @@ function InputArea({
         new Array(M).fill(null).map(() => getRandomXSeedNumber()),
       ];
     });
-  };
+  }, [setXSeeds, xSeeds]);
 
-  const removeXSeedWithIndex = (index: number) => {
-    setXSeeds((previousXSeeds: XSeeds) => {
-      return previousXSeeds.length > 1
-        ? previousXSeeds.filter((_, itemIndex) => itemIndex !== index)
-        : previousXSeeds;
-    });
-  };
-
-  const xSeedOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
-    const cIndex = parseInt(e.target.dataset.cIndex as string);
-    const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
-
-    const value = parseFloat(e.currentTarget.value);
-
-    if (typeof value === "number" && !isNaN(value)) {
-      setXSeeds((previousXSeeds) => {
-        const nextXSeeds = produce(previousXSeeds, (draft) => {
-          draft[xSeedIndex][cIndex][cPartIndex] = value;
-        });
-        return nextXSeeds;
+  const removeXSeedWithIndex = useCallback(
+    (index: number) => {
+      setXSeeds((previousXSeeds: XSeeds) => {
+        return previousXSeeds.length > 1
+          ? previousXSeeds.filter((_, itemIndex) => itemIndex !== index)
+          : previousXSeeds;
       });
-    }
-  };
+    },
+    [setXSeeds]
+  );
 
-  const toggleXSeedsEditor = () => {
+  const xSeedOnChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
+      const cIndex = parseInt(e.target.dataset.cIndex as string);
+      const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
+
+      const value = parseFloat(e.currentTarget.value);
+
+      if (typeof value === "number" && !isNaN(value)) {
+        setXSeeds((previousXSeeds) => {
+          const nextXSeeds = produce(previousXSeeds, (draft) => {
+            draft[xSeedIndex][cIndex][cPartIndex] = value;
+          });
+          return nextXSeeds;
+        });
+      }
+    },
+    [setXSeeds]
+  );
+
+  const toggleXSeedsEditor = useCallback(() => {
     setXSeedsEditorVisible(
       (previousXSeedsEditorVisible) => !previousXSeedsEditorVisible
     );
-  };
+  }, []);
 
   return (
     <>
