@@ -86,17 +86,26 @@ const StyledDelete = styled(Delete)`
 
 const INPUT_STEPS = 1000;
 
+function getInitialXSeeds(seeds: Complex[][]) {
+  return seeds.map((seed, seedIndex) => ({
+    seed,
+    color: getColorForIndex(seedIndex),
+  }));
+}
+
 function App() {
-  const [xSeeds, setXSeeds] = useState<XSeeds>([
-    [
-      [2, -3],
-      [3, -2],
-    ],
-    [
-      [2, 3],
-      [2, 4],
-    ],
-  ]);
+  const [xSeeds, setXSeeds] = useState<XSeeds>(
+    getInitialXSeeds([
+      [
+        [2, -3],
+        [3, -2],
+      ],
+      [
+        [2, 3],
+        [2, 4],
+      ],
+    ])
+  );
 
   const [input, setInput] = useState<Complex[]>([]);
   const [outputs, setOutputs] = useState<Output[]>([]);
@@ -104,7 +113,7 @@ function App() {
   const clearInputAreaPaths = useRef<() => void>();
 
   const process = useCallback(() => {
-    const results = xSeeds.map((xSeed) => solveInQArray(xSeed, input));
+    const results = xSeeds.map((xSeed) => solveInQArray(xSeed.seed, input));
 
     console.log(
       JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")
@@ -115,7 +124,7 @@ function App() {
 
     const outputs = results.map((result, i) => ({
       result,
-      color: getColorForIndex(i),
+      color: xSeeds[i].color,
     }));
 
     setOutputs(outputs);

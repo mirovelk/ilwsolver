@@ -1,4 +1,4 @@
-import { getColorForIndex, initialColor } from "./color";
+import { getColorForIndex, initialColor } from './color';
 
 test("returns initial color for i===0", () => {
   expect(getColorForIndex(0).hue).toEqual(initialColor.hue);
