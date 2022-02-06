@@ -1,11 +1,16 @@
-import styled from '@emotion/styled';
-import { Add, Remove } from '@mui/icons-material';
-import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
-import produce from 'immer';
-import React, { useCallback, useEffect, useState } from 'react';
+import styled from "@emotion/styled";
+import { Add, Remove } from "@mui/icons-material";
+import {
+  IconButton,
+  Paper as MaterialPaper,
+  TextField,
+  Typography,
+} from "@mui/material";
+import produce from "immer";
+import React, { useCallback, useEffect, useState } from "react";
 
-import { getColorForIndex } from '../../util/color';
-import { Complex, getRandomComplexNumber } from '../../util/complex';
+import { getColorForIndex } from "../../util/color";
+import { Complex, getRandomComplexNumber } from "../../util/complex";
 
 const LeftControlsWrapper = styled(MaterialPaper)`
   display: inline-flex;
@@ -99,30 +104,32 @@ const XSeedColor = styled.div<{ seedColor: paper.Color }>`
   background: ${({ seedColor }) => seedColor.toCSS(true)};
 `;
 
+type XSeedValue = Complex[];
+
 export interface XSeed {
-  seed: Complex[];
+  seed: XSeedValue;
   color: paper.Color;
 }
 
 export type XSeeds = XSeed[];
 
-function parseXSeeds(input: string): XSeeds {
+function parseXSeeds(input: string): XSeedValue[] {
   return JSON.parse(input.replaceAll("{", "[").replaceAll("}", "]"));
 }
 
-function stringifyXSeeds(xSeeds: XSeeds) {
+function stringifyXSeedValues(xSeeds: XSeedValue[]) {
   let output = "";
   output += "{";
   xSeeds.forEach((xSeed, xSeedIndex) => {
     output += "{";
     output += "\n";
-    xSeed.seed.forEach((c, cIndex) => {
+    xSeed.forEach((c, cIndex) => {
       output += "  {";
       output += c[0];
       output += ", ";
       output += c[1];
       output += " }";
-      if (cIndex < xSeed.seed.length - 1) output += ",";
+      if (cIndex < xSeed.length - 1) output += ",";
     });
     output += "\n";
     output += "}";
@@ -131,6 +138,10 @@ function stringifyXSeeds(xSeeds: XSeeds) {
   output += "}";
 
   return output;
+}
+
+function stringifyXSeeds(xSeeds: XSeeds) {
+  return stringifyXSeedValues(xSeeds.map((xSeed) => xSeed.seed));
 }
 
 function getRandomXSeedNumber(): Complex {
@@ -152,7 +163,6 @@ function XSeedsEditor({
   useEffect(() => {
     try {
       const xSeedsParsed = parseXSeeds(xSeedsInput);
-
       if (
         Array.isArray(xSeedsParsed) &&
         xSeedsParsed.length > 0 && // at least one xSeed
@@ -160,7 +170,7 @@ function XSeedsEditor({
           (xSeed) =>
             Array.isArray(xSeed) &&
             xSeed.length > 0 && // at least one point in xSeed
-            xSeed.length === xSeedsParsed[0].seed.length && // all xSeeds same length
+            xSeed.length === xSeedsParsed[0].length && // all xSeeds same length
             xSeed.every(
               (c) =>
                 c.length === 2 &&
@@ -171,8 +181,11 @@ function XSeedsEditor({
       ) {
         setXSeedsInputError(false);
         setXSeeds((previousXSeeds) =>
-          JSON.stringify(xSeedsParsed) !== JSON.stringify(previousXSeeds)
-            ? xSeedsParsed
+          stringifyXSeeds(previousXSeeds) !== stringifyXSeedValues(xSeedsParsed)
+            ? xSeedsParsed.map((xSeedValue, index) => ({
+                seed: xSeedValue,
+                color: previousXSeeds[index]?.color ?? getColorForIndex(index),
+              }))
             : previousXSeeds
         );
       } else {
