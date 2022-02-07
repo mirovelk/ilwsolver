@@ -170,6 +170,7 @@ function XSeedsEditor({
   setXSeeds: React.Dispatch<React.SetStateAction<XSeeds>>;
 }) {
   const [xSeedsInput, setXSeedsInput] = useState(stringifyXSeeds(xSeeds));
+  const [xSeedsInputEditing, setXSeedsInputEditing] = useState(false);
   const [xSeedsInputError, setXSeedsInputError] = useState(false);
   const [xSeedsM, setXSeedsM] = useState(xSeeds[0].seed.length);
 
@@ -177,58 +178,67 @@ function XSeedsEditor({
     number | null
   >(null);
 
-  // process xSeeds input
+  // reflect xSeeds changes back into editing area when not editing
   useEffect(() => {
-    try {
-      const xSeedsParsed = parseXSeeds(xSeedsInput);
-      if (
-        Array.isArray(xSeedsParsed) &&
-        xSeedsParsed.length > 0 && // at least one xSeed
-        xSeedsParsed.every(
-          (xSeed) =>
-            Array.isArray(xSeed) &&
-            xSeed.length > 0 && // at least one point in xSeed
-            xSeed.length === xSeedsParsed[0].length && // all xSeeds same length
-            xSeed.every(
-              (c) =>
-                c.length === 2 &&
-                typeof c[0] === "number" &&
-                typeof c[1] === "number"
-            )
-        )
-      ) {
-        setXSeedsInputError(false);
-        setXSeeds((previousXSeeds) =>
-          stringifyXSeeds(previousXSeeds) !== stringifyXSeedValues(xSeedsParsed)
-            ? xSeedsParsed.map((xSeedValue, index) => ({
-                seed: xSeedValue,
-                color: previousXSeeds[index]?.color ?? getColorForIndex(index),
-              }))
-            : previousXSeeds
-        );
-      } else {
-        throw new Error("invalid input");
-      }
-    } catch {
-      setXSeedsInputError(true);
-    }
-  }, [setXSeeds, xSeedsInput]);
-
-  // reflect xSeeds changes back into editing area
-  useEffect(() => {
-    setXSeedsInput(stringifyXSeeds(xSeeds));
-  }, [xSeeds]);
+    if (!xSeedsInputEditing) setXSeedsInput(stringifyXSeeds(xSeeds));
+  }, [xSeeds, xSeedsInputEditing]);
 
   // reflect M changes back into M input
   useEffect(() => {
     setXSeedsM(xSeeds[0].seed.length);
   }, [xSeeds]);
 
-  const setXSeedInputOnChange = useCallback(
+  const xSeedInputOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setXSeedsInput(e.currentTarget.value);
+      setXSeedsInputEditing(true);
+
+      const value = e.currentTarget.value;
+      setXSeedsInput(value);
+
+      try {
+        const xSeedsParsed = parseXSeeds(value);
+        if (
+          Array.isArray(xSeedsParsed) &&
+          xSeedsParsed.length > 0 && // at least one xSeed
+          xSeedsParsed.every(
+            (xSeed) =>
+              Array.isArray(xSeed) &&
+              xSeed.length > 0 && // at least one point in xSeed
+              xSeed.length === xSeedsParsed[0].length && // all xSeeds same length
+              xSeed.every(
+                (c) =>
+                  c.length === 2 &&
+                  typeof c[0] === "number" &&
+                  typeof c[1] === "number"
+              )
+          )
+        ) {
+          setXSeedsInputError(false);
+          setXSeeds((previousXSeeds) =>
+            stringifyXSeeds(previousXSeeds) !==
+            stringifyXSeedValues(xSeedsParsed)
+              ? xSeedsParsed.map((xSeedValue, index) => ({
+                  seed: xSeedValue,
+                  color:
+                    previousXSeeds[index]?.color ?? getColorForIndex(index),
+                }))
+              : previousXSeeds
+          );
+        } else {
+          throw new Error("invalid input");
+        }
+      } catch {
+        setXSeedsInputError(true);
+      }
     },
-    []
+    [setXSeeds]
+  );
+
+  const xSeedInputOnBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      setXSeedsInputEditing(false);
+    },
+    [setXSeedsInputEditing]
   );
 
   const xSeedsMInputOnChange = useCallback(
@@ -431,7 +441,8 @@ function XSeedsEditor({
       <XSeedInput
         value={xSeedsInput}
         error={xSeedsInputError}
-        onChange={setXSeedInputOnChange}
+        onChange={xSeedInputOnChange}
+        onBlur={xSeedInputOnBlur}
         multiline
         helperText={xSeedsInputError ? "Invalid input" : ""}
       />
