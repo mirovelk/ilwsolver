@@ -116,9 +116,9 @@ const XSeedColorPickerWrapper = styled.div`
   z-index: 4000;
 `;
 
-type NullableComplex = [r: number | null, i: number | null];
+type PartialComplex = [r?: number, i?: number];
 
-type XSeedValue = NullableComplex[];
+type XSeedValue = PartialComplex[];
 
 export interface XSeed {
   seed: XSeedValue;
@@ -180,7 +180,10 @@ function XSeedsEditor({
 
   // reflect xSeeds changes back into editing area when not editing
   useEffect(() => {
-    if (!xSeedsInputEditing) setXSeedsInput(stringifyXSeeds(xSeeds));
+    if (!xSeedsInputEditing) {
+      setXSeedsInput(stringifyXSeeds(xSeeds));
+      setXSeedsInputError(false);
+    }
   }, [xSeeds, xSeedsInputEditing]);
 
   // reflect M changes back into M input
@@ -300,7 +303,7 @@ function XSeedsEditor({
       if (e.currentTarget.value.trim() === "") {
         setXSeeds((previousXSeeds) =>
           produce(previousXSeeds, (draft) => {
-            draft[xSeedIndex].seed[cIndex][cPartIndex] = null;
+            draft[xSeedIndex].seed[cIndex][cPartIndex] = undefined;
           })
         );
       } else {
@@ -327,7 +330,7 @@ function XSeedsEditor({
 
       setXSeeds((previousXSeeds) => {
         const nextXSeeds = produce(previousXSeeds, (draft) => {
-          if (draft[xSeedIndex].seed[cIndex][cPartIndex] === null)
+          if (typeof draft[xSeedIndex].seed[cIndex][cPartIndex] === "undefined")
             draft[xSeedIndex].seed[cIndex][cPartIndex] =
               getRandomXSeedNumber()[0];
         });
@@ -410,7 +413,7 @@ function XSeedsEditor({
                   {c.map((cPart, cPartIndex) => (
                     <XSeedRootPart elevation={0} key={cPartIndex}>
                       <XSeedRootPartInput
-                        value={cPart}
+                        value={typeof cPart !== "undefined" ? cPart : ""}
                         variant="standard"
                         type="number"
                         inputProps={{
