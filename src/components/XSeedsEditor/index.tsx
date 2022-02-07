@@ -219,6 +219,11 @@ function XSeedsEditor({
     setXSeedsInput(stringifyXSeeds(xSeeds));
   }, [xSeeds]);
 
+  // reflect M changes back into M input
+  useEffect(() => {
+    setXSeedsM(xSeeds[0].seed.length);
+  }, [xSeeds]);
+
   const setXSeedInputOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setXSeedsInput(e.currentTarget.value);
