@@ -113,7 +113,9 @@ function App() {
   const clearInputAreaPaths = useRef<() => void>();
 
   const process = useCallback(() => {
-    const results = xSeeds.map((xSeed) => solveInQArray(xSeed.seed, input));
+    const results = xSeeds.map((xSeed) =>
+      solveInQArray(xSeed.seed as Complex[], input)
+    );
 
     console.log(
       JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")

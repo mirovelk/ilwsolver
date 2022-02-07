@@ -116,7 +116,9 @@ const XSeedColorPickerWrapper = styled.div`
   z-index: 4000;
 `;
 
-type XSeedValue = Complex[];
+type NullableComplex = [r: number | null, i: number | null];
+
+type XSeedValue = NullableComplex[];
 
 export interface XSeed {
   seed: XSeedValue;
@@ -217,7 +219,7 @@ function XSeedsEditor({
     setXSeedsInput(stringifyXSeeds(xSeeds));
   }, [xSeeds]);
 
-  const setXSeedOnChange = useCallback(
+  const setXSeedInputOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setXSeedsInput(e.currentTarget.value);
     },
@@ -275,21 +277,47 @@ function XSeedsEditor({
   );
 
   const xSeedOnChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.FocusEvent<HTMLInputElement>) => {
       const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
       const cIndex = parseInt(e.target.dataset.cIndex as string);
       const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
 
-      const value = parseFloat(e.currentTarget.value);
-
-      if (typeof value === "number" && !isNaN(value)) {
-        setXSeeds((previousXSeeds) => {
-          const nextXSeeds = produce(previousXSeeds, (draft) => {
-            draft[xSeedIndex].seed[cIndex][cPartIndex] = value;
+      if (e.currentTarget.value.trim() === "") {
+        setXSeeds((previousXSeeds) =>
+          produce(previousXSeeds, (draft) => {
+            draft[xSeedIndex].seed[cIndex][cPartIndex] = null;
+          })
+        );
+      } else {
+        const value = parseFloat(e.currentTarget.value);
+        if (typeof value === "number" && !isNaN(value)) {
+          setXSeeds((previousXSeeds) => {
+            const nextXSeeds = produce(previousXSeeds, (draft) => {
+              draft[xSeedIndex].seed[cIndex][cPartIndex] = value;
+            });
+            return nextXSeeds;
           });
-          return nextXSeeds;
-        });
+        }
       }
+    },
+    [setXSeeds]
+  );
+
+  // fill in random numbers instead of nulls
+  const xSeedOnBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
+      const cIndex = parseInt(e.target.dataset.cIndex as string);
+      const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
+
+      setXSeeds((previousXSeeds) => {
+        const nextXSeeds = produce(previousXSeeds, (draft) => {
+          if (draft[xSeedIndex].seed[cIndex][cPartIndex] === null)
+            draft[xSeedIndex].seed[cIndex][cPartIndex] =
+              getRandomXSeedNumber()[0];
+        });
+        return nextXSeeds;
+      });
     },
     [setXSeeds]
   );
@@ -377,6 +405,7 @@ function XSeedsEditor({
                           "data-c-part-index": cPartIndex,
                         }}
                         onChange={xSeedOnChange}
+                        onBlur={xSeedOnBlur}
                       />
                     </XSeedRootPart>
                   ))}
@@ -397,7 +426,7 @@ function XSeedsEditor({
       <XSeedInput
         value={xSeedsInput}
         error={xSeedsInputError}
-        onChange={setXSeedOnChange}
+        onChange={setXSeedInputOnChange}
         multiline
         helperText={xSeedsInputError ? "Invalid input" : ""}
       />
