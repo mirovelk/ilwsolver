@@ -26,9 +26,16 @@ const LeftControlsWrapper = styled(MaterialPaper)`
 
 const XSeedsHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   margin-bottom: 5px;
 `;
+
+const XSeedsHeaderControlsWrapper = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+`;
+
+const AddXSeedButtonWrapper = styled.div``;
 
 const XSeedsMWrapper = styled.div`
   display: flex;
@@ -74,12 +81,6 @@ const XSeedRootPart = styled(MaterialPaper)`
 `;
 
 const XSeedRootPartInput = styled(TextField)``;
-
-const AddXSeedButtonWrapper = styled.div`
-  margin-top: 10px;
-  display: flex;
-  justify-content: flex-end;
-`;
 
 const AddXSeedButton = styled(IconButton)``;
 
@@ -343,21 +344,33 @@ function XSeedsEditor({
   return (
     <LeftControlsWrapper elevation={3}>
       <XSeedsHeader>
-        <Typography variant="h6" color="text.secondary" gutterBottom>
+        <Typography
+          variant="h6"
+          color="text.secondary"
+          gutterBottom
+          style={{ marginRight: "20px" }}
+        >
           xSeeds
         </Typography>
 
-        <XSeedsMWrapper>
-          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-            M=
-          </Typography>
-          <XSeedsMInput
-            value={xSeedsM}
-            variant="standard"
-            type="number"
-            onChange={xSeedsMInputOnChange}
-          />
-        </XSeedsMWrapper>
+        <XSeedsHeaderControlsWrapper>
+          <XSeedsMWrapper>
+            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+              M=
+            </Typography>
+            <XSeedsMInput
+              value={xSeedsM}
+              variant="standard"
+              type="number"
+              onChange={xSeedsMInputOnChange}
+            />
+          </XSeedsMWrapper>
+          <AddXSeedButtonWrapper>
+            <AddXSeedButton onClick={addXSeedOnClick}>
+              <Add />
+            </AddXSeedButton>
+          </AddXSeedButtonWrapper>
+        </XSeedsHeaderControlsWrapper>
       </XSeedsHeader>
 
       <XSeedsWrapper>
@@ -432,11 +445,6 @@ function XSeedsEditor({
             </XSeedContent>
           </XSeedWrapper>
         ))}
-        <AddXSeedButtonWrapper>
-          <AddXSeedButton onClick={addXSeedOnClick}>
-            <Add />
-          </AddXSeedButton>
-        </AddXSeedButtonWrapper>
       </XSeedsWrapper>
       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
         Edit:
