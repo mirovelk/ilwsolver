@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
 import Paper from "paper";
+import React, { useEffect, useRef } from "react";
 
 function Path({
   paper,
@@ -10,6 +10,7 @@ function Path({
   strokeWidth = 1,
   selected = false,
   fullySelected = false,
+  dashArray = [],
 }: {
   paper: paper.PaperScope;
   points?: paper.Point[];
@@ -19,6 +20,7 @@ function Path({
   strokeWidth?: number;
   selected?: boolean;
   fullySelected?: boolean;
+  dashArray?: number[];
 }) {
   const pathRef = useRef<paper.Path>();
 
@@ -52,6 +54,12 @@ function Path({
       pathRef.current.visible = visible;
     }
   }, [visible]);
+
+  useEffect(() => {
+    if (pathRef.current) {
+      pathRef.current.dashArray = dashArray;
+    }
+  }, [dashArray]);
 
   useEffect(() => {
     if (pathRef.current) {

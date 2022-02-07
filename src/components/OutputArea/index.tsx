@@ -25,11 +25,13 @@ function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
 
 export interface Output {
   result: ResultInQArray;
+  valid: boolean;
 }
 
 interface OutputPaths {
   paths: Array<paper.Point[]>;
   color: paper.Color;
+  valid: boolean;
 }
 
 type OutputsPaths = OutputPaths[];
@@ -52,6 +54,7 @@ function OutputArea({
         path.map(([x, y]) => new Paper.Point(x, -y))
       ),
       color: xSeeds[outputIndex]?.color ?? new Paper.Color(0, 0, 0, 0),
+      valid: output.valid,
     }));
     if (
       outputsPaths.some((outputPaths) =>
@@ -105,6 +108,7 @@ function OutputArea({
               strokeColor={outputPathsPoints.color}
               strokeWidth={OUTPUT_PATH_WIDTH}
               fullySelected={false}
+              dashArray={outputPathsPoints.valid ? [] : [10, 8]}
             />
           )
         )

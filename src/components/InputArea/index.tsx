@@ -1,14 +1,21 @@
-import styled from '@emotion/styled';
-import { Settings } from '@mui/icons-material';
-import { Checkbox, FormControlLabel, Grid, IconButton, Input, Slider } from '@mui/material';
-import Paper, { Color } from 'paper';
-import React, { useCallback, useEffect, useState } from 'react';
+import styled from "@emotion/styled";
+import { Settings } from "@mui/icons-material";
+import {
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  Input,
+  Slider,
+} from "@mui/material";
+import Paper, { Color } from "paper";
+import React, { useCallback, useEffect, useState } from "react";
 
-import { inputStrokeWidth } from '../../papers';
-import { Complex, complex } from '../../util/complex';
-import InteractiveCanvas from '../InteractiveCanvas';
-import Path from '../paper/Path';
-import XSeedsEditor, { XSeeds } from '../XSeedsEditor';
+import { inputStrokeWidth } from "../../papers";
+import { Complex, complex } from "../../util/complex";
+import InteractiveCanvas from "../InteractiveCanvas";
+import Path from "../paper/Path";
+import XSeedsEditor, { XSeeds } from "../XSeedsEditor";
 
 const DrawingPath = styled(Path)``;
 const InputPath = styled(Path)``;
@@ -48,6 +55,10 @@ function InputArea({
   xSeeds,
   setXSeeds,
   clearInputAreaPathsRef,
+  removeOutputAtIndex,
+  invalidateOutputAtIndex,
+  removeAllOutputs,
+  invalidateAllOutputs,
 }: {
   paper: paper.PaperScope;
   setInput: (input: Complex[]) => void;
@@ -55,6 +66,10 @@ function InputArea({
   xSeeds: XSeeds;
   setXSeeds: React.Dispatch<React.SetStateAction<XSeeds>>;
   clearInputAreaPathsRef: React.MutableRefObject<(() => void) | undefined>;
+  removeOutputAtIndex: (index: number) => void;
+  invalidateOutputAtIndex: (index: number) => void;
+  removeAllOutputs: () => void;
+  invalidateAllOutputs: () => void;
 }) {
   const [xSeedsEditorVisible, setXSeedsEditorVisible] = useState(false);
 
@@ -167,7 +182,14 @@ function InputArea({
   return (
     <>
       {xSeedsEditorVisible && (
-        <XSeedsEditor xSeeds={xSeeds} setXSeeds={setXSeeds} />
+        <XSeedsEditor
+          xSeeds={xSeeds}
+          setXSeeds={setXSeeds}
+          removeOutputAtIndex={removeOutputAtIndex}
+          invalidateOutputAtIndex={invalidateOutputAtIndex}
+          removeAllOutputs={removeAllOutputs}
+          invalidateAllOutputs={invalidateAllOutputs}
+        />
       )}
       <InteractiveCanvas
         paper={paper}

@@ -127,6 +127,7 @@ function App() {
     const outputs = results.map((result, i) => ({
       result,
       color: xSeeds[i].color,
+      valid: true,
     }));
 
     setOutputs(outputs);
@@ -152,6 +153,39 @@ function App() {
         Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
     );
   }, [setInput, setOutputs]);
+
+  const removeOutputAtIndex = useCallback(
+    (index: number) => {
+      setOutputs((previousOututs) =>
+        previousOututs.filter((_, ouputIndex) => ouputIndex !== index)
+      );
+    },
+    [setOutputs]
+  );
+
+  const invalidateOutputAtIndex = useCallback(
+    (index: number) => {
+      setOutputs((previousOututs) =>
+        previousOututs.map((output, outputIndex) =>
+          outputIndex === index ? { ...output, valid: false } : output
+        )
+      );
+    },
+    [setOutputs]
+  );
+
+  const removeAllOutputs = useCallback(() => {
+    setOutputs([]);
+  }, [setOutputs]);
+
+  const invalidateAllOutputs = useCallback(() => {
+    setOutputs((previousOututs) =>
+      previousOututs.map((output, outputIndex) => ({
+        ...output,
+        valid: false,
+      }))
+    );
+  }, [setOutputs]);
 
   return (
     <StyleProvider>
@@ -182,6 +216,10 @@ function App() {
               xSeeds={xSeeds}
               setXSeeds={setXSeeds}
               clearInputAreaPathsRef={clearInputAreaPaths}
+              removeOutputAtIndex={removeOutputAtIndex}
+              invalidateOutputAtIndex={invalidateOutputAtIndex}
+              removeAllOutputs={removeAllOutputs}
+              invalidateAllOutputs={invalidateAllOutputs}
             />
           </AreaWrapper>
           <AreaWrapper>

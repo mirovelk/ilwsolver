@@ -166,9 +166,17 @@ function getRandomXSeedNumber(): Complex {
 function XSeedsEditor({
   xSeeds,
   setXSeeds,
+  removeOutputAtIndex,
+  invalidateOutputAtIndex,
+  removeAllOutputs,
+  invalidateAllOutputs,
 }: {
   xSeeds: XSeeds;
   setXSeeds: React.Dispatch<React.SetStateAction<XSeeds>>;
+  removeOutputAtIndex: (index: number) => void;
+  invalidateOutputAtIndex: (index: number) => void;
+  removeAllOutputs: () => void;
+  invalidateAllOutputs: () => void;
 }) {
   const [xSeedsInput, setXSeedsInput] = useState(stringifyXSeeds(xSeeds));
   const [xSeedsInputEditing, setXSeedsInputEditing] = useState(false);
@@ -218,16 +226,32 @@ function XSeedsEditor({
           )
         ) {
           setXSeedsInputError(false);
-          setXSeeds((previousXSeeds) =>
-            stringifyXSeeds(previousXSeeds) !==
-            stringifyXSeedValues(xSeedsParsed)
-              ? xSeedsParsed.map((xSeedValue, index) => ({
+          setXSeeds((previousXSeeds) => {
+            if (
+              stringifyXSeeds(previousXSeeds) !==
+              stringifyXSeedValues(xSeedsParsed)
+            ) {
+              if (previousXSeeds.length !== xSeedsParsed.length) {
+                // count change, not obvious which xSeed has been removed/added, just remove all outputs
+                removeAllOutputs();
+              }
+              return xSeedsParsed.map((xSeedValue, index) => {
+                if (
+                  JSON.stringify(xSeedValue) !==
+                  JSON.stringify(previousXSeeds[index].seed)
+                ) {
+                  invalidateOutputAtIndex(index); // seed changed
+                }
+                return {
                   seed: xSeedValue,
                   color:
                     previousXSeeds[index]?.color ?? getColorForIndex(index),
-                }))
-              : previousXSeeds
-          );
+                };
+              });
+            } else {
+              return previousXSeeds;
+            }
+          });
         } else {
           throw new Error("invalid input");
         }
@@ -235,7 +259,7 @@ function XSeedsEditor({
         setXSeedsInputError(true);
       }
     },
-    [setXSeeds]
+    [invalidateOutputAtIndex, removeAllOutputs, setXSeeds]
   );
 
   const xSeedInputOnBlur = useCallback(
@@ -249,6 +273,7 @@ function XSeedsEditor({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newM = parseInt(e.currentTarget.value);
       if (typeof newM === "number" && !isNaN(newM) && newM > 0) {
+        invalidateAllOutputs();
         setXSeedsM(newM);
         setXSeeds((previousXSeeds: XSeeds) => {
           // assuming there's always at least one xSeed
@@ -267,7 +292,7 @@ function XSeedsEditor({
         });
       }
     },
-    [setXSeeds]
+    [invalidateAllOutputs, setXSeeds]
   );
 
   const addXSeedOnClick = useCallback(() => {
@@ -287,12 +312,14 @@ function XSeedsEditor({
   const removeXSeedWithIndex = useCallback(
     (index: number) => {
       setXSeeds((previousXSeeds: XSeeds) => {
-        return previousXSeeds.length > 1
-          ? previousXSeeds.filter((_, itemIndex) => itemIndex !== index)
-          : previousXSeeds;
+        if (previousXSeeds.length > 1) {
+          removeOutputAtIndex(index);
+          return previousXSeeds.filter((_, itemIndex) => itemIndex !== index);
+        }
+        return previousXSeeds;
       });
     },
-    [setXSeeds]
+    [removeOutputAtIndex, setXSeeds]
   );
 
   const xSeedOnChange = useCallback(
@@ -302,6 +329,7 @@ function XSeedsEditor({
       const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
 
       if (e.currentTarget.value.trim() === "") {
+        invalidateOutputAtIndex(xSeedIndex);
         setXSeeds((previousXSeeds) =>
           produce(previousXSeeds, (draft) => {
             draft[xSeedIndex].seed[cIndex][cPartIndex] = undefined;
@@ -310,6 +338,7 @@ function XSeedsEditor({
       } else {
         const value = parseFloat(e.currentTarget.value);
         if (typeof value === "number" && !isNaN(value)) {
+          invalidateOutputAtIndex(xSeedIndex);
           setXSeeds((previousXSeeds) => {
             const nextXSeeds = produce(previousXSeeds, (draft) => {
               draft[xSeedIndex].seed[cIndex][cPartIndex] = value;
@@ -319,7 +348,7 @@ function XSeedsEditor({
         }
       }
     },
-    [setXSeeds]
+    [invalidateOutputAtIndex, setXSeeds]
   );
 
   // fill in random numbers instead of nulls
@@ -332,13 +361,14 @@ function XSeedsEditor({
       setXSeeds((previousXSeeds) => {
         const nextXSeeds = produce(previousXSeeds, (draft) => {
           if (typeof draft[xSeedIndex].seed[cIndex][cPartIndex] === "undefined")
-            draft[xSeedIndex].seed[cIndex][cPartIndex] =
-              getRandomXSeedNumber()[0];
+            invalidateOutputAtIndex(xSeedIndex);
+          draft[xSeedIndex].seed[cIndex][cPartIndex] =
+            getRandomXSeedNumber()[0];
         });
         return nextXSeeds;
       });
     },
-    [setXSeeds]
+    [invalidateOutputAtIndex, setXSeeds]
   );
 
   return (
@@ -379,6 +409,7 @@ function XSeedsEditor({
             <XSeedRemoveWrapper>
               <IconButton
                 size="small"
+                disabled={xSeeds.length < 2}
                 onClick={() => removeXSeedWithIndex(xSeedIndex)}
               >
                 <Remove fontSize="inherit" />
