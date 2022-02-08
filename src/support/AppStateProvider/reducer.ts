@@ -1,8 +1,8 @@
-import produce from "immer";
+import produce from 'immer';
 
-import { getColorForIndex } from "../../util/color";
-import { Complex, getRandomNumberBetween } from "../../util/complex";
-import { ResultInQArray, solveInQArray } from "../calc/calc";
+import { getDifferentColor, getNextColorWithBuffer } from '../../util/color';
+import { Complex, getRandomNumberBetween } from '../../util/complex';
+import { ResultInQArray, solveInQArray } from '../calc/calc';
 
 enum AppActionType {
   AddXSeed,
@@ -160,11 +160,12 @@ function getRandomXSeedNumber(): Complex {
 }
 
 function getInitialData(seeds: Complex[][]): AppState {
+  const colorsBuffer: paper.Color[] = [];
   return {
     inputValues: [],
     solvers: seeds.map((xSeed, xSeedIndex) => ({
       xSeed,
-      color: getColorForIndex(xSeedIndex),
+      color: getNextColorWithBuffer(colorsBuffer),
       ouputValues: undefined,
       ouputValuesValid: false,
     })),
@@ -250,6 +251,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           (solver) => solver.xSeed
         );
 
+        const colorsBuffer = draft.solvers
+          .slice(0, payloadXSeedsValues.length)
+          .map((solver) => solver.color);
+
         if (
           JSON.stringify(previousXSeedsValues) !==
           JSON.stringify(payloadXSeedsValues)
@@ -268,7 +273,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
                   }
                 : {
                     ouputValuesValid: false,
-                    color: getColorForIndex(payloadXSeedValuesIndex),
+                    color: getNextColorWithBuffer(colorsBuffer),
                   }),
               xSeed: payloadXSeedValues,
             })
@@ -301,9 +306,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case AppActionType.AddXSeed:
       return produce(state, (draft) => {
         const M = draft.solvers[0].xSeed.length;
+        const previousColors = draft.solvers.map((solver) => solver.color);
+
         draft.solvers.push({
           xSeed: new Array(M).fill(null).map(() => getRandomXSeedNumber()),
-          color: getColorForIndex(draft.solvers.length),
+          color: getDifferentColor(previousColors),
           ouputValues: undefined,
           ouputValuesValid: false,
         });

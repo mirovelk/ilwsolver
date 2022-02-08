@@ -1,22 +1,50 @@
 import { Color } from 'paper';
 
-export const initialColor = new Color(0, 1, 0);
+export const initialColor = new Color({
+  hue: 0,
+  saturation: 1,
+  lightness: 0.5,
+});
 
 export const colorCount = 8;
 
 export const hueShiftStep = 360 / colorCount;
 
-export function getColorForIndex(i: number): paper.Color {
-  const color = new Color(initialColor);
-
-  // base shift
-  color.hue += (i * hueShiftStep) % 360;
-
-  // additional shift based on how many rotations there were
-  // TODO can casue repeating colors!!!
-  const rotation = Math.floor((i * hueShiftStep) / 360);
-  if (rotation > 0) {
-    color.hue += hueShiftStep / (rotation + 1);
+export function getDifferentColor(previousColors: paper.Color[]): paper.Color {
+  if (previousColors.length === 0) {
+    return initialColor;
   }
-  return color;
+  const processedPreviousColors = previousColors
+    .map((previousColor) => ({
+      original: previousColor, // save original
+      hue: previousColor.hue, // extract hue
+    }))
+    .sort((a, b) => a.hue - b.hue) // sort by hue
+    .map((color, _, colorArray) => ({
+      ...color,
+      zeroAlignedHue: color.hue - colorArray[0].hue, // align space to start with 0 (and end it 360)
+    }))
+    .map((color, colorIndex, colorArray) => ({
+      ...color,
+      hueDistanceToRight:
+        colorIndex + 1 < colorArray.length
+          ? colorArray[colorIndex + 1].hue - color.hue
+          : 360 - color.hue,
+    }))
+    .sort((a, b) => b.hueDistanceToRight - a.hueDistanceToRight);
+
+  const furthestHue =
+    processedPreviousColors[0].hue +
+    Math.floor(processedPreviousColors[0].hueDistanceToRight / 2);
+
+  const furthestColor = new Color(initialColor);
+  furthestColor.hue = furthestHue;
+
+  return furthestColor;
+}
+
+export function getNextColorWithBuffer(buffer: paper.Color[]): paper.Color {
+  const nextColor = getDifferentColor(buffer);
+  buffer.push(nextColor);
+  return nextColor;
 }
