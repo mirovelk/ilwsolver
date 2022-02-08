@@ -1,7 +1,7 @@
 import { Color } from 'paper';
 
 export const initialColor = new Color({
-  hue: 0,
+  hue: 100,
   saturation: 1,
   lightness: 0.5,
 });
