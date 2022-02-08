@@ -3,7 +3,7 @@ import { Add, Remove } from '@mui/icons-material';
 import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
 import Paper from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SketchPicker } from 'react-color';
+import { ChromePicker } from 'react-color';
 
 import {
   addXSeedAction,
@@ -335,13 +335,13 @@ function XSeedsEditor() {
               />
               <XSeedColorPickerWrapper>
                 {visibleColorPickerIndex === xSeedIndex && (
-                  <SketchPicker
+                  <ChromePicker
                     color={appStateSolvers[xSeedIndex].color.toCSS(true)}
                     disableAlpha
                     styles={{
                       default: {
                         picker: {
-                          background: "#ababab",
+                          background: "#111111",
                         },
                       },
                     }}
