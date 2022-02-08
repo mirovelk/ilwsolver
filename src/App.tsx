@@ -2,16 +2,18 @@ import styled from "@emotion/styled";
 import { Delete, Functions } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import Paper from "paper";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 
 import InputArea from "./components/InputArea";
-import OutputArea, { Output } from "./components/OutputArea";
-import { XSeeds } from "./components/XSeedsEditor";
+import OutputArea from "./components/OutputArea";
 import { defaultScaleDownFactor, inputPaper, outputPaper } from "./papers";
-import { solveInQArray } from "./support/calc/calc";
+import {
+  calculateAllOutputPathsAction,
+  clearInputOuputValuesAction,
+} from "./support/AppStateProvider/reducer";
+import useAppDispatch from "./support/AppStateProvider/useAppDispatch";
+import useAppStateInputValues from "./support/AppStateProvider/useAppStateInputValues";
 import StyleProvider from "./support/style/StyleProvider";
-import { getColorForIndex } from "./util/color";
-import { Complex } from "./util/complex";
 
 const Wrapper = styled.div`
   position: realtive;
@@ -86,59 +88,21 @@ const StyledDelete = styled(Delete)`
 
 const INPUT_STEPS = 1000;
 
-function getInitialXSeeds(seeds: Complex[][]) {
-  return seeds.map((seed, seedIndex) => ({
-    seed,
-    color: getColorForIndex(seedIndex),
-  }));
-}
-
 function App() {
-  const [xSeeds, setXSeeds] = useState<XSeeds>(
-    getInitialXSeeds([
-      [
-        [2, -3],
-        [3, -2],
-      ],
-      [
-        [2, 3],
-        [2, 4],
-      ],
-    ])
-  );
-
-  const [input, setInput] = useState<Complex[]>([]);
-  const [outputs, setOutputs] = useState<Output[]>([]);
+  const { appDispatch } = useAppDispatch();
+  const { appStateInputValues } = useAppStateInputValues();
 
   const clearInputAreaPaths = useRef<() => void>();
 
   const process = useCallback(() => {
-    const results = xSeeds.map((xSeed) =>
-      solveInQArray(xSeed.seed as Complex[], input)
-    );
-
-    console.log(
-      JSON.stringify(input).replaceAll("[", "{").replaceAll("]", "}")
-    );
-    console.log(
-      JSON.stringify(results).replaceAll("[", "{").replaceAll("]", "}")
-    );
-
-    const outputs = results.map((result, i) => ({
-      result,
-      color: xSeeds[i].color,
-      valid: true,
-    }));
-
-    setOutputs(outputs);
-  }, [input, xSeeds]);
+    appDispatch(calculateAllOutputPathsAction());
+  }, [appDispatch]);
 
   const clear = useCallback(() => {
-    setInput([]);
-    setOutputs([]);
+    appDispatch(clearInputOuputValuesAction());
 
     if (typeof clearInputAreaPaths.current === "function")
-      clearInputAreaPaths.current();
+      clearInputAreaPaths.current(); // TODO move to appState
 
     inputPaper.view.center = new Paper.Point(0, 0);
     outputPaper.view.center = new Paper.Point(0, 0);
@@ -152,40 +116,7 @@ function App() {
       defaultScaleDownFactor *
         Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
     );
-  }, [setInput, setOutputs]);
-
-  const removeOutputAtIndex = useCallback(
-    (index: number) => {
-      setOutputs((previousOututs) =>
-        previousOututs.filter((_, ouputIndex) => ouputIndex !== index)
-      );
-    },
-    [setOutputs]
-  );
-
-  const invalidateOutputAtIndex = useCallback(
-    (index: number) => {
-      setOutputs((previousOututs) =>
-        previousOututs.map((output, outputIndex) =>
-          outputIndex === index ? { ...output, valid: false } : output
-        )
-      );
-    },
-    [setOutputs]
-  );
-
-  const removeAllOutputs = useCallback(() => {
-    setOutputs([]);
-  }, [setOutputs]);
-
-  const invalidateAllOutputs = useCallback(() => {
-    setOutputs((previousOututs) =>
-      previousOututs.map((output, outputIndex) => ({
-        ...output,
-        valid: false,
-      }))
-    );
-  }, [setOutputs]);
+  }, [appDispatch]);
 
   return (
     <StyleProvider>
@@ -196,7 +127,7 @@ function App() {
               size="large"
               color="inherit"
               onClick={process}
-              disabled={input.length === 0}
+              disabled={appStateInputValues.length === 0}
             >
               <StyledFunctions fontSize="inherit" />
             </RunButton>
@@ -211,19 +142,12 @@ function App() {
           <AreaWrapper>
             <InputArea
               paper={inputPaper}
-              setInput={setInput}
               inputSteps={INPUT_STEPS}
-              xSeeds={xSeeds}
-              setXSeeds={setXSeeds}
               clearInputAreaPathsRef={clearInputAreaPaths}
-              removeOutputAtIndex={removeOutputAtIndex}
-              invalidateOutputAtIndex={invalidateOutputAtIndex}
-              removeAllOutputs={removeAllOutputs}
-              invalidateAllOutputs={invalidateAllOutputs}
             />
           </AreaWrapper>
           <AreaWrapper>
-            <OutputArea paper={outputPaper} outputs={outputs} xSeeds={xSeeds} />
+            <OutputArea paper={outputPaper} />
           </AreaWrapper>
         </AreasWrapper>
       </Wrapper>

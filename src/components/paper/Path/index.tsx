@@ -1,5 +1,5 @@
 import Paper from "paper";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 function Path({
   paper,

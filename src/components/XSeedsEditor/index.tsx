@@ -1,18 +1,22 @@
-import styled from "@emotion/styled";
-import { Add, Remove } from "@mui/icons-material";
-import {
-  IconButton,
-  Paper as MaterialPaper,
-  TextField,
-  Typography,
-} from "@mui/material";
-import produce from "immer";
-import Paper from "paper";
-import React, { useCallback, useEffect, useState } from "react";
-import { SketchPicker } from "react-color";
+import styled from '@emotion/styled';
+import { Add, Remove } from '@mui/icons-material';
+import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
+import Paper from 'paper';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { SketchPicker } from 'react-color';
 
-import { getColorForIndex } from "../../util/color";
-import { Complex, getRandomComplexNumber } from "../../util/complex";
+import {
+  addXSeedAction,
+  getRandomXSeedPartNumber,
+  removeXSeedAction,
+  setSolverColorAction,
+  setXSeedNumberPartAction,
+  setXSeedsMAction,
+  setXSeedsValuesAction,
+  XSeedValue,
+} from '../../support/AppStateProvider/reducer';
+import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
+import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
 
 const LeftControlsWrapper = styled(MaterialPaper)`
   display: inline-flex;
@@ -117,17 +121,6 @@ const XSeedColorPickerWrapper = styled.div`
   z-index: 4000;
 `;
 
-type PartialComplex = [r?: number, i?: number];
-
-type XSeedValue = PartialComplex[];
-
-export interface XSeed {
-  seed: XSeedValue;
-  color: paper.Color;
-}
-
-export type XSeeds = XSeed[];
-
 function parseXSeeds(input: string): XSeedValue[] {
   return JSON.parse(input.replaceAll("{", "[").replaceAll("}", "]"));
 }
@@ -139,7 +132,7 @@ function stringifyXSeedValues(xSeeds: XSeedValue[]) {
     output += "{";
     output += "\n";
     xSeed.forEach((c, cIndex) => {
-      output += "  {";
+      output += "  { ";
       output += c[0];
       output += ", ";
       output += c[1];
@@ -155,33 +148,24 @@ function stringifyXSeedValues(xSeeds: XSeedValue[]) {
   return output;
 }
 
-function stringifyXSeeds(xSeeds: XSeeds) {
-  return stringifyXSeedValues(xSeeds.map((xSeed) => xSeed.seed));
+function stringifyXSeeds(xSeeds: XSeedValue[]) {
+  return stringifyXSeedValues(xSeeds);
 }
 
-function getRandomXSeedNumber(): Complex {
-  return getRandomComplexNumber(-10, 10);
-}
+function XSeedsEditor() {
+  const { appDispatch } = useAppDispatch();
+  const { appStateSolvers } = useAppStateSolvers();
 
-function XSeedsEditor({
-  xSeeds,
-  setXSeeds,
-  removeOutputAtIndex,
-  invalidateOutputAtIndex,
-  removeAllOutputs,
-  invalidateAllOutputs,
-}: {
-  xSeeds: XSeeds;
-  setXSeeds: React.Dispatch<React.SetStateAction<XSeeds>>;
-  removeOutputAtIndex: (index: number) => void;
-  invalidateOutputAtIndex: (index: number) => void;
-  removeAllOutputs: () => void;
-  invalidateAllOutputs: () => void;
-}) {
+  const xSeeds = useMemo(
+    () => appStateSolvers.map((solver) => solver.xSeed),
+    [appStateSolvers]
+  );
+
+  const xSeedsM = useMemo(() => xSeeds[0].length, [xSeeds]);
+
   const [xSeedsInput, setXSeedsInput] = useState(stringifyXSeeds(xSeeds));
   const [xSeedsInputEditing, setXSeedsInputEditing] = useState(false);
   const [xSeedsInputError, setXSeedsInputError] = useState(false);
-  const [xSeedsM, setXSeedsM] = useState(xSeeds[0].seed.length);
 
   const [visibleColorPickerIndex, setVisibleColorPickerIndex] = useState<
     number | null
@@ -194,11 +178,6 @@ function XSeedsEditor({
       setXSeedsInputError(false);
     }
   }, [xSeeds, xSeedsInputEditing]);
-
-  // reflect M changes back into M input
-  useEffect(() => {
-    setXSeedsM(xSeeds[0].seed.length);
-  }, [xSeeds]);
 
   const xSeedInputOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,32 +205,7 @@ function XSeedsEditor({
           )
         ) {
           setXSeedsInputError(false);
-          setXSeeds((previousXSeeds) => {
-            if (
-              stringifyXSeeds(previousXSeeds) !==
-              stringifyXSeedValues(xSeedsParsed)
-            ) {
-              if (previousXSeeds.length !== xSeedsParsed.length) {
-                // count change, not obvious which xSeed has been removed/added, just remove all outputs
-                removeAllOutputs();
-              }
-              return xSeedsParsed.map((xSeedValue, index) => {
-                if (
-                  JSON.stringify(xSeedValue) !==
-                  JSON.stringify(previousXSeeds[index].seed)
-                ) {
-                  invalidateOutputAtIndex(index); // seed changed
-                }
-                return {
-                  seed: xSeedValue,
-                  color:
-                    previousXSeeds[index]?.color ?? getColorForIndex(index),
-                };
-              });
-            } else {
-              return previousXSeeds;
-            }
-          });
+          appDispatch(setXSeedsValuesAction(xSeedsParsed));
         } else {
           throw new Error("invalid input");
         }
@@ -259,7 +213,7 @@ function XSeedsEditor({
         setXSeedsInputError(true);
       }
     },
-    [invalidateOutputAtIndex, removeAllOutputs, setXSeeds]
+    [appDispatch]
   );
 
   const xSeedInputOnBlur = useCallback(
@@ -273,53 +227,21 @@ function XSeedsEditor({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newM = parseInt(e.currentTarget.value);
       if (typeof newM === "number" && !isNaN(newM) && newM > 0) {
-        invalidateAllOutputs();
-        setXSeedsM(newM);
-        setXSeeds((previousXSeeds: XSeeds) => {
-          // assuming there's always at least one xSeed
-          if (previousXSeeds[0].seed.length < newM) {
-            return previousXSeeds.map((xSeed) => ({
-              seed: [...xSeed.seed, getRandomXSeedNumber()],
-              color: xSeed.color,
-            }));
-          } else if (previousXSeeds[0].seed.length > newM) {
-            return previousXSeeds.map((xSeed) => ({
-              seed: xSeed.seed.slice(0, xSeed.seed.length - 1),
-              color: xSeed.color,
-            }));
-          }
-          return previousXSeeds;
-        });
+        appDispatch(setXSeedsMAction(newM));
       }
     },
-    [invalidateAllOutputs, setXSeeds]
+    [appDispatch]
   );
 
   const addXSeedOnClick = useCallback(() => {
-    setXSeeds((previousXSeeds: XSeeds) => {
-      // assuming there's always at least one xSeed
-      const M = xSeeds[0].seed.length;
-      return [
-        ...previousXSeeds,
-        {
-          seed: new Array(M).fill(null).map(() => getRandomXSeedNumber()),
-          color: getColorForIndex(previousXSeeds.length),
-        },
-      ];
-    });
-  }, [setXSeeds, xSeeds]);
+    appDispatch(addXSeedAction());
+  }, [appDispatch]);
 
   const removeXSeedWithIndex = useCallback(
     (index: number) => {
-      setXSeeds((previousXSeeds: XSeeds) => {
-        if (previousXSeeds.length > 1) {
-          removeOutputAtIndex(index);
-          return previousXSeeds.filter((_, itemIndex) => itemIndex !== index);
-        }
-        return previousXSeeds;
-      });
+      appDispatch(removeXSeedAction(index));
     },
-    [removeOutputAtIndex, setXSeeds]
+    [appDispatch]
   );
 
   const xSeedOnChange = useCallback(
@@ -327,28 +249,15 @@ function XSeedsEditor({
       const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
       const cIndex = parseInt(e.target.dataset.cIndex as string);
       const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
-
-      if (e.currentTarget.value.trim() === "") {
-        invalidateOutputAtIndex(xSeedIndex);
-        setXSeeds((previousXSeeds) =>
-          produce(previousXSeeds, (draft) => {
-            draft[xSeedIndex].seed[cIndex][cPartIndex] = undefined;
-          })
-        );
-      } else {
-        const value = parseFloat(e.currentTarget.value);
-        if (typeof value === "number" && !isNaN(value)) {
-          invalidateOutputAtIndex(xSeedIndex);
-          setXSeeds((previousXSeeds) => {
-            const nextXSeeds = produce(previousXSeeds, (draft) => {
-              draft[xSeedIndex].seed[cIndex][cPartIndex] = value;
-            });
-            return nextXSeeds;
-          });
-        }
-      }
+      const value =
+        e.currentTarget.value.trim() === ""
+          ? undefined
+          : parseFloat(e.currentTarget.value);
+      appDispatch(
+        setXSeedNumberPartAction(xSeedIndex, cIndex, cPartIndex, value)
+      );
     },
-    [invalidateOutputAtIndex, setXSeeds]
+    [appDispatch]
   );
 
   // fill in random numbers instead of nulls
@@ -357,18 +266,15 @@ function XSeedsEditor({
       const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
       const cIndex = parseInt(e.target.dataset.cIndex as string);
       const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
-
-      setXSeeds((previousXSeeds) => {
-        const nextXSeeds = produce(previousXSeeds, (draft) => {
-          if (typeof draft[xSeedIndex].seed[cIndex][cPartIndex] === "undefined")
-            invalidateOutputAtIndex(xSeedIndex);
-          draft[xSeedIndex].seed[cIndex][cPartIndex] =
-            getRandomXSeedNumber()[0];
-        });
-        return nextXSeeds;
-      });
+      const value =
+        e.currentTarget.value.trim() === ""
+          ? getRandomXSeedPartNumber()
+          : parseFloat(e.currentTarget.value);
+      appDispatch(
+        setXSeedNumberPartAction(xSeedIndex, cIndex, cPartIndex, value)
+      );
     },
-    [invalidateOutputAtIndex, setXSeeds]
+    [appDispatch]
   );
 
   return (
@@ -417,7 +323,7 @@ function XSeedsEditor({
             </XSeedRemoveWrapper>
             <XSeedColorWrapper>
               <XSeedColor
-                seedColor={xSeed.color}
+                seedColor={appStateSolvers[xSeedIndex].color}
                 onClick={() =>
                   setVisibleColorPickerIndex(
                     (previousVisibleColorPickerIndex) =>
@@ -430,7 +336,7 @@ function XSeedsEditor({
               <XSeedColorPickerWrapper>
                 {visibleColorPickerIndex === xSeedIndex && (
                   <SketchPicker
-                    color={xSeed.color.toCSS(true)}
+                    color={appStateSolvers[xSeedIndex].color.toCSS(true)}
                     disableAlpha
                     styles={{
                       default: {
@@ -440,19 +346,19 @@ function XSeedsEditor({
                       },
                     }}
                     onChange={(color) => {
-                      setXSeeds((previousXSeeds) =>
-                        produce(previousXSeeds, (draft) => {
-                          draft[xSeedIndex].color = new Paper.Color(color.hex);
-                        })
+                      appDispatch(
+                        setSolverColorAction(
+                          xSeedIndex,
+                          new Paper.Color(color.hex)
+                        )
                       );
-                      //
                     }}
                   />
                 )}
               </XSeedColorPickerWrapper>
             </XSeedColorWrapper>
             <XSeedContent elevation={0} key={xSeedIndex}>
-              {xSeed.seed.map((c, cIndex) => (
+              {xSeed.map((c, cIndex) => (
                 <XSeedRoot elevation={3} key={cIndex}>
                   {c.map((cPart, cPartIndex) => (
                     <XSeedRootPart elevation={0} key={cPartIndex}>

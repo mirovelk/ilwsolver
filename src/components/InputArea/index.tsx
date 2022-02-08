@@ -12,10 +12,12 @@ import Paper, { Color } from "paper";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { inputStrokeWidth } from "../../papers";
+import { setInputValuesAction } from "../../support/AppStateProvider/reducer";
+import useAppDispatch from "../../support/AppStateProvider/useAppDispatch";
 import { Complex, complex } from "../../util/complex";
 import InteractiveCanvas from "../InteractiveCanvas";
 import Path from "../paper/Path";
-import XSeedsEditor, { XSeeds } from "../XSeedsEditor";
+import XSeedsEditor from "../XSeedsEditor";
 
 const DrawingPath = styled(Path)``;
 const InputPath = styled(Path)``;
@@ -50,27 +52,15 @@ function getInputFromPath(
 
 function InputArea({
   paper,
-  setInput,
   inputSteps,
-  xSeeds,
-  setXSeeds,
   clearInputAreaPathsRef,
-  removeOutputAtIndex,
-  invalidateOutputAtIndex,
-  removeAllOutputs,
-  invalidateAllOutputs,
 }: {
   paper: paper.PaperScope;
-  setInput: (input: Complex[]) => void;
   inputSteps: number;
-  xSeeds: XSeeds;
-  setXSeeds: React.Dispatch<React.SetStateAction<XSeeds>>;
   clearInputAreaPathsRef: React.MutableRefObject<(() => void) | undefined>;
-  removeOutputAtIndex: (index: number) => void;
-  invalidateOutputAtIndex: (index: number) => void;
-  removeAllOutputs: () => void;
-  invalidateAllOutputs: () => void;
 }) {
+  const { appDispatch } = useAppDispatch();
+
   const [xSeedsEditorVisible, setXSeedsEditorVisible] = useState(false);
 
   const [isDrawing, setIsDrawing] = useState(false);
@@ -162,7 +152,7 @@ function InputArea({
         path.simplify(simplifyTolerance);
       }
       setInputPathSegments(path.segments);
-      setInput(getInputFromPath(path, inputSteps));
+      appDispatch(setInputValuesAction(getInputFromPath(path, inputSteps)));
     }
   }, [
     drawingPathPoints,
@@ -170,7 +160,7 @@ function InputArea({
     simplifyEnabled,
     simplifyTolerance,
     inputSteps,
-    setInput,
+    appDispatch,
   ]);
 
   const toggleXSeedsEditor = useCallback(() => {
@@ -181,16 +171,7 @@ function InputArea({
 
   return (
     <>
-      {xSeedsEditorVisible && (
-        <XSeedsEditor
-          xSeeds={xSeeds}
-          setXSeeds={setXSeeds}
-          removeOutputAtIndex={removeOutputAtIndex}
-          invalidateOutputAtIndex={invalidateOutputAtIndex}
-          removeAllOutputs={removeAllOutputs}
-          invalidateAllOutputs={invalidateAllOutputs}
-        />
-      )}
+      {xSeedsEditorVisible && <XSeedsEditor />}
       <InteractiveCanvas
         paper={paper}
         id="input"

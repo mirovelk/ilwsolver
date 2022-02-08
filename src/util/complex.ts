@@ -35,7 +35,7 @@ export function minus(a: Complex): Complex {
   return complex(-a[0], -a[1]);
 }
 
-function getRandomNumberBetween(min: number, max: number) {
+export function getRandomNumberBetween(min: number, max: number) {
   return parseFloat((Math.random() * (max - min + 1) + min).toFixed(3));
 }
 
