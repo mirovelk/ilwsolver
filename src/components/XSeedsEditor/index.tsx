@@ -1,9 +1,14 @@
-import styled from '@emotion/styled';
-import { Add, Remove } from '@mui/icons-material';
-import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
-import Paper from 'paper';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChromePicker } from 'react-color';
+import styled from "@emotion/styled";
+import { Add, Remove } from "@mui/icons-material";
+import {
+  IconButton,
+  Paper as MaterialPaper,
+  TextField,
+  Typography,
+} from "@mui/material";
+import Paper from "paper";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ChromePicker } from "react-color";
 
 import {
   addXSeedAction,
@@ -14,9 +19,9 @@ import {
   setXSeedsMAction,
   setXSeedsValuesAction,
   XSeedValue,
-} from '../../support/AppStateProvider/reducer';
-import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
-import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
+} from "../../support/AppStateProvider/reducer";
+import useAppDispatch from "../../support/AppStateProvider/useAppDispatch";
+import useAppStateSolvers from "../../support/AppStateProvider/useAppStateSolvers";
 
 const LeftControlsWrapper = styled(MaterialPaper)`
   display: inline-flex;
@@ -60,7 +65,7 @@ const XSeedsWrapper = styled.div`
   margin-bottom: 10px;
 `;
 
-const XSeedContent = styled(MaterialPaper)`
+const XSeedContent = styled.div`
   display: flex;
   padding: 5px;
   &:not(:last-child) {
@@ -357,9 +362,9 @@ function XSeedsEditor() {
                 )}
               </XSeedColorPickerWrapper>
             </XSeedColorWrapper>
-            <XSeedContent elevation={0} key={xSeedIndex}>
+            <XSeedContent key={xSeedIndex}>
               {xSeed.map((c, cIndex) => (
-                <XSeedRoot elevation={3} key={cIndex}>
+                <XSeedRoot elevation={0} key={cIndex}>
                   {c.map((cPart, cPartIndex) => (
                     <XSeedRootPart elevation={0} key={cPartIndex}>
                       <XSeedRootPartInput
