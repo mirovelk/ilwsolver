@@ -14,6 +14,7 @@ enum AppActionType {
   SetXSeedsM,
   SetXSeedNumberPart,
   SetSolverColor,
+  CopyResultToXSeed,
 }
 
 export interface AppAction {
@@ -79,6 +80,10 @@ interface SetSolverColorAction extends AppAction {
   };
 }
 
+interface CopyResultToXSeedAction extends AppAction {
+  type: AppActionType.CopyResultToXSeed;
+}
+
 export function addXSeedAction(): AddXSeedAction {
   return {
     type: AppActionType.AddXSeed,
@@ -120,6 +125,12 @@ export function setXSeedsMAction(M: number): SetXSeedsMAction {
   return {
     type: AppActionType.SetXSeedsM,
     payload: { M },
+  };
+}
+
+export function copyResultToXSeedAction(): CopyResultToXSeedAction {
+  return {
+    type: AppActionType.CopyResultToXSeed,
   };
 }
 
@@ -189,6 +200,7 @@ export type XSeedValue = PartialComplex[];
 
 export interface SolverState {
   xSeed: XSeedValue;
+  calculatedXSeed?: XSeedValue;
   color: paper.Color;
   ouputValues?: ResultInQArray;
   ouputValuesValid: boolean;
@@ -212,6 +224,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             solver.xSeed as Complex[], // TODO remove when types are more tight
             state.inputValues
           );
+          solver.calculatedXSeed = solver.ouputValues.map(
+            (output) => output[0]
+          );
           solver.ouputValuesValid = true;
         });
       });
@@ -233,6 +248,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         draft.solvers.forEach((solver) => {
           solver.ouputValues = [];
           solver.ouputValuesValid = false;
+          solver.calculatedXSeed = undefined;
         });
       });
 
@@ -269,6 +285,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
                       JSON.stringify(
                         draft.solvers[payloadXSeedValuesIndex].xSeed
                       ) === JSON.stringify(payloadXSeedValues),
+                    calculatedXSeed:
+                      JSON.stringify(
+                        draft.solvers[payloadXSeedValuesIndex].xSeed
+                      ) === JSON.stringify(payloadXSeedValues)
+                        ? draft.solvers[payloadXSeedValuesIndex].calculatedXSeed
+                        : undefined,
                     color: draft.solvers[payloadXSeedValuesIndex].color,
                   }
                 : {
@@ -295,10 +317,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
                 .fill(null)
                 .map((_) => getRandomXSeedNumber()),
             ];
+            solver.calculatedXSeed = undefined;
           });
         } else if (previousXSeedsValues[0].length > M) {
           draft.solvers.forEach((solver) => {
             solver.xSeed = solver.xSeed.slice(0, M);
+            solver.calculatedXSeed = undefined;
           });
         }
       });
@@ -338,6 +362,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         draft.solvers[solverIndex].xSeed[xSeedNumberIndex][
           xSeedNumberPartIndex
         ] = value;
+        draft.solvers[solverIndex].calculatedXSeed = undefined;
       });
 
     case AppActionType.SetSolverColor:
@@ -347,6 +372,15 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         const color = (action as SetSolverColorAction).payload.color;
 
         draft.solvers[solverIndex].color = color;
+      });
+
+    case AppActionType.CopyResultToXSeed:
+      return produce(state, (draft) => {
+        draft.solvers.forEach((solver) => {
+          if (solver.calculatedXSeed) {
+            solver.xSeed = solver.calculatedXSeed;
+          }
+        });
       });
 
     default:

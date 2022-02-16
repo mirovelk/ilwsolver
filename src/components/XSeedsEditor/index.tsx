@@ -1,17 +1,14 @@
-import styled from "@emotion/styled";
-import { Add, Remove } from "@mui/icons-material";
-import {
-  IconButton,
-  Paper as MaterialPaper,
-  TextField,
-  Typography,
-} from "@mui/material";
-import Paper from "paper";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChromePicker } from "react-color";
+import { css } from '@emotion/react';
+import styled from '@emotion/styled';
+import { Add, ContentCopy, Remove } from '@mui/icons-material';
+import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
+import Paper from 'paper';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChromePicker } from 'react-color';
 
 import {
   addXSeedAction,
+  copyResultToXSeedAction,
   getRandomXSeedPartNumber,
   removeXSeedAction,
   setSolverColorAction,
@@ -19,10 +16,11 @@ import {
   setXSeedsMAction,
   setXSeedsValuesAction,
   XSeedValue,
-} from "../../support/AppStateProvider/reducer";
-import useAppDispatch from "../../support/AppStateProvider/useAppDispatch";
-import useAppStateSolvers from "../../support/AppStateProvider/useAppStateSolvers";
+} from '../../support/AppStateProvider/reducer';
+import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
+import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
 
+/** @jsxImportSource @emotion/react */
 const LeftControlsWrapper = styled(MaterialPaper)`
   display: inline-flex;
   flex-direction: column;
@@ -166,6 +164,11 @@ function XSeedsEditor() {
     [appStateSolvers]
   );
 
+  const calculatedXSeeds = useMemo(
+    () => appStateSolvers.map((solver) => solver.calculatedXSeed),
+    [appStateSolvers]
+  );
+
   const xSeedsM = useMemo(() => xSeeds[0].length, [xSeeds]);
 
   const [xSeedsInput, setXSeedsInput] = useState(stringifyXSeeds(xSeeds));
@@ -282,6 +285,13 @@ function XSeedsEditor() {
     [appDispatch]
   );
 
+  const copyResultToXSeedOnClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      appDispatch(copyResultToXSeedAction());
+    },
+    [appDispatch]
+  );
+
   return (
     <LeftControlsWrapper elevation={3}>
       <XSeedsHeader>
@@ -307,6 +317,9 @@ function XSeedsEditor() {
             />
           </XSeedsMWrapper>
           <AddXSeedButtonWrapper>
+            <IconButton onClick={copyResultToXSeedOnClick}>
+              <ContentCopy />
+            </IconButton>
             <AddXSeedButton onClick={addXSeedOnClick}>
               <Add />
             </AddXSeedButton>
@@ -380,6 +393,21 @@ function XSeedsEditor() {
                         onChange={xSeedOnChange}
                         onBlur={xSeedOnBlur}
                       />
+                      {calculatedXSeeds && calculatedXSeeds[xSeedIndex] && (
+                        <div
+                          css={css`
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            color: #666666;
+                            font-size: 13px;
+                          `}
+                        >
+                          {
+                            // @ts-ignore
+                            calculatedXSeeds[xSeedIndex][cIndex][cPartIndex]
+                          }
+                        </div>
+                      )}
                     </XSeedRootPart>
                   ))}
                 </XSeedRoot>
