@@ -1,7 +1,7 @@
 import { Color } from 'paper';
 
 export const initialColor = new Color({
-  hue: 0,
+  hue: 210,
   saturation: 1,
   lightness: 0.5,
 });
@@ -20,16 +20,12 @@ export function getDifferentColor(previousColors: paper.Color[]): paper.Color {
       hue: previousColor.hue, // extract hue
     }))
     .sort((a, b) => a.hue - b.hue) // sort by hue
-    .map((color, _, colorArray) => ({
-      ...color,
-      zeroAlignedHue: color.hue - colorArray[0].hue, // align space to start with 0 (and end it 360)
-    }))
     .map((color, colorIndex, colorArray) => ({
       ...color,
       hueDistanceToRight:
         colorIndex + 1 < colorArray.length
           ? colorArray[colorIndex + 1].hue - color.hue
-          : 360 - color.hue,
+          : 360 - color.hue + colorArray[0].hue,
     }))
     .sort((a, b) => b.hueDistanceToRight - a.hueDistanceToRight);
 
@@ -38,7 +34,7 @@ export function getDifferentColor(previousColors: paper.Color[]): paper.Color {
     Math.floor(processedPreviousColors[0].hueDistanceToRight / 2);
 
   const furthestColor = new Color(initialColor);
-  furthestColor.hue = furthestHue;
+  furthestColor.hue = furthestHue % 360;
 
   return furthestColor;
 }
