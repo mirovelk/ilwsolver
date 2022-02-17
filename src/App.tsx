@@ -1,19 +1,16 @@
-import styled from "@emotion/styled";
-import { Delete, Functions } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
-import Paper from "paper";
-import { useCallback, useRef } from "react";
+import styled from '@emotion/styled';
+import { Delete, Functions } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
+import Paper from 'paper';
+import { useCallback, useRef } from 'react';
 
-import InputArea from "./components/InputArea";
-import OutputArea from "./components/OutputArea";
-import { defaultScaleDownFactor, inputPaper, outputPaper } from "./papers";
-import {
-  calculateAllOutputPathsAction,
-  clearInputOuputValuesAction,
-} from "./support/AppStateProvider/reducer";
-import useAppDispatch from "./support/AppStateProvider/useAppDispatch";
-import useAppStateInputValues from "./support/AppStateProvider/useAppStateInputValues";
-import StyleProvider from "./support/style/StyleProvider";
+import InputArea from './components/InputArea';
+import OutputArea from './components/OutputArea';
+import { defaultScaleDownFactor, inputPaper, outputPaper } from './papers';
+import { calculateAllOutputPathsAction, clearInputOuputValuesAction } from './support/AppStateProvider/reducer';
+import useAppDispatch from './support/AppStateProvider/useAppDispatch';
+import useAppStateInputValues from './support/AppStateProvider/useAppStateInputValues';
+import StyleProvider from './support/style/StyleProvider';
 
 const Wrapper = styled.div`
   position: realtive;
@@ -42,7 +39,7 @@ const CenterControlsWrapper = styled.div`
   justify-content: center;
   position: absolute;
   z-index: 1000;
-  top: 80px;
+  top: 120px;
   left: 50%;
   transform: translate(-50%, 0);
 `;

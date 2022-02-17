@@ -1,23 +1,21 @@
-import styled from "@emotion/styled";
-import { Settings } from "@mui/icons-material";
-import {
-  Checkbox,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  Input,
-  Slider,
-} from "@mui/material";
-import Paper, { Color } from "paper";
-import React, { useCallback, useEffect, useState } from "react";
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
+import styled from '@emotion/styled';
+import { GpsFixed, Settings } from '@mui/icons-material';
+import { Checkbox, FormControlLabel, Grid, IconButton, Input, Slider } from '@mui/material';
+import Paper, { Color } from 'paper';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { inputStrokeWidth } from "../../papers";
-import { setInputValuesAction } from "../../support/AppStateProvider/reducer";
-import useAppDispatch from "../../support/AppStateProvider/useAppDispatch";
-import { Complex, complex } from "../../util/complex";
-import InteractiveCanvas from "../InteractiveCanvas";
-import Path from "../paper/Path";
-import XSeedsEditor from "../XSeedsEditor";
+import { inputStrokeWidth } from '../../papers';
+import { setInputValuesAction } from '../../support/AppStateProvider/reducer';
+import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
+import useAppStateBadPoints from '../../support/AppStateProvider/useAppStateBadPoints';
+import { Complex, complex } from '../../util/complex';
+import BadPointEditor from '../BadPointEditor';
+import InteractiveCanvas from '../InteractiveCanvas';
+import Circle from '../paper/Circle';
+import Path from '../paper/Path';
+import XSeedsEditor from '../XSeedsEditor';
 
 const DrawingPath = styled(Path)``;
 const InputPath = styled(Path)``;
@@ -60,8 +58,16 @@ function InputArea({
   clearInputAreaPathsRef: React.MutableRefObject<(() => void) | undefined>;
 }) {
   const { appDispatch } = useAppDispatch();
+  const { appStateBadPoints } = useAppStateBadPoints();
+
+  const badPoints = useMemo(
+    () =>
+      appStateBadPoints.map((point) => new Paper.Point(point[0], -point[1])),
+    [appStateBadPoints]
+  );
 
   const [xSeedsEditorVisible, setXSeedsEditorVisible] = useState(false);
+  const [badPointEditorVisible, setBadPointEditorVisible] = useState(false);
 
   const [isDrawing, setIsDrawing] = useState(false);
 
@@ -169,6 +175,12 @@ function InputArea({
     );
   }, []);
 
+  const toggleBadPointEditor = useCallback(() => {
+    setBadPointEditorVisible(
+      (previousBadPointEditorVisible) => !previousBadPointEditorVisible
+    );
+  }, []);
+
   return (
     <>
       {xSeedsEditorVisible && <XSeedsEditor />}
@@ -176,10 +188,46 @@ function InputArea({
         paper={paper}
         id="input"
         title="Input"
-        controls={
+        topControls={
+          <>
+            <div
+              css={css`
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+                position: relative;
+              `}
+            >
+              <div>
+                <IconButton
+                  onClick={toggleBadPointEditor}
+                  color={badPointEditorVisible ? "primary" : "default"}
+                >
+                  <GpsFixed />
+                </IconButton>
+              </div>
+              {badPointEditorVisible && (
+                <div
+                  css={css`
+                    position: absolute;
+                    z-index: 2000;
+                    top: 45px;
+                    right: 10px;
+                  `}
+                >
+                  <BadPointEditor />
+                </div>
+              )}
+            </div>
+          </>
+        }
+        bottomControls={
           <ControlsWrapper container spacing={2} alignItems="center">
             <Grid item>
-              <IconButton onClick={toggleXSeedsEditor}>
+              <IconButton
+                onClick={toggleXSeedsEditor}
+                color={xSeedsEditorVisible ? "primary" : "default"}
+              >
                 <Settings />
               </IconButton>
             </Grid>
@@ -225,6 +273,16 @@ function InputArea({
           </ControlsWrapper>
         }
       />
+      {badPoints.map((point) => (
+        <Circle
+          paper={paper}
+          center={point}
+          radius={0.001}
+          strokeWidth={4}
+          key={`${point.x},${point.y}`}
+        />
+      ))}
+
       <DrawingPath
         paper={paper}
         points={drawingPathPoints}

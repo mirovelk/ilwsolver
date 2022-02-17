@@ -1,10 +1,10 @@
-import Paper from "paper";
-import React, { useEffect, useState } from "react";
+import Paper from 'paper';
+import React, { useEffect, useState } from 'react';
 
-import useAppStateSolvers from "../../support/AppStateProvider/useAppStateSolvers";
-import { ResultInQArray } from "../../support/calc/calc";
-import InteractiveCanvas from "../InteractiveCanvas";
-import Path from "../paper/Path";
+import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
+import { ResultInQArray } from '../../support/calc/calc';
+import InteractiveCanvas from '../InteractiveCanvas';
+import Path from '../paper/Path';
 
 const OUTPUT_PATH_WIDTH = 3;
 
@@ -69,7 +69,8 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
         paper={paper}
         id="output"
         title="Output"
-        controls={<></>}
+        topControls={<></>}
+        bottomControls={<></>}
       />
       {points.map((outputPathsPoints, outputPathsPointsIndex) =>
         outputPathsPoints.paths.map(

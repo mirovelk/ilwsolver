@@ -1,3 +1,4 @@
+/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Add, ContentCopy, Remove } from '@mui/icons-material';
@@ -20,14 +21,13 @@ import {
 import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
 import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
 
-/** @jsxImportSource @emotion/react */
 const LeftControlsWrapper = styled(MaterialPaper)`
   display: inline-flex;
   flex-direction: column;
   position: absolute;
   z-index: 2000;
-  top: 80px;
-  left: 40px;
+  top: 105px;
+  left: 30px;
   padding: 10px 20px;
 `;
 

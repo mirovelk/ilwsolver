@@ -15,6 +15,7 @@ enum AppActionType {
   SetXSeedNumberPart,
   SetSolverColor,
   CopyResultToXSeed,
+  SetBadPoints,
 }
 
 export interface AppAction {
@@ -25,6 +26,11 @@ export interface AppAction {
 interface AddXSeedAction extends AppAction {
   type: AppActionType.AddXSeed;
 }
+export function addXSeedAction(): AddXSeedAction {
+  return {
+    type: AppActionType.AddXSeed,
+  };
+}
 
 interface RemoveXSeedAction extends AppAction {
   type: AppActionType.RemoveXSeed;
@@ -32,19 +38,43 @@ interface RemoveXSeedAction extends AppAction {
     index: number;
   };
 }
+export function removeXSeedAction(index: number): RemoveXSeedAction {
+  return {
+    type: AppActionType.RemoveXSeed,
+    payload: { index },
+  };
+}
 
 interface CalculateAllOutputPathsAction extends AppAction {
   type: AppActionType.CalculateAllOutputPaths;
 }
+export function calculateAllOutputPathsAction(): CalculateAllOutputPathsAction {
+  return {
+    type: AppActionType.CalculateAllOutputPaths,
+  };
+}
 
 interface ClearInputOuputValuesAction extends AppAction {
   type: AppActionType.ClearInputOuputValues;
+}
+export function clearInputOuputValuesAction(): ClearInputOuputValuesAction {
+  return {
+    type: AppActionType.ClearInputOuputValues,
+  };
 }
 
 interface SetInputValuesAction extends AppAction {
   type: AppActionType.SetInputValues;
   payload: {
     inputValues: Complex[];
+  };
+}
+export function setInputValuesAction(
+  inputValues: Complex[]
+): SetInputValuesAction {
+  return {
+    type: AppActionType.SetInputValues,
+    payload: { inputValues },
   };
 }
 
@@ -54,11 +84,25 @@ interface SetXSeedsValuesAction extends AppAction {
     xSeedsValues: XSeedValue[];
   };
 }
+export function setXSeedsValuesAction(
+  xSeedsValues: XSeedValue[]
+): SetXSeedsValuesAction {
+  return {
+    type: AppActionType.SetXSeedsValues,
+    payload: { xSeedsValues },
+  };
+}
 
 interface SetXSeedsMAction extends AppAction {
   type: AppActionType.SetXSeedsM;
   payload: {
     M: number;
+  };
+}
+export function setXSeedsMAction(M: number): SetXSeedsMAction {
+  return {
+    type: AppActionType.SetXSeedsM,
+    payload: { M },
   };
 }
 
@@ -71,69 +115,6 @@ interface SetXSeedNumberPartAction extends AppAction {
     value?: number;
   };
 }
-
-interface SetSolverColorAction extends AppAction {
-  type: AppActionType.SetSolverColor;
-  payload: {
-    solverIndex: number;
-    color: paper.Color;
-  };
-}
-
-interface CopyResultToXSeedAction extends AppAction {
-  type: AppActionType.CopyResultToXSeed;
-}
-
-export function addXSeedAction(): AddXSeedAction {
-  return {
-    type: AppActionType.AddXSeed,
-  };
-}
-
-export function removeXSeedAction(index: number): RemoveXSeedAction {
-  return {
-    type: AppActionType.RemoveXSeed,
-    payload: { index },
-  };
-}
-
-export function calculateAllOutputPathsAction(): CalculateAllOutputPathsAction {
-  return {
-    type: AppActionType.CalculateAllOutputPaths,
-  };
-}
-
-export function setInputValuesAction(
-  inputValues: Complex[]
-): SetInputValuesAction {
-  return {
-    type: AppActionType.SetInputValues,
-    payload: { inputValues },
-  };
-}
-
-export function setXSeedsValuesAction(
-  xSeedsValues: XSeedValue[]
-): SetXSeedsValuesAction {
-  return {
-    type: AppActionType.SetXSeedsValues,
-    payload: { xSeedsValues },
-  };
-}
-
-export function setXSeedsMAction(M: number): SetXSeedsMAction {
-  return {
-    type: AppActionType.SetXSeedsM,
-    payload: { M },
-  };
-}
-
-export function copyResultToXSeedAction(): CopyResultToXSeedAction {
-  return {
-    type: AppActionType.CopyResultToXSeed,
-  };
-}
-
 export function setXSeedNumberPartAction(
   solverIndex: number,
   xSeedNumberIndex: number,
@@ -146,6 +127,13 @@ export function setXSeedNumberPartAction(
   };
 }
 
+interface SetSolverColorAction extends AppAction {
+  type: AppActionType.SetSolverColor;
+  payload: {
+    solverIndex: number;
+    color: paper.Color;
+  };
+}
 export function setSolverColorAction(
   solverIndex: number,
   color: paper.Color
@@ -156,9 +144,27 @@ export function setSolverColorAction(
   };
 }
 
-export function clearInputOuputValuesAction(): ClearInputOuputValuesAction {
+interface CopyResultToXSeedAction extends AppAction {
+  type: AppActionType.CopyResultToXSeed;
+}
+export function copyResultToXSeedAction(): CopyResultToXSeedAction {
   return {
-    type: AppActionType.ClearInputOuputValues,
+    type: AppActionType.CopyResultToXSeed,
+  };
+}
+
+interface SetBadPointsAction extends AppAction {
+  type: AppActionType.SetBadPoints;
+  payload: {
+    badPoints: Complex[];
+  };
+}
+export function setBadPointsAction(badPoints: Complex[]): SetBadPointsAction {
+  return {
+    type: AppActionType.SetBadPoints,
+    payload: {
+      badPoints,
+    },
   };
 }
 
@@ -180,6 +186,35 @@ function getInitialData(seeds: Complex[][]): AppState {
       ouputValues: undefined,
       ouputValuesValid: false,
     })),
+    badPoints: [
+      [-58.0141, 0],
+      [-55.6141, 0],
+      [-2.87771, 0],
+      [-1.13319, 0],
+      [-1, 0],
+      [-0.882464, 0],
+      [-0.347498, 0],
+      [-0.21514, -9.43404],
+      [-0.21514, 9.43404],
+      [-0.139849, -0.990173],
+      [-0.139849, 0.990173],
+      [-0.017981, 0],
+      [-0.0172372, 0],
+      [-0.00241602, -0.105944],
+      [-0.00241602, 0.105944],
+      [0, 0],
+      [0.021071, 0],
+      [0.168469, -0.432772],
+      [0.168469, 0.432772],
+      [0.306398, -0.528142],
+      [0.306398, 0.528142],
+      [0.781129, -2.00661],
+      [0.781129, 2.00661],
+      [0.821853, -1.41664],
+      [0.821853, 1.41664],
+      [1, 0],
+      [47.4586, 0],
+    ],
   };
 }
 
@@ -211,6 +246,7 @@ export type Solvers = SolverState[];
 export interface AppState {
   inputValues: Complex[];
   solvers: Solvers;
+  badPoints: Complex[];
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -381,6 +417,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             solver.xSeed = solver.calculatedXSeed;
           }
         });
+      });
+
+    case AppActionType.SetBadPoints:
+      return produce(state, (draft) => {
+        draft.badPoints = (action as SetBadPointsAction).payload.badPoints;
       });
 
     default:

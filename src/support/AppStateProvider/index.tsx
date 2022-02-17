@@ -1,8 +1,8 @@
-import React, { Dispatch } from "react";
-import { useReducer } from "react";
+import React, { Dispatch } from 'react';
+import { useReducer } from 'react';
 
-import { Complex } from "../../util/complex";
-import { AppAction, appReducer, initialAppState, Solvers } from "./reducer";
+import { Complex } from '../../util/complex';
+import { AppAction, appReducer, initialAppState, Solvers } from './reducer';
 
 export const AppDispatchProviderContext = React.createContext<{
   dispatch: Dispatch<AppAction>;
@@ -22,6 +22,12 @@ export const AppStateInputValuesContext = React.createContext<{
   inputValues: initialAppState.inputValues,
 });
 
+export const AppStateBadPointsProviderContext = React.createContext<{
+  badPoints: Complex[];
+}>({
+  badPoints: initialAppState.badPoints,
+});
+
 function AppStateProvider({ children }: { children: React.ReactElement }) {
   const [appState, appDispatch] = useReducer(appReducer, initialAppState);
 
@@ -33,7 +39,11 @@ function AppStateProvider({ children }: { children: React.ReactElement }) {
         <AppStateInputValuesContext.Provider
           value={{ inputValues: appState.inputValues }}
         >
-          {children}
+          <AppStateBadPointsProviderContext.Provider
+            value={{ badPoints: appState.badPoints }}
+          >
+            {children}
+          </AppStateBadPointsProviderContext.Provider>
         </AppStateInputValuesContext.Provider>
       </AppStateSolversProviderContext.Provider>
     </AppDispatchProviderContext.Provider>

@@ -1,3 +1,5 @@
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
 import styled from '@emotion/styled/macro';
 import {
   KeyboardArrowDown,
@@ -76,11 +78,6 @@ const ScrollButton = styled(IconButton)`
   min-width: initial;
 `;
 
-const ControlsWrapper = styled.div`
-  margin-bottom: 5px;
-  display: flex;
-`;
-
 const CursorInfo = styled.div`
   position: absolute;
   display: inline-block;
@@ -143,13 +140,15 @@ function InteractiveCanvas({
   paper,
   id,
   title,
-  controls,
+  topControls,
+  bottomControls,
   children,
 }: {
   paper: paper.PaperScope;
   id: string;
   title: string;
-  controls: JSX.Element;
+  topControls: JSX.Element;
+  bottomControls: JSX.Element;
   children?: React.ReactNode;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -214,10 +213,28 @@ function InteractiveCanvas({
 
   return (
     <Wrapper>
-      <ControlsWrapper>
-        <Title>{title}</Title>
-        {controls}
-      </ControlsWrapper>
+      <div>
+        <div
+          css={css`
+            height: 35px;
+            margin-bottom: 5px;
+            display: flex;
+          `}
+        >
+          <Title>{title}</Title>
+          {topControls}
+        </div>
+        <div
+          css={css`
+            height: 35px;
+            margin-bottom: 15px;
+            display: flex;
+          `}
+        >
+          {bottomControls}
+        </div>
+      </div>
+
       <CanvasWrapper ref={canvasWrapperRef}>
         <CursorInfo ref={cursorInfoRef} />
         <OnCanvasControlsWrapper>
