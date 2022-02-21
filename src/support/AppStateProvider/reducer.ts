@@ -201,7 +201,7 @@ export function getRandomXSeedPartNumber(): number {
 }
 
 function getRandomXSeedNumber(): Complex {
-  return [getRandomXSeedPartNumber(), getRandomXSeedPartNumber()];
+  return [getRandomXSeedPartNumber(), 0];
 }
 
 function getInitialData(seeds: Complex[][]): AppState {
