@@ -28,6 +28,18 @@ export const AppStateBadPointsProviderContext = React.createContext<{
   badPoints: initialAppState.badPoints,
 });
 
+export const AppStateInputZoomProviderContext = React.createContext<{
+  inputZoom: number;
+}>({
+  inputZoom: initialAppState.inputZoom,
+});
+
+export const AppStateOutputZoomProviderContext = React.createContext<{
+  outputZoom: number;
+}>({
+  outputZoom: initialAppState.outputZoom,
+});
+
 function AppStateProvider({ children }: { children: React.ReactElement }) {
   const [appState, appDispatch] = useReducer(appReducer, initialAppState);
 
@@ -42,7 +54,15 @@ function AppStateProvider({ children }: { children: React.ReactElement }) {
           <AppStateBadPointsProviderContext.Provider
             value={{ badPoints: appState.badPoints }}
           >
-            {children}
+            <AppStateInputZoomProviderContext.Provider
+              value={{ inputZoom: appState.inputZoom }}
+            >
+              <AppStateOutputZoomProviderContext.Provider
+                value={{ outputZoom: appState.outputZoom }}
+              >
+                {children}
+              </AppStateOutputZoomProviderContext.Provider>
+            </AppStateInputZoomProviderContext.Provider>
           </AppStateBadPointsProviderContext.Provider>
         </AppStateInputValuesContext.Provider>
       </AppStateSolversProviderContext.Provider>

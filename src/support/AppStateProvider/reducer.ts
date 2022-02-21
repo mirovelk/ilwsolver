@@ -16,6 +16,8 @@ enum AppActionType {
   SetSolverColor,
   CopyResultToXSeed,
   SetBadPoints,
+  SetInputZoom,
+  SetOutputZoom,
 }
 
 export interface AppAction {
@@ -168,6 +170,32 @@ export function setBadPointsAction(badPoints: Complex[]): SetBadPointsAction {
   };
 }
 
+interface SetInputZoomAction extends AppAction {
+  type: AppActionType.SetInputZoom;
+  payload: {
+    zoom: number;
+  };
+}
+export function setInputZoomAction(zoom: number): SetInputZoomAction {
+  return {
+    type: AppActionType.SetInputZoom,
+    payload: { zoom },
+  };
+}
+
+interface SetOutputZoomAction extends AppAction {
+  type: AppActionType.SetOutputZoom;
+  payload: {
+    zoom: number;
+  };
+}
+export function setOutputZoomAction(zoom: number): SetOutputZoomAction {
+  return {
+    type: AppActionType.SetOutputZoom,
+    payload: { zoom },
+  };
+}
+
 export function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
 }
@@ -186,6 +214,8 @@ function getInitialData(seeds: Complex[][]): AppState {
       ouputValues: undefined,
       ouputValuesValid: false,
     })),
+    inputZoom: 1,
+    outputZoom: 1,
     badPoints: [
       [-58.0141, 0],
       [-55.6141, 0],
@@ -245,6 +275,8 @@ export type Solvers = SolverState[];
 
 export interface AppState {
   inputValues: Complex[];
+  inputZoom: number;
+  outputZoom: number;
   solvers: Solvers;
   badPoints: Complex[];
 }
@@ -422,6 +454,16 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case AppActionType.SetBadPoints:
       return produce(state, (draft) => {
         draft.badPoints = (action as SetBadPointsAction).payload.badPoints;
+      });
+
+    case AppActionType.SetInputZoom:
+      return produce(state, (draft) => {
+        draft.inputZoom = (action as SetInputZoomAction).payload.zoom;
+      });
+
+    case AppActionType.SetOutputZoom:
+      return produce(state, (draft) => {
+        draft.outputZoom = (action as SetOutputZoomAction).payload.zoom;
       });
 
     default:

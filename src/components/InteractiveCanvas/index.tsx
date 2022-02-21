@@ -1,4 +1,3 @@
-/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled/macro';
 import {
@@ -10,7 +9,7 @@ import {
   ZoomOut,
 } from '@mui/icons-material';
 import { IconButton, Paper as MaterialPaper } from '@mui/material';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 import {
   initAxis,
@@ -22,10 +21,9 @@ import {
   scrollRight,
   scrollUp,
   updateCursorCoordinatesStatus,
-  zoomIn,
-  zoomOut,
 } from './util';
 
+/** @jsxImportSource @emotion/react */
 const Title = styled.h2`
   margin: 0 20px 5px 0;
 `;
@@ -142,6 +140,7 @@ function InteractiveCanvas({
   title,
   topControls,
   bottomControls,
+  setZoom,
   children,
 }: {
   paper: paper.PaperScope;
@@ -149,6 +148,7 @@ function InteractiveCanvas({
   title: string;
   topControls: JSX.Element;
   bottomControls: JSX.Element;
+  setZoom: (zoom: number) => void;
   children?: React.ReactNode;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -159,6 +159,23 @@ function InteractiveCanvas({
   const statusCursorXValueRef = useRef<HTMLDivElement | null>(null);
   const statusCursorYValueRef = useRef<HTMLDivElement | null>(null);
 
+  const zoomStep = 0.8;
+  const zoomOut = useCallback(
+    (paper: paper.PaperScope) => {
+      paper.view.zoom *= zoomStep;
+      setZoom(paper.view.zoom);
+    },
+    [setZoom]
+  );
+
+  const zoomIn = useCallback(
+    (paper: paper.PaperScope) => {
+      paper.view.zoom /= zoomStep;
+      setZoom(paper.view.zoom);
+    },
+    [setZoom]
+  );
+
   // init paper.js
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -168,8 +185,9 @@ function InteractiveCanvas({
       paper.project.currentStyle.strokeScaling = false;
 
       initCoordinates(paper);
+      setZoom(paper.view.zoom); // initial zoom
       initPanning(paper, canvasWrapperRef.current);
-      initZooming(paper, canvasWrapperRef.current);
+      initZooming(paper, canvasWrapperRef.current, setZoom);
 
       const backgroundLayer = new paper.Layer();
       initAxis(backgroundLayer);
@@ -209,7 +227,7 @@ function InteractiveCanvas({
         }
       };
     }
-  }, [paper]);
+  }, [paper, setZoom]);
 
   return (
     <Wrapper>

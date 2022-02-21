@@ -1,13 +1,6 @@
-import { Color, Matrix, Path, Point, Tool } from "paper";
-import { defaultScaleDownFactor } from "../../papers";
+import { Color, Matrix, Path, Point, Tool } from 'paper';
 
-const zoomStep = 0.8;
-export function zoomOut(paper: paper.PaperScope) {
-  paper.view.zoom *= zoomStep;
-}
-export function zoomIn(paper: paper.PaperScope) {
-  paper.view.zoom /= zoomStep;
-}
+export const defaultScaleDownFactor = 0.9;
 
 const scrollStep = 0.1;
 export function scrollUp(paper: paper.PaperScope) {
@@ -96,7 +89,8 @@ export function initPanning(
 
 export function initZooming(
   paper: paper.PaperScope,
-  wrapperRef: HTMLDivElement
+  wrapperRef: HTMLDivElement,
+  setZoom: (zoom: number) => void
 ) {
   wrapperRef.addEventListener("wheel", (e: WheelEvent) => {
     let newZoom = paper.view.zoom;
@@ -123,6 +117,7 @@ export function initZooming(
       .subtract(center);
 
     paper.view.zoom = newZoom;
+    setZoom(newZoom);
     paper.view.center = paper.view.center.add(offset);
 
     e.preventDefault();

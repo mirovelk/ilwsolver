@@ -5,8 +5,8 @@ function Path({
   paper,
   center,
   radius,
-  fillColor,
-  strokeColor = new Paper.Color(255, 255, 0),
+  fillColor = new Paper.Color(255, 255, 0),
+  strokeColor,
   strokeWidth = 1,
 }: {
   paper: paper.PaperScope;
@@ -24,7 +24,6 @@ function Path({
     if (fillColor) pathRef.current.fillColor = fillColor;
     if (strokeColor) pathRef.current.strokeColor = strokeColor;
     pathRef.current.strokeWidth = strokeWidth;
-    pathRef.current.strokeJoin = "round";
     paper.project.activeLayer.addChild(pathRef.current);
 
     return () => {

@@ -5,9 +5,15 @@ import Paper from 'paper';
 import { useCallback, useRef } from 'react';
 
 import InputArea from './components/InputArea';
+import { defaultScaleDownFactor } from './components/InteractiveCanvas/util';
 import OutputArea from './components/OutputArea';
-import { defaultScaleDownFactor, inputPaper, outputPaper } from './papers';
-import { calculateAllOutputPathsAction, clearInputOuputValuesAction } from './support/AppStateProvider/reducer';
+import { inputPaper, outputPaper } from './papers';
+import {
+  calculateAllOutputPathsAction,
+  clearInputOuputValuesAction,
+  setInputZoomAction,
+  setOutputZoomAction,
+} from './support/AppStateProvider/reducer';
 import useAppDispatch from './support/AppStateProvider/useAppDispatch';
 import useAppStateInputValues from './support/AppStateProvider/useAppStateInputValues';
 import StyleProvider from './support/style/StyleProvider';
@@ -108,11 +114,13 @@ function App() {
       defaultScaleDownFactor *
         Math.min(inputPaper.view.bounds.right, inputPaper.view.bounds.bottom)
     );
+    appDispatch(setInputZoomAction(inputPaper.view.zoom));
 
     outputPaper.view.scale(
       defaultScaleDownFactor *
         Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
     );
+    appDispatch(setOutputZoomAction(outputPaper.view.zoom));
   }, [appDispatch]);
 
   return (

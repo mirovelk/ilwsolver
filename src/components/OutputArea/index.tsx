@@ -1,6 +1,8 @@
 import Paper from 'paper';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
+import { setOutputZoomAction } from '../../support/AppStateProvider/reducer';
+import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
 import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
 import { ResultInQArray } from '../../support/calc/calc';
 import InteractiveCanvas from '../InteractiveCanvas';
@@ -37,8 +39,15 @@ interface OutputPaths {
 type OutputsPaths = OutputPaths[];
 
 function OutputArea({ paper }: { paper: paper.PaperScope }) {
+  const { appDispatch } = useAppDispatch();
   const { appStateSolvers } = useAppStateSolvers();
 
+  const setZoom = useCallback(
+    (zoom: number) => {
+      appDispatch(setOutputZoomAction(zoom));
+    },
+    [appDispatch]
+  );
   const [points, setPoints] = useState<OutputsPaths>([]);
 
   // convert ouput Complex array to Path points
@@ -69,6 +78,7 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
         paper={paper}
         id="output"
         title="Output"
+        setZoom={setZoom}
         topControls={<></>}
         bottomControls={<></>}
       />

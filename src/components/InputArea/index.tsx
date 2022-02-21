@@ -7,9 +7,10 @@ import Paper, { Color } from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { inputStrokeWidth } from '../../papers';
-import { setInputValuesAction } from '../../support/AppStateProvider/reducer';
+import { setInputValuesAction, setInputZoomAction } from '../../support/AppStateProvider/reducer';
 import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
 import useAppStateBadPoints from '../../support/AppStateProvider/useAppStateBadPoints';
+import useAppStateInputZoom from '../../support/AppStateProvider/useAppStateInputZoom';
 import { Complex, complex } from '../../util/complex';
 import BadPointEditor from '../BadPointEditor';
 import InteractiveCanvas from '../InteractiveCanvas';
@@ -59,11 +60,24 @@ function InputArea({
 }) {
   const { appDispatch } = useAppDispatch();
   const { appStateBadPoints } = useAppStateBadPoints();
+  const { appStateInputZoom } = useAppStateInputZoom();
 
   const badPoints = useMemo(
     () =>
       appStateBadPoints.map((point) => new Paper.Point(point[0], -point[1])),
     [appStateBadPoints]
+  );
+
+  const setZoom = useCallback(
+    (zoom: number) => {
+      appDispatch(setInputZoomAction(zoom));
+    },
+    [appDispatch]
+  );
+
+  const badPointRadius = useMemo(
+    () => (1 / appStateInputZoom) * 3,
+    [appStateInputZoom]
   );
 
   const [xSeedsEditorVisible, setXSeedsEditorVisible] = useState(false);
@@ -188,6 +202,7 @@ function InputArea({
         paper={paper}
         id="input"
         title="Input"
+        setZoom={setZoom}
         topControls={
           <>
             <div
@@ -277,8 +292,7 @@ function InputArea({
         <Circle
           paper={paper}
           center={point}
-          radius={0.001}
-          strokeWidth={4}
+          radius={badPointRadius}
           key={`${point.x},${point.y}`}
         />
       ))}
