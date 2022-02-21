@@ -31,10 +31,10 @@ const drawingPathIsNotDrawingWidth = 1;
 
 const inputPathColor = new Color(1, 0, 0);
 
-const SIMPLIFY_INITIAL = 0.003;
-const SIMPLIFY_MIN = 0.0001;
-const SIMPLIFY_MAX = 0.01;
-const SIMPLIFY_STEP = 0.0001;
+const SIMPLIFY_INITIAL = -3;
+const SIMPLIFY_MIN = -5;
+const SIMPLIFY_MAX = 5;
+const SIMPLIFY_STEP = 0.001;
 
 function getInputFromPath(
   inputPath: paper.Path,
@@ -169,7 +169,8 @@ function InputArea({
     if (!isDrawing) {
       const path = new Paper.Path(drawingPathPoints);
       if (simplifyEnabled) {
-        path.simplify(simplifyTolerance);
+        const paperTolerance = Math.pow(10, simplifyTolerance);
+        path.simplify(paperTolerance);
       }
       setInputPathSegments(path.segments);
       appDispatch(setInputValuesAction(getInputFromPath(path, inputSteps)));
