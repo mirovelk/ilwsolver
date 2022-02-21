@@ -1,5 +1,5 @@
-import Paper from "paper";
-import { useEffect, useRef } from "react";
+import Paper from 'paper';
+import { useEffect, useRef } from 'react';
 
 function Path({
   paper,
@@ -46,6 +46,7 @@ function Path({
           (point) => new Paper.Segment(point)
         );
       }
+      if (fullySelected) pathRef.current.fullySelected = true;
     }
   }, [points, segments, fullySelected, selected]);
 
