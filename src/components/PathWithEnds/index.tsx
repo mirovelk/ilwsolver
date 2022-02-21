@@ -35,42 +35,14 @@ function PathWithEnds({
 
   const endPointRadius = useMemo(() => (1 / zoom) * 5, [zoom]);
 
+  const endColor = useMemo(() => {
+    const c = new Paper.Color(strokeColor);
+    c.lightness -= 0.1;
+    return c;
+  }, [strokeColor]);
+
   return (
     <>
-      {segments && segments.length > 0 && (
-        <Star
-          paper={paper}
-          center={segments[0].point}
-          radius1={startPointRadius1}
-          radius2={startPointRadius2}
-          fillColor={strokeColor}
-        />
-      )}
-      {segments && segments.length > 0 && (
-        <Circle
-          paper={paper}
-          center={segments[segments.length - 1].point}
-          radius={endPointRadius}
-          fillColor={strokeColor}
-        />
-      )}
-      {points && points.length > 0 && (
-        <Star
-          paper={paper}
-          center={points[0]}
-          radius1={startPointRadius1}
-          radius2={startPointRadius2}
-          fillColor={strokeColor}
-        />
-      )}
-      {points && points.length > 0 && (
-        <Circle
-          paper={paper}
-          center={points[points.length - 1]}
-          radius={endPointRadius}
-          fillColor={strokeColor}
-        />
-      )}
       <Path
         paper={paper}
         segments={segments}
@@ -82,6 +54,40 @@ function PathWithEnds({
         selected={selected}
         dashArray={dashArray}
       />
+      {segments && segments.length > 0 && (
+        <Star
+          paper={paper}
+          center={segments[0].point}
+          radius1={startPointRadius1}
+          radius2={startPointRadius2}
+          fillColor={endColor}
+        />
+      )}
+      {segments && segments.length > 0 && (
+        <Circle
+          paper={paper}
+          center={segments[segments.length - 1].point}
+          radius={endPointRadius}
+          fillColor={endColor}
+        />
+      )}
+      {points && points.length > 0 && (
+        <Star
+          paper={paper}
+          center={points[0]}
+          radius1={startPointRadius1}
+          radius2={startPointRadius2}
+          fillColor={endColor}
+        />
+      )}
+      {points && points.length > 0 && (
+        <Circle
+          paper={paper}
+          center={points[points.length - 1]}
+          radius={endPointRadius}
+          fillColor={endColor}
+        />
+      )}
     </>
   );
 }

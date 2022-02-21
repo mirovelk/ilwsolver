@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Add, ContentCopy, Remove } from '@mui/icons-material';
+import { Add, Circle, ContentCopy, Remove, Star } from '@mui/icons-material';
 import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
 import Paper from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -81,7 +81,7 @@ const XSeedRoot = styled(MaterialPaper)`
 
 const XSeedRootPart = styled(MaterialPaper)`
   padding: 5px;
-  width: 80px;
+  width: 100px;
   &:not(:last-child) {
     margin-right: 5px;
   }
@@ -393,23 +393,68 @@ function XSeedsEditor() {
                         onChange={xSeedOnChange}
                         onBlur={xSeedOnBlur}
                       />
-                      {calculatedXSeeds && calculatedXSeeds[xSeedIndex] && (
-                        <div
-                          css={css`
-                            overflow: hidden;
-                            color: #666666;
-                            font-size: 13px;
-                            white-space: nowrap;
-                          `}
-                        >
-                          {
-                            // @ts-ignore
-                            calculatedXSeeds[xSeedIndex][cIndex][
-                              cPartIndex
-                            ].toExponential(3)
-                          }
-                        </div>
-                      )}
+                      {calculatedXSeeds &&
+                        calculatedXSeeds[xSeedIndex] &&
+                        calculatedXSeeds[xSeedIndex]?.start && (
+                          <div
+                            css={css`
+                              margin-top: 3px;
+                              overflow: hidden;
+                              color: #666666;
+                              font-size: 13px;
+                              white-space: nowrap;
+                              display: flex;
+                              align-items: center;
+                            `}
+                          >
+                            <Star
+                              css={css`
+                                width: 15px;
+                                height: 15px;
+                                position: relative;
+                                margin-right: 2px;
+                                top: -1px;
+                              `}
+                            />
+                            {
+                              // @ts-ignore
+                              calculatedXSeeds[xSeedIndex]?.start[cIndex][
+                                cPartIndex
+                              ].toExponential(3)
+                            }
+                          </div>
+                        )}
+
+                      {calculatedXSeeds &&
+                        calculatedXSeeds[xSeedIndex] &&
+                        calculatedXSeeds[xSeedIndex]?.end && (
+                          <div
+                            css={css`
+                              overflow: hidden;
+                              color: #666666;
+                              font-size: 13px;
+                              white-space: nowrap;
+                              display: flex;
+                              align-items: center;
+                            `}
+                          >
+                            <Circle
+                              css={css`
+                                width: 13px;
+                                height: 13px;
+                                position: relative;
+                                margin-right: 4px;
+                                top: -1px;
+                              `}
+                            />
+                            {
+                              // @ts-ignore
+                              calculatedXSeeds[xSeedIndex]?.end[cIndex][
+                                cPartIndex
+                              ].toExponential(3)
+                            }
+                          </div>
+                        )}
                     </XSeedRootPart>
                   ))}
                 </XSeedRoot>

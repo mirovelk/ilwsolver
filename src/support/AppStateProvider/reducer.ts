@@ -326,7 +326,10 @@ export type XSeedValue = PartialComplex[];
 
 export interface SolverState {
   xSeed: XSeedValue;
-  calculatedXSeed?: XSeedValue;
+  calculatedXSeed?: {
+    start: XSeedValue;
+    end: XSeedValue;
+  };
   color: paper.Color;
   ouputValues?: ResultInQArray;
   ouputValuesValid: boolean;
@@ -357,13 +360,15 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case AppActionType.CalculateAllOutputPaths:
       const nextState = produce(state, (draft) => {
         draft.sheets[draft.activeSheetIndex].solvers.forEach((solver) => {
-          solver.ouputValues = solveInQArray(
+          const ouptputValues = solveInQArray(
             solver.xSeed as Complex[], // TODO remove when types are more tight
             draft.sheets[draft.activeSheetIndex].inputValues
           );
-          solver.calculatedXSeed = solver.ouputValues.map(
-            (output) => output[0]
-          );
+          solver.ouputValues = ouptputValues;
+          solver.calculatedXSeed = {
+            start: solver.ouputValues.map((output) => output[0]),
+            end: solver.ouputValues.map((output) => output[output.length - 1]),
+          };
           solver.ouputValuesValid = true;
         });
       });
@@ -542,7 +547,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return produce(state, (draft) => {
         draft.sheets[draft.activeSheetIndex].solvers.forEach((solver) => {
           if (solver.calculatedXSeed) {
-            solver.xSeed = solver.calculatedXSeed;
+            solver.xSeed = solver.calculatedXSeed.start;
           }
         });
       });

@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 function Star({
   paper,
   center,
-  points = 7,
+  points = 5,
   radius1,
   radius2,
   fillColor = new Paper.Color(255, 255, 0),
