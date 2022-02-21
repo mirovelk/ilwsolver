@@ -81,7 +81,7 @@ const XSeedRoot = styled(MaterialPaper)`
 
 const XSeedRootPart = styled(MaterialPaper)`
   padding: 5px;
-  width: 70px;
+  width: 80px;
   &:not(:last-child) {
     margin-right: 5px;
   }
@@ -397,14 +397,16 @@ function XSeedsEditor() {
                         <div
                           css={css`
                             overflow: hidden;
-                            text-overflow: ellipsis;
                             color: #666666;
                             font-size: 13px;
+                            white-space: nowrap;
                           `}
                         >
                           {
                             // @ts-ignore
-                            calculatedXSeeds[xSeedIndex][cIndex][cPartIndex]
+                            calculatedXSeeds[xSeedIndex][cIndex][
+                              cPartIndex
+                            ].toExponential(3)
                           }
                         </div>
                       )}
