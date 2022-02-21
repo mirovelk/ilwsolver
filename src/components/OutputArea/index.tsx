@@ -48,7 +48,6 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
   const { appDispatch } = useAppDispatch();
   const { appStateSolvers } = useAppStateSolvers();
   const { appStateOutputZoom } = useAppStateOutputZoom();
-
   const setZoom = useCallback(
     (zoom: number) => {
       appDispatch(setOutputZoomAction(zoom));
@@ -109,4 +108,4 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
   );
 }
 
-export default OutputArea;
+export default React.memo(OutputArea);

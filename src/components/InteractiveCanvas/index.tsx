@@ -234,7 +234,7 @@ function InteractiveCanvas({
       <div>
         <div
           css={css`
-            height: 35px;
+            height: 40px;
             margin-bottom: 5px;
             display: flex;
           `}

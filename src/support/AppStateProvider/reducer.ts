@@ -1,7 +1,7 @@
-import produce from 'immer';
+import produce, { castDraft } from 'immer';
 
 import { getDifferentColor, getNextColorWithBuffer } from '../../util/color';
-import { Complex, getRandomNumberBetween } from '../../util/complex';
+import { Complex, complex, getRandomNumberBetween } from '../../util/complex';
 import { ResultInQArray, solveInQArray } from '../calc/calc';
 
 enum AppActionType {
@@ -18,6 +18,10 @@ enum AppActionType {
   SetBadPoints,
   SetInputZoom,
   SetOutputZoom,
+  AddSheet,
+  SetActiveSheet,
+  SetInputSegments,
+  AddInputDrawingPoint,
 }
 
 export interface AppAction {
@@ -77,6 +81,36 @@ export function setInputValuesAction(
   return {
     type: AppActionType.SetInputValues,
     payload: { inputValues },
+  };
+}
+
+interface SetInputSegmentsAction extends AppAction {
+  type: AppActionType.SetInputSegments;
+  payload: {
+    segments: paper.Segment[];
+  };
+}
+export function setInputSegmentsAction(
+  segments: paper.Segment[]
+): SetInputSegmentsAction {
+  return {
+    type: AppActionType.SetInputSegments,
+    payload: { segments },
+  };
+}
+
+interface AddInputDrawingPointAction extends AppAction {
+  type: AppActionType.AddInputDrawingPoint;
+  payload: {
+    point: paper.Point;
+  };
+}
+export function addInputDrawingPointAction(
+  point: paper.Point
+): AddInputDrawingPointAction {
+  return {
+    type: AppActionType.AddInputDrawingPoint,
+    payload: { point },
   };
 }
 
@@ -196,6 +230,28 @@ export function setOutputZoomAction(zoom: number): SetOutputZoomAction {
   };
 }
 
+interface AddSheetAction extends AppAction {
+  type: AppActionType.AddSheet;
+}
+export function addSheetAction(): AddSheetAction {
+  return {
+    type: AppActionType.AddSheet,
+  };
+}
+
+interface SetActiveSheetAction extends AppAction {
+  type: AppActionType.SetActiveSheet;
+  payload: {
+    sheetIndex: number;
+  };
+}
+export function setActiveSheetAction(sheetIndex: number): SetActiveSheetAction {
+  return {
+    type: AppActionType.SetActiveSheet,
+    payload: { sheetIndex },
+  };
+}
+
 export function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
 }
@@ -204,16 +260,30 @@ function getRandomXSeedNumber(): Complex {
   return [getRandomXSeedPartNumber(), 0];
 }
 
-function getInitialData(seeds: Complex[][]): AppState {
+function getInitialSheet(): Sheet {
+  const seeds = [
+    [complex(2, -3), complex(3, -2)],
+    [complex(2, 3), complex(2, 4)],
+  ];
   const colorsBuffer: paper.Color[] = [];
   return {
     inputValues: [],
-    solvers: seeds.map((xSeed, xSeedIndex) => ({
+    inputSegments: [],
+    inputDrawingPoints: [],
+    solvers: seeds.map((xSeed) => ({
       xSeed,
       color: getNextColorWithBuffer(colorsBuffer),
       ouputValues: undefined,
       ouputValuesValid: false,
     })),
+  };
+}
+
+function getInitialData(): AppState {
+  return {
+    sheets: [getInitialSheet()],
+    activeSheetIndex: 0,
+    secondaryActiveSheetIndecies: new Set(),
     inputZoom: 1,
     outputZoom: 1,
     badPoints: [
@@ -248,16 +318,7 @@ function getInitialData(seeds: Complex[][]): AppState {
   };
 }
 
-export const initialAppState = getInitialData([
-  [
-    [2, -3],
-    [3, -2],
-  ],
-  [
-    [2, 3],
-    [2, 4],
-  ],
-]);
+export const initialAppState = getInitialData();
 
 type PartialComplex = [r?: number, i?: number]; // TODO separate into 2 fields (working copy and final xSeed)
 
@@ -273,12 +334,20 @@ export interface SolverState {
 
 export type Solvers = SolverState[];
 
-export interface AppState {
+export interface Sheet {
+  inputSegments: paper.Segment[];
+  inputDrawingPoints: paper.Point[];
   inputValues: Complex[];
+  solvers: Solvers;
+}
+
+export interface AppState {
   inputZoom: number;
   outputZoom: number;
-  solvers: Solvers;
   badPoints: Complex[];
+  sheets: Sheet[];
+  activeSheetIndex: number;
+  secondaryActiveSheetIndecies: Set<number>;
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -287,10 +356,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
   switch (type) {
     case AppActionType.CalculateAllOutputPaths:
       const nextState = produce(state, (draft) => {
-        draft.solvers.forEach((solver) => {
+        draft.sheets[draft.activeSheetIndex].solvers.forEach((solver) => {
           solver.ouputValues = solveInQArray(
             solver.xSeed as Complex[], // TODO remove when types are more tight
-            state.inputValues
+            draft.sheets[draft.activeSheetIndex].inputValues
           );
           solver.calculatedXSeed = solver.ouputValues.map(
             (output) => output[0]
@@ -299,12 +368,16 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         });
       });
       console.log(
-        JSON.stringify(nextState.inputValues)
+        JSON.stringify(nextState.sheets[nextState.activeSheetIndex])
           .replaceAll("[", "{")
           .replaceAll("]", "}")
       );
       console.log(
-        JSON.stringify(nextState.solvers.map((solver) => solver.ouputValues))
+        JSON.stringify(
+          nextState.sheets[nextState.activeSheetIndex].solvers.map(
+            (solver) => solver.ouputValues
+          )
+        )
           .replaceAll("[", "{")
           .replaceAll("]", "}")
       );
@@ -312,8 +385,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case AppActionType.ClearInputOuputValues:
       return produce(state, (draft) => {
-        draft.inputValues = [];
-        draft.solvers.forEach((solver) => {
+        draft.sheets[draft.activeSheetIndex].inputValues = [];
+        draft.sheets[draft.activeSheetIndex].inputSegments = [];
+        draft.sheets[draft.activeSheetIndex].inputDrawingPoints = [];
+        draft.sheets[draft.activeSheetIndex].solvers.forEach((solver) => {
           solver.ouputValues = [];
           solver.ouputValuesValid = false;
           solver.calculatedXSeed = undefined;
@@ -322,7 +397,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case AppActionType.SetInputValues:
       return produce(state, (draft) => {
-        draft.inputValues = (
+        draft.sheets[draft.activeSheetIndex].inputValues = (
           action as SetInputValuesAction
         ).payload.inputValues;
       });
@@ -331,11 +406,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return produce(state, (draft) => {
         const payloadXSeedsValues = (action as SetXSeedsValuesAction).payload
           .xSeedsValues;
-        const previousXSeedsValues = state.solvers.map(
-          (solver) => solver.xSeed
-        );
+        const previousXSeedsValues = state.sheets[
+          draft.activeSheetIndex
+        ].solvers.map((solver) => solver.xSeed);
 
-        const colorsBuffer = draft.solvers
+        const colorsBuffer = draft.sheets[draft.activeSheetIndex].solvers
           .slice(0, payloadXSeedsValues.length)
           .map((solver) => solver.color);
 
@@ -343,42 +418,57 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           JSON.stringify(previousXSeedsValues) !==
           JSON.stringify(payloadXSeedsValues)
         ) {
-          draft.solvers = payloadXSeedsValues.map(
-            (payloadXSeedValues, payloadXSeedValuesIndex) => ({
-              ...(payloadXSeedValuesIndex < draft.solvers.length
-                ? {
-                    ...draft.solvers[payloadXSeedValuesIndex],
-                    ouputValuesValid:
-                      draft.solvers[payloadXSeedValuesIndex].ouputValuesValid &&
-                      JSON.stringify(
-                        draft.solvers[payloadXSeedValuesIndex].xSeed
-                      ) === JSON.stringify(payloadXSeedValues),
-                    calculatedXSeed:
-                      JSON.stringify(
-                        draft.solvers[payloadXSeedValuesIndex].xSeed
-                      ) === JSON.stringify(payloadXSeedValues)
-                        ? draft.solvers[payloadXSeedValuesIndex].calculatedXSeed
-                        : undefined,
-                    color: draft.solvers[payloadXSeedValuesIndex].color,
-                  }
-                : {
-                    ouputValuesValid: false,
-                    color: getNextColorWithBuffer(colorsBuffer),
-                  }),
-              xSeed: payloadXSeedValues,
-            })
-          );
+          draft.sheets[draft.activeSheetIndex].solvers =
+            payloadXSeedsValues.map(
+              (payloadXSeedValues, payloadXSeedValuesIndex) => ({
+                ...(payloadXSeedValuesIndex <
+                draft.sheets[draft.activeSheetIndex].solvers.length
+                  ? {
+                      ...draft.sheets[draft.activeSheetIndex].solvers[
+                        payloadXSeedValuesIndex
+                      ],
+                      ouputValuesValid:
+                        draft.sheets[draft.activeSheetIndex].solvers[
+                          payloadXSeedValuesIndex
+                        ].ouputValuesValid &&
+                        JSON.stringify(
+                          draft.sheets[draft.activeSheetIndex].solvers[
+                            payloadXSeedValuesIndex
+                          ].xSeed
+                        ) === JSON.stringify(payloadXSeedValues),
+                      calculatedXSeed:
+                        JSON.stringify(
+                          draft.sheets[draft.activeSheetIndex].solvers[
+                            payloadXSeedValuesIndex
+                          ].xSeed
+                        ) === JSON.stringify(payloadXSeedValues)
+                          ? draft.sheets[draft.activeSheetIndex].solvers[
+                              payloadXSeedValuesIndex
+                            ].calculatedXSeed
+                          : undefined,
+                      color:
+                        draft.sheets[draft.activeSheetIndex].solvers[
+                          payloadXSeedValuesIndex
+                        ].color,
+                    }
+                  : {
+                      ouputValuesValid: false,
+                      color: getNextColorWithBuffer(colorsBuffer),
+                    }),
+                xSeed: payloadXSeedValues,
+              })
+            );
         }
       });
 
     case AppActionType.SetXSeedsM:
       return produce(state, (draft) => {
         const M = (action as SetXSeedsMAction).payload.M;
-        const previousXSeedsValues = state.solvers.map(
-          (solver) => solver.xSeed
-        );
+        const previousXSeedsValues = state.sheets[
+          draft.activeSheetIndex
+        ].solvers.map((solver) => solver.xSeed);
         if (previousXSeedsValues[0].length < M) {
-          draft.solvers.forEach((solver) => {
+          draft.sheets[draft.activeSheetIndex].solvers.forEach((solver) => {
             solver.xSeed = [
               ...solver.xSeed,
               ...new Array(M - solver.xSeed.length)
@@ -388,7 +478,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             solver.calculatedXSeed = undefined;
           });
         } else if (previousXSeedsValues[0].length > M) {
-          draft.solvers.forEach((solver) => {
+          draft.sheets[draft.activeSheetIndex].solvers.forEach((solver) => {
             solver.xSeed = solver.xSeed.slice(0, M);
             solver.calculatedXSeed = undefined;
           });
@@ -397,10 +487,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case AppActionType.AddXSeed:
       return produce(state, (draft) => {
-        const M = draft.solvers[0].xSeed.length;
-        const previousColors = draft.solvers.map((solver) => solver.color);
+        const M = draft.sheets[draft.activeSheetIndex].solvers[0].xSeed.length;
+        const previousColors = draft.sheets[draft.activeSheetIndex].solvers.map(
+          (solver) => solver.color
+        );
 
-        draft.solvers.push({
+        draft.sheets[draft.activeSheetIndex].solvers.push({
           xSeed: new Array(M).fill(null).map(() => getRandomXSeedNumber()),
           color: getDifferentColor(previousColors),
           ouputValues: undefined,
@@ -411,10 +503,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case AppActionType.RemoveXSeed:
       return produce(state, (draft) => {
         const index = (action as RemoveXSeedAction).payload.index;
-        if (draft.solvers.length > 1) {
-          draft.solvers = draft.solvers.filter(
-            (_, solverIndex) => solverIndex !== index
-          );
+        if (draft.sheets[draft.activeSheetIndex].solvers.length > 1) {
+          draft.sheets[draft.activeSheetIndex].solvers = draft.sheets[
+            draft.activeSheetIndex
+          ].solvers.filter((_, solverIndex) => solverIndex !== index);
         }
       });
 
@@ -426,11 +518,15 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         const xSeedNumberPartIndex = typedAction.payload.xSeedNumberPartIndex;
         const value = typedAction.payload.value;
 
-        draft.solvers[solverIndex].ouputValuesValid = false;
-        draft.solvers[solverIndex].xSeed[xSeedNumberIndex][
-          xSeedNumberPartIndex
-        ] = value;
-        draft.solvers[solverIndex].calculatedXSeed = undefined;
+        draft.sheets[draft.activeSheetIndex].solvers[
+          solverIndex
+        ].ouputValuesValid = false;
+        draft.sheets[draft.activeSheetIndex].solvers[solverIndex].xSeed[
+          xSeedNumberIndex
+        ][xSeedNumberPartIndex] = value;
+        draft.sheets[draft.activeSheetIndex].solvers[
+          solverIndex
+        ].calculatedXSeed = undefined;
       });
 
     case AppActionType.SetSolverColor:
@@ -439,12 +535,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           .solverIndex;
         const color = (action as SetSolverColorAction).payload.color;
 
-        draft.solvers[solverIndex].color = color;
+        draft.sheets[draft.activeSheetIndex].solvers[solverIndex].color = color;
       });
 
     case AppActionType.CopyResultToXSeed:
       return produce(state, (draft) => {
-        draft.solvers.forEach((solver) => {
+        draft.sheets[draft.activeSheetIndex].solvers.forEach((solver) => {
           if (solver.calculatedXSeed) {
             solver.xSeed = solver.calculatedXSeed;
           }
@@ -464,6 +560,34 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case AppActionType.SetOutputZoom:
       return produce(state, (draft) => {
         draft.outputZoom = (action as SetOutputZoomAction).payload.zoom;
+      });
+
+    case AppActionType.AddSheet:
+      return produce(state, (draft) => {
+        draft.sheets.push(castDraft(getInitialSheet()));
+        draft.activeSheetIndex = draft.sheets.length - 1;
+        draft.secondaryActiveSheetIndecies = new Set();
+      });
+
+    case AppActionType.SetActiveSheet:
+      return produce(state, (draft) => {
+        draft.activeSheetIndex = (
+          action as SetActiveSheetAction
+        ).payload.sheetIndex;
+      });
+
+    case AppActionType.SetInputSegments:
+      return produce(state, (draft) => {
+        draft.sheets[draft.activeSheetIndex].inputSegments = castDraft(
+          (action as SetInputSegmentsAction).payload.segments
+        );
+      });
+
+    case AppActionType.AddInputDrawingPoint:
+      return produce(state, (draft) => {
+        draft.sheets[draft.activeSheetIndex].inputDrawingPoints.push(
+          castDraft((action as AddInputDrawingPointAction).payload.point)
+        );
       });
 
     default:

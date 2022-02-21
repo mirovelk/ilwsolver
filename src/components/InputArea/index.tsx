@@ -7,9 +7,16 @@ import Paper, { Color } from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { inputStrokeWidth } from '../../papers';
-import { setInputValuesAction, setInputZoomAction } from '../../support/AppStateProvider/reducer';
+import {
+  addInputDrawingPointAction,
+  setInputSegmentsAction,
+  setInputValuesAction,
+  setInputZoomAction,
+} from '../../support/AppStateProvider/reducer';
 import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
 import useAppStateBadPoints from '../../support/AppStateProvider/useAppStateBadPoints';
+import useAppStateInputDrawingPoints from '../../support/AppStateProvider/useAppStateInputDrawingPoints';
+import useAppStateInputSegments from '../../support/AppStateProvider/useAppStateInputSegments';
 import useAppStateInputZoom from '../../support/AppStateProvider/useAppStateInputZoom';
 import { Complex, complex } from '../../util/complex';
 import BadPointEditor from '../BadPointEditor';
@@ -17,6 +24,7 @@ import InteractiveCanvas from '../InteractiveCanvas';
 import Circle from '../paper/Circle';
 import Path from '../paper/Path';
 import PathWithEnds from '../PathWithEnds';
+import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
 
 const DrawingPath = styled(Path)``;
@@ -32,9 +40,9 @@ const drawingPathIsNotDrawingWidth = 1;
 const inputPathColor = new Color(1, 0, 0);
 
 const SIMPLIFY_INITIAL = -3;
-const SIMPLIFY_MIN = -5;
-const SIMPLIFY_MAX = 5;
-const SIMPLIFY_STEP = 0.001;
+const SIMPLIFY_MIN = -10;
+const SIMPLIFY_MAX = 10;
+const SIMPLIFY_STEP = 0.0001;
 
 function getInputFromPath(
   inputPath: paper.Path,
@@ -52,15 +60,15 @@ function getInputFromPath(
 function InputArea({
   paper,
   inputSteps,
-  clearInputAreaPathsRef,
 }: {
   paper: paper.PaperScope;
   inputSteps: number;
-  clearInputAreaPathsRef: React.MutableRefObject<(() => void) | undefined>;
 }) {
   const { appDispatch } = useAppDispatch();
   const { appStateBadPoints } = useAppStateBadPoints();
   const { appStateInputZoom } = useAppStateInputZoom();
+  const { inputSegments } = useAppStateInputSegments();
+  const { inputDrawingPoints } = useAppStateInputDrawingPoints();
 
   const badPoints = useMemo(
     () =>
@@ -90,22 +98,6 @@ function InputArea({
   const [simplifyTolerance, setSimplifyTolerance] =
     useState<number>(SIMPLIFY_INITIAL);
 
-  const [drawingPathPoints, setDrawingPathPoints] = useState<paper.Point[]>([]);
-
-  const [inputPathSegmnets, setInputPathSegments] = useState<paper.Segment[]>(
-    []
-  );
-
-  const clearInputAreaPaths = useCallback(() => {
-    setDrawingPathPoints([]);
-    setInputPathSegments([]);
-  }, []);
-
-  // pass clear paths fn
-  useEffect(() => {
-    clearInputAreaPathsRef.current = clearInputAreaPaths;
-  }, [clearInputAreaPathsRef, clearInputAreaPaths]);
-
   const handleSimplifySliderChange = useCallback(
     (_event: Event, newValue: number | number[]) => {
       if (typeof newValue === "number") setSimplifyTolerance(newValue);
@@ -130,7 +122,7 @@ function InputArea({
     }
   }, [simplifyTolerance]);
 
-  // inpit paper events
+  // init paper events
   useEffect(() => {
     const oldOnMouseDown = paper.view.onMouseDown;
     paper.view.onMouseDown = (e: paper.MouseEvent) => {
@@ -138,10 +130,7 @@ function InputArea({
       // @ts-ignore
       if (e.event.buttons === 1) {
         setIsDrawing(true);
-        setDrawingPathPoints((previousDrawingPath) => [
-          ...previousDrawingPath,
-          e.point,
-        ]);
+        appDispatch(addInputDrawingPointAction(e.point));
       }
     };
 
@@ -150,10 +139,7 @@ function InputArea({
       if (oldOnMouseDrag) oldOnMouseDrag(e);
       // @ts-ignore
       if (e.event.buttons === 1) {
-        setDrawingPathPoints((previousDrawingPath) => [
-          ...previousDrawingPath,
-          e.point,
-        ]);
+        appDispatch(addInputDrawingPointAction(e.point));
       }
     };
 
@@ -162,21 +148,21 @@ function InputArea({
       if (oldOnMouseUp) oldOnMouseUp(e);
       setIsDrawing(false);
     };
-  }, [paper]);
+  }, [paper, appDispatch]);
 
   // calculate input path on drawing path or other parameter change (after finishing drawing)
   useEffect(() => {
     if (!isDrawing) {
-      const path = new Paper.Path(drawingPathPoints);
+      const path = new Paper.Path(inputDrawingPoints);
       if (simplifyEnabled) {
         const paperTolerance = Math.pow(10, simplifyTolerance);
         path.simplify(paperTolerance);
       }
-      setInputPathSegments(path.segments);
+      appDispatch(setInputSegmentsAction(path.segments));
       appDispatch(setInputValuesAction(getInputFromPath(path, inputSteps)));
     }
   }, [
-    drawingPathPoints,
+    inputDrawingPoints,
     isDrawing,
     simplifyEnabled,
     simplifyTolerance,
@@ -210,10 +196,11 @@ function InputArea({
               css={css`
                 width: 100%;
                 display: flex;
-                justify-content: flex-end;
+                justify-content: space-between;
                 position: relative;
               `}
             >
+              <SheetTabs />
               <div>
                 <IconButton
                   onClick={toggleBadPointEditor}
@@ -292,7 +279,7 @@ function InputArea({
 
       <DrawingPath
         paper={paper}
-        points={drawingPathPoints}
+        points={inputDrawingPoints}
         strokeColor={
           isDrawing ? drawingPathIsDrawingColor : drawingPathIsNotDrawingColor
         }
@@ -303,7 +290,7 @@ function InputArea({
       <PathWithEnds
         paper={paper}
         zoom={appStateInputZoom}
-        segments={inputPathSegmnets}
+        segments={inputSegments}
         strokeColor={inputPathColor}
         strokeWidth={inputStrokeWidth}
         visible={!isDrawing}

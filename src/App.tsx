@@ -95,17 +95,12 @@ function App() {
   const { appDispatch } = useAppDispatch();
   const { appStateInputValues } = useAppStateInputValues();
 
-  const clearInputAreaPaths = useRef<() => void>();
-
   const process = useCallback(() => {
     appDispatch(calculateAllOutputPathsAction());
   }, [appDispatch]);
 
   const clear = useCallback(() => {
     appDispatch(clearInputOuputValuesAction());
-
-    if (typeof clearInputAreaPaths.current === "function")
-      clearInputAreaPaths.current(); // TODO move to appState
 
     inputPaper.view.center = new Paper.Point(0, 0);
     outputPaper.view.center = new Paper.Point(0, 0);
@@ -145,11 +140,7 @@ function App() {
         </CenterControlsWrapper>
         <AreasWrapper>
           <AreaWrapper>
-            <InputArea
-              paper={inputPaper}
-              inputSteps={INPUT_STEPS}
-              clearInputAreaPathsRef={clearInputAreaPaths}
-            />
+            <InputArea paper={inputPaper} inputSteps={INPUT_STEPS} />
           </AreaWrapper>
           <AreaWrapper>
             <OutputArea paper={outputPaper} />

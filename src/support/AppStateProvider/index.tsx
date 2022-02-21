@@ -1,8 +1,8 @@
-import React, { Dispatch } from 'react';
+import React, { Dispatch, useMemo } from 'react';
 import { useReducer } from 'react';
 
 import { Complex } from '../../util/complex';
-import { AppAction, appReducer, initialAppState, Solvers } from './reducer';
+import { AppAction, appReducer, initialAppState, Sheet, Solvers } from './reducer';
 
 export const AppDispatchProviderContext = React.createContext<{
   dispatch: Dispatch<AppAction>;
@@ -13,13 +13,13 @@ export const AppDispatchProviderContext = React.createContext<{
 export const AppStateSolversProviderContext = React.createContext<{
   solvers: Solvers;
 }>({
-  solvers: initialAppState.solvers,
+  solvers: initialAppState.sheets[0].solvers,
 });
 
 export const AppStateInputValuesContext = React.createContext<{
   inputValues: Complex[];
 }>({
-  inputValues: initialAppState.inputValues,
+  inputValues: initialAppState.sheets[0].inputValues,
 });
 
 export const AppStateBadPointsProviderContext = React.createContext<{
@@ -40,32 +40,119 @@ export const AppStateOutputZoomProviderContext = React.createContext<{
   outputZoom: initialAppState.outputZoom,
 });
 
+export const AppStateSheetsProviderContext = React.createContext<{
+  sheets: Sheet[];
+  activeSheetIndex: number;
+  secondaryActiveSheetIndecies: Set<number>;
+}>({
+  sheets: initialAppState.sheets,
+  activeSheetIndex: initialAppState.activeSheetIndex,
+  secondaryActiveSheetIndecies: initialAppState.secondaryActiveSheetIndecies,
+});
+
+export const AppStateInputSegmentsProviderContext = React.createContext<{
+  inputSegments: paper.Segment[];
+}>({
+  inputSegments: initialAppState.sheets[0].inputSegments,
+});
+
+export const AppStateInputDrawingPointsProviderContext = React.createContext<{
+  inputDrawingPoints: paper.Point[];
+}>({
+  inputDrawingPoints: initialAppState.sheets[0].inputDrawingPoints,
+});
+
 function AppStateProvider({ children }: { children: React.ReactElement }) {
   const [appState, appDispatch] = useReducer(appReducer, initialAppState);
 
+  const activeSheet = useMemo(
+    () => appState.sheets[appState.activeSheetIndex],
+    [appState.activeSheetIndex, appState.sheets]
+  );
+
   return (
-    <AppDispatchProviderContext.Provider value={{ dispatch: appDispatch }}>
-      <AppStateSolversProviderContext.Provider
-        value={{ solvers: appState.solvers }}
+    <AppDispatchProviderContext.Provider
+      value={useMemo(() => ({ dispatch: appDispatch }), [appDispatch])}
+    >
+      <AppStateSheetsProviderContext.Provider
+        value={useMemo(
+          () => ({
+            sheets: appState.sheets,
+            activeSheetIndex: appState.activeSheetIndex,
+            secondaryActiveSheetIndecies: appState.secondaryActiveSheetIndecies,
+          }),
+          [
+            appState.activeSheetIndex,
+            appState.secondaryActiveSheetIndecies,
+            appState.sheets,
+          ]
+        )}
       >
-        <AppStateInputValuesContext.Provider
-          value={{ inputValues: appState.inputValues }}
+        <AppStateSolversProviderContext.Provider
+          value={useMemo(
+            () => ({
+              solvers: activeSheet.solvers,
+            }),
+            [activeSheet.solvers]
+          )}
         >
-          <AppStateBadPointsProviderContext.Provider
-            value={{ badPoints: appState.badPoints }}
+          <AppStateInputValuesContext.Provider
+            value={useMemo(
+              () => ({
+                inputValues: activeSheet.inputValues,
+              }),
+              [activeSheet.inputValues]
+            )}
           >
-            <AppStateInputZoomProviderContext.Provider
-              value={{ inputZoom: appState.inputZoom }}
+            <AppStateBadPointsProviderContext.Provider
+              value={useMemo(
+                () => ({
+                  badPoints: appState.badPoints,
+                }),
+                [appState.badPoints]
+              )}
             >
-              <AppStateOutputZoomProviderContext.Provider
-                value={{ outputZoom: appState.outputZoom }}
+              <AppStateInputZoomProviderContext.Provider
+                value={useMemo(
+                  () => ({
+                    inputZoom: appState.inputZoom,
+                  }),
+                  [appState.inputZoom]
+                )}
               >
-                {children}
-              </AppStateOutputZoomProviderContext.Provider>
-            </AppStateInputZoomProviderContext.Provider>
-          </AppStateBadPointsProviderContext.Provider>
-        </AppStateInputValuesContext.Provider>
-      </AppStateSolversProviderContext.Provider>
+                <AppStateOutputZoomProviderContext.Provider
+                  value={useMemo(
+                    () => ({
+                      outputZoom: appState.outputZoom,
+                    }),
+                    [appState.outputZoom]
+                  )}
+                >
+                  <AppStateInputSegmentsProviderContext.Provider
+                    value={useMemo(
+                      () => ({
+                        inputSegments: activeSheet.inputSegments,
+                      }),
+                      [activeSheet.inputSegments]
+                    )}
+                  >
+                    <AppStateInputDrawingPointsProviderContext.Provider
+                      value={useMemo(
+                        () => ({
+                          inputDrawingPoints: activeSheet.inputDrawingPoints,
+                        }),
+                        [activeSheet.inputDrawingPoints]
+                      )}
+                    >
+                      {children}
+                    </AppStateInputDrawingPointsProviderContext.Provider>
+                  </AppStateInputSegmentsProviderContext.Provider>
+                </AppStateOutputZoomProviderContext.Provider>
+              </AppStateInputZoomProviderContext.Provider>
+            </AppStateBadPointsProviderContext.Provider>
+          </AppStateInputValuesContext.Provider>
+        </AppStateSolversProviderContext.Provider>
+      </AppStateSheetsProviderContext.Provider>
     </AppDispatchProviderContext.Provider>
   );
 }
