@@ -16,10 +16,10 @@ import BadPointEditor from '../BadPointEditor';
 import InteractiveCanvas from '../InteractiveCanvas';
 import Circle from '../paper/Circle';
 import Path from '../paper/Path';
+import PathWithEnds from '../PathWithEnds';
 import XSeedsEditor from '../XSeedsEditor';
 
 const DrawingPath = styled(Path)``;
-const InputPath = styled(Path)``;
 
 const ControlsWrapper = styled(Grid)`
   height: 30px;
@@ -76,7 +76,7 @@ function InputArea({
   );
 
   const badPointRadius = useMemo(
-    () => (1 / appStateInputZoom) * 3,
+    () => (1 / appStateInputZoom) * 2,
     [appStateInputZoom]
   );
 
@@ -288,14 +288,6 @@ function InputArea({
           </ControlsWrapper>
         }
       />
-      {badPoints.map((point) => (
-        <Circle
-          paper={paper}
-          center={point}
-          radius={badPointRadius}
-          key={`${point.x},${point.y}`}
-        />
-      ))}
 
       <DrawingPath
         paper={paper}
@@ -307,14 +299,24 @@ function InputArea({
           isDrawing ? inputStrokeWidth : drawingPathIsNotDrawingWidth
         }
       />
-      <InputPath
+      <PathWithEnds
         paper={paper}
+        zoom={appStateInputZoom}
         segments={inputPathSegmnets}
         strokeColor={inputPathColor}
         strokeWidth={inputStrokeWidth}
         visible={!isDrawing}
         fullySelected={!isDrawing}
       />
+      {/* keep bad points on top */}
+      {badPoints.map((point) => (
+        <Circle
+          paper={paper}
+          center={point}
+          radius={badPointRadius}
+          key={`${point.x},${point.y}`}
+        />
+      ))}
     </>
   );
 }

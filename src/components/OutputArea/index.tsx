@@ -3,14 +3,19 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { setOutputZoomAction } from '../../support/AppStateProvider/reducer';
 import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
+import useAppStateOutputZoom from '../../support/AppStateProvider/useAppStateOutputZoom';
 import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
 import { ResultInQArray } from '../../support/calc/calc';
 import InteractiveCanvas from '../InteractiveCanvas';
-import Path from '../paper/Path';
+import PathWithEnds from '../PathWithEnds';
 
 const OUTPUT_PATH_WIDTH = 3;
 
-function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
+function viewFitBounds(
+  paper: paper.PaperScope,
+  path: paper.Path,
+  setZoom: (zoom: number) => void
+) {
   const viewBounds = paper.view.bounds;
   const scaleRatio = Math.min(
     viewBounds.width / path.bounds.width,
@@ -23,6 +28,7 @@ function viewFitBounds(paper: paper.PaperScope, path: paper.Path) {
     )
   );
   paper.view.scale(scaleRatio * 0.8);
+  setZoom(paper.view.zoom);
 }
 
 export interface Output {
@@ -41,6 +47,7 @@ type OutputsPaths = OutputPaths[];
 function OutputArea({ paper }: { paper: paper.PaperScope }) {
   const { appDispatch } = useAppDispatch();
   const { appStateSolvers } = useAppStateSolvers();
+  const { appStateOutputZoom } = useAppStateOutputZoom();
 
   const setZoom = useCallback(
     (zoom: number) => {
@@ -67,10 +74,10 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
       const allPaths = outputsPaths.flatMap((outputPaths) =>
         outputPaths.paths.flatMap((points) => points)
       );
-      viewFitBounds(paper, new Paper.Path(allPaths));
+      viewFitBounds(paper, new Paper.Path(allPaths), setZoom);
     }
     setPoints(outputsPaths);
-  }, [paper, appStateSolvers]);
+  }, [paper, appStateSolvers, setZoom]);
 
   return (
     <>
@@ -85,9 +92,10 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
       {points.map((outputPathsPoints, outputPathsPointsIndex) =>
         outputPathsPoints.paths.map(
           (outputPathPoints, outputPathPointsIndex) => (
-            <Path
+            <PathWithEnds
               key={`${outputPathsPointsIndex}-${outputPathPointsIndex}`}
               paper={paper}
+              zoom={appStateOutputZoom}
               points={outputPathPoints}
               strokeColor={outputPathsPoints.color}
               strokeWidth={OUTPUT_PATH_WIDTH}

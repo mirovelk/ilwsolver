@@ -1,3 +1,4 @@
+/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled/macro';
 import {
@@ -23,7 +24,6 @@ import {
   updateCursorCoordinatesStatus,
 } from './util';
 
-/** @jsxImportSource @emotion/react */
 const Title = styled.h2`
   margin: 0 20px 5px 0;
 `;
