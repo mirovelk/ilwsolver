@@ -70,11 +70,23 @@ export const AppStateInputDrawingPointsProviderContext = React.createContext<{
   inputDrawingPoints: initialAppState.sheets[0].inputDrawingPoints,
 });
 
+export const AppStatePreviousSheetEndPointProviderContext =
+  React.createContext<{
+    previousSheetEndPoint?: paper.Point;
+  }>({
+    previousSheetEndPoint: undefined,
+  });
+
 function AppStateProvider({ children }: { children: React.ReactElement }) {
   const [appState, appDispatch] = useReducer(appReducer, initialAppState);
 
   const activeSheet = useMemo(
     () => appState.sheets[appState.activeSheetIndex],
+    [appState.activeSheetIndex, appState.sheets]
+  );
+
+  const previousSheet = useMemo(
+    () => appState.sheets[appState.activeSheetIndex - 1],
     [appState.activeSheetIndex, appState.sheets]
   );
 
@@ -166,7 +178,25 @@ function AppStateProvider({ children }: { children: React.ReactElement }) {
                           ]
                         )}
                       >
-                        {children}
+                        <AppStatePreviousSheetEndPointProviderContext.Provider
+                          value={useMemo(
+                            () => ({
+                              previousSheetEndPoint:
+                                (previousSheet &&
+                                  previousSheet.inputSegments &&
+                                  previousSheet.inputSegments[
+                                    previousSheet.inputSegments.length - 1
+                                  ] &&
+                                  previousSheet.inputSegments[
+                                    previousSheet.inputSegments.length - 1
+                                  ].point) ||
+                                undefined,
+                            }),
+                            [previousSheet]
+                          )}
+                        >
+                          {children}
+                        </AppStatePreviousSheetEndPointProviderContext.Provider>
                       </AppStateInputSimplifyContext.Provider>
                     </AppStateInputDrawingPointsProviderContext.Provider>
                   </AppStateInputSegmentsProviderContext.Provider>

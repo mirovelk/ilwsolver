@@ -35,12 +35,16 @@ function PathWithEnds({
   const startPoint = startPointSegments || startPointPoints;
   const startPointSize = useMemo(() => (1 / zoom) * 10, [zoom]);
 
-  const startPointRectangle = startPoint
-    ? new paper.Rectangle({
-        point: startPoint.subtract(startPointSize / 2),
-        size: [startPointSize, startPointSize],
-      })
-    : undefined;
+  const startPointRectangle = useMemo(
+    () =>
+      startPoint
+        ? new paper.Rectangle({
+            point: startPoint.subtract(startPointSize / 2),
+            size: [startPointSize, startPointSize],
+          })
+        : undefined,
+    [paper.Rectangle, startPoint, startPointSize]
+  );
 
   const endPointSegments =
     segments && segments.length > 0 && segments[segments.length - 1].point;

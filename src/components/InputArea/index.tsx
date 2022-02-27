@@ -23,11 +23,13 @@ import useAppStateInputDrawingPoints from '../../support/AppStateProvider/useApp
 import useAppStateInputSegments from '../../support/AppStateProvider/useAppStateInputSegments';
 import useAppStateInputSimplifyTolerance from '../../support/AppStateProvider/useAppStateInputSimplify';
 import useAppStateInputZoom from '../../support/AppStateProvider/useAppStateInputZoom';
+import useAppStatePreviousSheetEndPoint from '../../support/AppStateProvider/useAppStatePreviousSheetEndPoint';
 import { Complex, complex } from '../../util/complex';
 import BadPointEditor from '../BadPointEditor';
 import InteractiveCanvas from '../InteractiveCanvas';
 import Circle from '../paper/Circle';
 import Path from '../paper/Path';
+import Rectangle from '../paper/Rectangle';
 import PathWithEnds from '../PathWithEnds';
 import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
@@ -72,6 +74,24 @@ function InputArea({
   const { inputDrawingPoints } = useAppStateInputDrawingPoints();
   const { inputSimplifyTolerance, inputSimplifyEnabled } =
     useAppStateInputSimplifyTolerance();
+
+  const { previousSheetEndPoint } = useAppStatePreviousSheetEndPoint();
+  const previousSheetEndPointSize = useMemo(
+    () => (1 / appStateInputZoom) * 12,
+    [appStateInputZoom]
+  );
+  const previousSheetEndPointRectangle = useMemo(
+    () =>
+      previousSheetEndPoint
+        ? new paper.Rectangle({
+            point: previousSheetEndPoint.subtract(
+              previousSheetEndPointSize / 2
+            ),
+            size: [previousSheetEndPointSize, previousSheetEndPointSize],
+          })
+        : undefined,
+    [paper.Rectangle, previousSheetEndPoint, previousSheetEndPointSize]
+  );
 
   const badPoints = useMemo(
     () =>
@@ -281,6 +301,10 @@ function InputArea({
           </ControlsWrapper>
         }
       />
+
+      {previousSheetEndPointRectangle && (
+        <Rectangle paper={paper} rectangle={previousSheetEndPointRectangle} />
+      )}
 
       <DrawingPath
         paper={paper}
