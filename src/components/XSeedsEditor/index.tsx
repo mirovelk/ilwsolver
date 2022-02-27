@@ -26,7 +26,7 @@ const LeftControlsWrapper = styled(MaterialPaper)`
   flex-direction: column;
   position: absolute;
   z-index: 2000;
-  top: 105px;
+  top: 135px;
   left: 30px;
   padding: 10px 20px;
 `;

@@ -45,7 +45,7 @@ const CenterControlsWrapper = styled.div`
   justify-content: center;
   position: absolute;
   z-index: 1000;
-  top: 120px;
+  top: 60px;
   left: 50%;
   transform: translate(-50%, 0);
 `;
