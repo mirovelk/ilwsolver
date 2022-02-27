@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { GpsFixed, Settings } from '@mui/icons-material';
+import { Ballot, GpsFixed } from '@mui/icons-material';
 import { Checkbox, FormControlLabel, Grid, IconButton, Input, Slider } from '@mui/material';
 import Paper, { Color } from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -232,7 +232,7 @@ function InputArea({
                 onClick={toggleXSeedsEditor}
                 color={xSeedsEditorVisible ? "primary" : "default"}
               >
-                <Settings />
+                <Ballot />
               </IconButton>
             </Grid>
             <Grid item>

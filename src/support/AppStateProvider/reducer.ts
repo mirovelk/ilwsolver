@@ -1,4 +1,5 @@
 import produce, { castDraft } from 'immer';
+import Paper from 'paper';
 
 import { getDifferentColor, getNextColorWithBuffer } from '../../util/color';
 import { Complex, complex, getRandomNumberBetween } from '../../util/complex';
@@ -297,6 +298,12 @@ function getRandomXSeedNumber(): Complex {
   return [getRandomXSeedPartNumber(), getRandomXSeedPartNumber()];
 }
 
+const initialSolver = {
+  xSeed: [0, 0],
+  color: new Paper.Color(255, 0, 0),
+  ouputValues: undefined,
+  ouputValuesValid: false,
+};
 function getInitialSheet(): Sheet {
   const seeds = [
     [complex(2, -3), complex(3, -2)],
@@ -310,10 +317,9 @@ function getInitialSheet(): Sheet {
     inputSimplifyTolerance: SIMPLIFY_INITIAL,
     inputSimplifyEnabled: true,
     solvers: seeds.map((xSeed) => ({
+      ...initialSolver,
       xSeed,
       color: getNextColorWithBuffer(colorsBuffer),
-      ouputValues: undefined,
-      ouputValuesValid: false,
     })),
   };
 }
@@ -610,7 +616,21 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case AppActionType.AddSheet:
       return produce(state, (draft) => {
-        draft.sheets.push(castDraft(getInitialSheet()));
+        const newSheet = castDraft(getInitialSheet());
+        const lastSheetSolvers = state.sheets[draft.sheets.length - 1].solvers;
+
+        newSheet.solvers = lastSheetSolvers.map((lastSheetSolver) => ({
+          ...initialSolver,
+          color: lastSheetSolver.color,
+          xSeed:
+            lastSheetSolver.ouputValues && lastSheetSolver.ouputValuesValid
+              ? lastSheetSolver.ouputValues.map(
+                  (output) => output[output.length - 1]
+                )
+              : lastSheetSolver.xSeed,
+        }));
+
+        draft.sheets.push(newSheet);
         draft.activeSheetIndex = draft.sheets.length - 1;
         draft.secondaryActiveSheetIndecies = new Set();
       });
