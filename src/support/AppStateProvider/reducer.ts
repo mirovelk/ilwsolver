@@ -257,7 +257,7 @@ export function getRandomXSeedPartNumber(): number {
 }
 
 function getRandomXSeedNumber(): Complex {
-  return [getRandomXSeedPartNumber(), 0];
+  return [getRandomXSeedPartNumber(), getRandomXSeedPartNumber()];
 }
 
 function getInitialSheet(): Sheet {
