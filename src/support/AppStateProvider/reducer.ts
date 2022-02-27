@@ -4,6 +4,11 @@ import { getDifferentColor, getNextColorWithBuffer } from '../../util/color';
 import { Complex, complex, getRandomNumberBetween } from '../../util/complex';
 import { ResultInQArray, solveInQArray } from '../calc/calc';
 
+export const SIMPLIFY_INITIAL = -3;
+export const SIMPLIFY_MIN = -10;
+export const SIMPLIFY_MAX = 10;
+export const SIMPLIFY_STEP = 0.0001;
+
 enum AppActionType {
   AddXSeed,
   RemoveXSeed,
@@ -22,6 +27,8 @@ enum AppActionType {
   SetActiveSheet,
   SetInputSegments,
   AddInputDrawingPoint,
+  SetInputSimplifyTolerance,
+  SetInputSimplifyEnabled,
 }
 
 export interface AppAction {
@@ -111,6 +118,36 @@ export function addInputDrawingPointAction(
   return {
     type: AppActionType.AddInputDrawingPoint,
     payload: { point },
+  };
+}
+
+interface SetInputSimplifyToleranceAction extends AppAction {
+  type: AppActionType.SetInputSimplifyTolerance;
+  payload: {
+    inputSimplifyTolerance: number;
+  };
+}
+export function setInputSimplifyToleranceAction(
+  inputSimplifyTolerance: number
+): SetInputSimplifyToleranceAction {
+  return {
+    type: AppActionType.SetInputSimplifyTolerance,
+    payload: { inputSimplifyTolerance },
+  };
+}
+
+interface SetInputSimplifyEnabledAction extends AppAction {
+  type: AppActionType.SetInputSimplifyEnabled;
+  payload: {
+    inputSimplifyEnabled: boolean;
+  };
+}
+export function setInputSimplifyEnabledAction(
+  inputSimplifyEnabled: boolean
+): SetInputSimplifyEnabledAction {
+  return {
+    type: AppActionType.SetInputSimplifyEnabled,
+    payload: { inputSimplifyEnabled },
   };
 }
 
@@ -270,6 +307,8 @@ function getInitialSheet(): Sheet {
     inputValues: [],
     inputSegments: [],
     inputDrawingPoints: [],
+    inputSimplifyTolerance: SIMPLIFY_INITIAL,
+    inputSimplifyEnabled: true,
     solvers: seeds.map((xSeed) => ({
       xSeed,
       color: getNextColorWithBuffer(colorsBuffer),
@@ -341,6 +380,8 @@ export interface Sheet {
   inputSegments: paper.Segment[];
   inputDrawingPoints: paper.Point[];
   inputValues: Complex[];
+  inputSimplifyTolerance: number;
+  inputSimplifyEnabled: boolean;
   solvers: Solvers;
 }
 
@@ -592,6 +633,21 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return produce(state, (draft) => {
         draft.sheets[draft.activeSheetIndex].inputDrawingPoints.push(
           castDraft((action as AddInputDrawingPointAction).payload.point)
+        );
+      });
+
+    case AppActionType.SetInputSimplifyTolerance:
+      return produce(state, (draft) => {
+        draft.sheets[draft.activeSheetIndex].inputSimplifyTolerance = castDraft(
+          (action as SetInputSimplifyToleranceAction).payload
+            .inputSimplifyTolerance
+        );
+      });
+
+    case AppActionType.SetInputSimplifyEnabled:
+      return produce(state, (draft) => {
+        draft.sheets[draft.activeSheetIndex].inputSimplifyEnabled = castDraft(
+          (action as SetInputSimplifyEnabledAction).payload.inputSimplifyEnabled
         );
       });
 

@@ -1,4 +1,3 @@
-/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { GpsFixed, Settings } from '@mui/icons-material';
@@ -10,13 +9,19 @@ import { inputStrokeWidth } from '../../papers';
 import {
   addInputDrawingPointAction,
   setInputSegmentsAction,
+  setInputSimplifyEnabledAction,
+  setInputSimplifyToleranceAction,
   setInputValuesAction,
   setInputZoomAction,
+  SIMPLIFY_MAX,
+  SIMPLIFY_MIN,
+  SIMPLIFY_STEP,
 } from '../../support/AppStateProvider/reducer';
 import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
 import useAppStateBadPoints from '../../support/AppStateProvider/useAppStateBadPoints';
 import useAppStateInputDrawingPoints from '../../support/AppStateProvider/useAppStateInputDrawingPoints';
 import useAppStateInputSegments from '../../support/AppStateProvider/useAppStateInputSegments';
+import useAppStateInputSimplifyTolerance from '../../support/AppStateProvider/useAppStateInputSimplify';
 import useAppStateInputZoom from '../../support/AppStateProvider/useAppStateInputZoom';
 import { Complex, complex } from '../../util/complex';
 import BadPointEditor from '../BadPointEditor';
@@ -27,6 +32,7 @@ import PathWithEnds from '../PathWithEnds';
 import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
 
+/** @jsxImportSource @emotion/react */
 const DrawingPath = styled(Path)``;
 
 const ControlsWrapper = styled(Grid)`
@@ -38,11 +44,6 @@ const drawingPathIsNotDrawingColor = new Color(0.3, 0.3, 0.3);
 const drawingPathIsNotDrawingWidth = 1;
 
 const inputPathColor = new Color(1, 0, 0);
-
-const SIMPLIFY_INITIAL = -3;
-const SIMPLIFY_MIN = -10;
-const SIMPLIFY_MAX = 10;
-const SIMPLIFY_STEP = 0.0001;
 
 function getInputFromPath(
   inputPath: paper.Path,
@@ -69,6 +70,8 @@ function InputArea({
   const { appStateInputZoom } = useAppStateInputZoom();
   const { inputSegments } = useAppStateInputSegments();
   const { inputDrawingPoints } = useAppStateInputDrawingPoints();
+  const { inputSimplifyTolerance, inputSimplifyEnabled } =
+    useAppStateInputSimplifyTolerance();
 
   const badPoints = useMemo(
     () =>
@@ -93,34 +96,32 @@ function InputArea({
 
   const [isDrawing, setIsDrawing] = useState(false);
 
-  const [simplifyEnabled, setSimplifyEnabled] = useState(true);
-
-  const [simplifyTolerance, setSimplifyTolerance] =
-    useState<number>(SIMPLIFY_INITIAL);
-
   const handleSimplifySliderChange = useCallback(
     (_event: Event, newValue: number | number[]) => {
-      if (typeof newValue === "number") setSimplifyTolerance(newValue);
+      if (typeof newValue === "number")
+        appDispatch(setInputSimplifyToleranceAction(newValue));
     },
-    []
+    [appDispatch]
   );
 
   const handleSimplifyInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setSimplifyTolerance(
-        event.target.value === "" ? SIMPLIFY_MIN : Number(event.target.value)
+      appDispatch(
+        setInputSimplifyToleranceAction(
+          event.target.value === "" ? SIMPLIFY_MIN : Number(event.target.value)
+        )
       );
     },
-    []
+    [appDispatch]
   );
 
   const handleSimplifyInputBlur = useCallback(() => {
-    if (simplifyTolerance < SIMPLIFY_MIN) {
-      setSimplifyTolerance(SIMPLIFY_MIN);
-    } else if (simplifyTolerance > SIMPLIFY_MAX) {
-      setSimplifyTolerance(SIMPLIFY_MAX);
+    if (inputSimplifyTolerance < SIMPLIFY_MIN) {
+      appDispatch(setInputSimplifyToleranceAction(SIMPLIFY_MIN));
+    } else if (inputSimplifyTolerance > SIMPLIFY_MAX) {
+      appDispatch(setInputSimplifyToleranceAction(SIMPLIFY_MAX));
     }
-  }, [simplifyTolerance]);
+  }, [appDispatch, inputSimplifyTolerance]);
 
   // init paper events
   useEffect(() => {
@@ -154,8 +155,8 @@ function InputArea({
   useEffect(() => {
     if (!isDrawing) {
       const path = new Paper.Path(inputDrawingPoints);
-      if (simplifyEnabled) {
-        const paperTolerance = Math.pow(10, simplifyTolerance);
+      if (inputSimplifyEnabled) {
+        const paperTolerance = Math.pow(10, inputSimplifyTolerance);
         path.simplify(paperTolerance);
       }
       appDispatch(setInputSegmentsAction(path.segments));
@@ -164,8 +165,8 @@ function InputArea({
   }, [
     inputDrawingPoints,
     isDrawing,
-    simplifyEnabled,
-    simplifyTolerance,
+    inputSimplifyEnabled,
+    inputSimplifyTolerance,
     inputSteps,
     appDispatch,
   ]);
@@ -239,8 +240,12 @@ function InputArea({
                 label="Simplify"
                 control={
                   <Checkbox
-                    checked={simplifyEnabled}
-                    onChange={() => setSimplifyEnabled((previous) => !previous)}
+                    checked={inputSimplifyEnabled}
+                    onChange={() =>
+                      appDispatch(
+                        setInputSimplifyEnabledAction(!inputSimplifyEnabled)
+                      )
+                    }
                   />
                 }
               />
@@ -248,8 +253,8 @@ function InputArea({
             <Grid item xs>
               <Slider
                 value={
-                  typeof simplifyTolerance === "number"
-                    ? simplifyTolerance
+                  typeof inputSimplifyTolerance === "number"
+                    ? inputSimplifyTolerance
                     : SIMPLIFY_MIN
                 }
                 size="small"
@@ -261,7 +266,7 @@ function InputArea({
             </Grid>
             <Grid item>
               <Input
-                value={simplifyTolerance}
+                value={inputSimplifyTolerance}
                 size="small"
                 onChange={handleSimplifyInputChange}
                 onBlur={handleSimplifyInputBlur}

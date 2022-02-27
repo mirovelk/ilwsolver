@@ -22,6 +22,14 @@ export const AppStateInputValuesContext = React.createContext<{
   inputValues: initialAppState.sheets[0].inputValues,
 });
 
+export const AppStateInputSimplifyContext = React.createContext<{
+  inputSimplifyTolerance: number;
+  inputSimplifyEnabled: boolean;
+}>({
+  inputSimplifyTolerance: initialAppState.sheets[0].inputSimplifyTolerance,
+  inputSimplifyEnabled: initialAppState.sheets[0].inputSimplifyEnabled,
+});
+
 export const AppStateBadPointsProviderContext = React.createContext<{
   badPoints: Complex[];
 }>({
@@ -144,7 +152,22 @@ function AppStateProvider({ children }: { children: React.ReactElement }) {
                         [activeSheet.inputDrawingPoints]
                       )}
                     >
-                      {children}
+                      <AppStateInputSimplifyContext.Provider
+                        value={useMemo(
+                          () => ({
+                            inputSimplifyTolerance:
+                              activeSheet.inputSimplifyTolerance,
+                            inputSimplifyEnabled:
+                              activeSheet.inputSimplifyEnabled,
+                          }),
+                          [
+                            activeSheet.inputSimplifyTolerance,
+                            activeSheet.inputSimplifyEnabled,
+                          ]
+                        )}
+                      >
+                        {children}
+                      </AppStateInputSimplifyContext.Provider>
                     </AppStateInputDrawingPointsProviderContext.Provider>
                   </AppStateInputSegmentsProviderContext.Provider>
                 </AppStateOutputZoomProviderContext.Provider>
