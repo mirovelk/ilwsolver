@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 
 import Circle from '../paper/Circle';
 import Path from '../paper/Path';
-import Star from '../paper/Star';
+import Rectangle from '../paper/Rectangle';
 
 function PathWithEnds({
   paper,
@@ -29,9 +29,24 @@ function PathWithEnds({
   fullySelected?: boolean;
   dashArray?: number[];
 }) {
-  const startPointRadius1 = useMemo(() => (1 / zoom) * 7, [zoom]);
+  const startPointSegments =
+    segments && segments.length > 0 && segments[0].point;
+  const startPointPoints = points && points.length > 0 && points[0];
+  const startPoint = startPointSegments || startPointPoints;
+  const startPointSize = useMemo(() => (1 / zoom) * 10, [zoom]);
 
-  const startPointRadius2 = useMemo(() => (1 / zoom) * 4, [zoom]);
+  const startPointRectangle = startPoint
+    ? new paper.Rectangle({
+        point: startPoint.subtract(startPointSize / 2),
+        size: [startPointSize, startPointSize],
+      })
+    : undefined;
+
+  const endPointSegments =
+    segments && segments.length > 0 && segments[segments.length - 1].point;
+  const endPointPoints =
+    points && points.length > 0 && points[points.length - 1];
+  const endPoint = endPointSegments || endPointPoints;
 
   const endPointRadius = useMemo(() => (1 / zoom) * 5, [zoom]);
 
@@ -54,36 +69,17 @@ function PathWithEnds({
         selected={selected}
         dashArray={dashArray}
       />
-      {segments && segments.length > 0 && (
-        <Star
+      {startPointRectangle && (
+        <Rectangle
           paper={paper}
-          center={segments[0].point}
-          radius1={startPointRadius1}
-          radius2={startPointRadius2}
+          rectangle={startPointRectangle}
           fillColor={endColor}
         />
       )}
-      {segments && segments.length > 0 && (
+      {endPoint && (
         <Circle
           paper={paper}
-          center={segments[segments.length - 1].point}
-          radius={endPointRadius}
-          fillColor={endColor}
-        />
-      )}
-      {points && points.length > 0 && (
-        <Star
-          paper={paper}
-          center={points[0]}
-          radius1={startPointRadius1}
-          radius2={startPointRadius2}
-          fillColor={endColor}
-        />
-      )}
-      {points && points.length > 0 && (
-        <Circle
-          paper={paper}
-          center={points[points.length - 1]}
+          center={endPoint}
           radius={endPointRadius}
           fillColor={endColor}
         />
