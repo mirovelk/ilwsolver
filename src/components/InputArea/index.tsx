@@ -45,6 +45,8 @@ const drawingPathIsDrawingColor = new Color(1, 0, 0);
 const drawingPathIsNotDrawingColor = new Color(0.3, 0.3, 0.3);
 const drawingPathIsNotDrawingWidth = 1;
 
+const previousSheetEndPointRectangleColor = new Color(0, 1, 1);
+
 const inputPathColor = new Color(1, 0, 0);
 
 function getInputFromPath(
@@ -77,7 +79,7 @@ function InputArea({
 
   const { previousSheetEndPoint } = useAppStatePreviousSheetEndPoint();
   const previousSheetEndPointSize = useMemo(
-    () => (1 / appStateInputZoom) * 12,
+    () => (1 / appStateInputZoom) * 5,
     [appStateInputZoom]
   );
   const previousSheetEndPointRectangle = useMemo(
@@ -303,7 +305,11 @@ function InputArea({
       />
 
       {previousSheetEndPointRectangle && (
-        <Rectangle paper={paper} rectangle={previousSheetEndPointRectangle} />
+        <Rectangle
+          paper={paper}
+          rectangle={previousSheetEndPointRectangle}
+          fillColor={previousSheetEndPointRectangleColor}
+        />
       )}
 
       <DrawingPath
