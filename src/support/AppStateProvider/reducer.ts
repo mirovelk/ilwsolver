@@ -420,19 +420,19 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         });
       });
       console.log(
-        JSON.stringify(nextState.sheets[nextState.activeSheetIndex])
+        JSON.stringify(nextState.sheets[nextState.activeSheetIndex].inputValues)
           .replaceAll("[", "{")
           .replaceAll("]", "}")
       );
-      console.log(
-        JSON.stringify(
-          nextState.sheets[nextState.activeSheetIndex].solvers.map(
-            (solver) => solver.ouputValues
-          )
-        )
-          .replaceAll("[", "{")
-          .replaceAll("]", "}")
-      );
+      // console.log(
+      //   JSON.stringify(
+      //     nextState.sheets[nextState.activeSheetIndex].solvers.map(
+      //       (solver) => solver.ouputValues
+      //     )
+      //   )
+      //     .replaceAll("[", "{")
+      //     .replaceAll("]", "}")
+      // );
       return nextState;
 
     case AppActionType.ClearInputOuputValues:
