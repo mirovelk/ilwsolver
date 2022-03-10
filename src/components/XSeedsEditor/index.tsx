@@ -401,7 +401,7 @@ function XSeedsEditor() {
                             css={css`
                               margin-top: 3px;
                               overflow: hidden;
-                              color: #666666;
+                              color: #999999;
                               font-size: 13px;
                               white-space: nowrap;
                               display: flex;
@@ -432,7 +432,7 @@ function XSeedsEditor() {
                           <div
                             css={css`
                               overflow: hidden;
-                              color: #666666;
+                              color: #999999;
                               font-size: 13px;
                               white-space: nowrap;
                               display: flex;
