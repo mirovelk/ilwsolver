@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Add, Circle, ContentCopy, Remove, Star } from '@mui/icons-material';
+import { Add, Circle, ContentCopy, Remove, Square } from '@mui/icons-material';
 import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
 import Paper from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -407,12 +407,12 @@ function XSeedsEditor() {
                               align-items: center;
                             `}
                           >
-                            <Star
+                            <Square
                               css={css`
-                                width: 15px;
-                                height: 15px;
+                                width: 13px;
+                                height: 13px;
                                 position: relative;
-                                margin-right: 2px;
+                                margin-right: 4px;
                                 top: -1px;
                               `}
                             />
