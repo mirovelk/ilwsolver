@@ -65,10 +65,7 @@ const XSeedsWrapper = styled.div`
 
 const XSeedContent = styled.div`
   display: flex;
-  padding: 5px;
-  &:not(:last-child) {
-    margin-bottom: 10px;
-  }
+  margin-bottom: 10px;
 `;
 
 const XSeedRoot = styled(MaterialPaper)`
@@ -93,14 +90,18 @@ const AddXSeedButton = styled(IconButton)``;
 
 const XSeedWrapper = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 `;
 
+const controlOffset = "10px";
+
 const XSeedRemoveWrapper = styled.div`
+  margin-top: ${controlOffset};
   margin-right: 10px;
 `;
 
 const XSeedColorWrapper = styled.div`
+  margin-top: ${controlOffset};
   position: relative;
   margin-right: 8px;
   display: flex;
