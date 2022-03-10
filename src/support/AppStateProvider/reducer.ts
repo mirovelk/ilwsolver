@@ -3,6 +3,7 @@ import Paper from 'paper';
 
 import { getDifferentColor, getNextColorWithBuffer } from '../../util/color';
 import { Complex, complex, getRandomNumberBetween } from '../../util/complex';
+import { stringifyForMathematica } from '../../util/mathematica';
 import { ResultInQArray, solveInQArray } from '../calc/calc';
 
 export const SIMPLIFY_INITIAL = -3;
@@ -20,7 +21,6 @@ enum AppActionType {
   SetXSeedsM,
   SetXSeedNumberPart,
   SetSolverColor,
-  CopyResultToXSeed,
   SetBadPoints,
   SetInputZoom,
   SetOutputZoom,
@@ -218,15 +218,6 @@ export function setSolverColorAction(
   };
 }
 
-interface CopyResultToXSeedAction extends AppAction {
-  type: AppActionType.CopyResultToXSeed;
-}
-export function copyResultToXSeedAction(): CopyResultToXSeedAction {
-  return {
-    type: AppActionType.CopyResultToXSeed,
-  };
-}
-
 interface SetBadPointsAction extends AppAction {
   type: AppActionType.SetBadPoints;
   payload: {
@@ -420,9 +411,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         });
       });
       console.log(
-        JSON.stringify(nextState.sheets[nextState.activeSheetIndex].inputValues)
-          .replaceAll("[", "{")
-          .replaceAll("]", "}")
+        stringifyForMathematica(
+          nextState.sheets[nextState.activeSheetIndex].inputValues
+        )
       );
       // console.log(
       //   JSON.stringify(
@@ -588,15 +579,6 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         const color = (action as SetSolverColorAction).payload.color;
 
         draft.sheets[draft.activeSheetIndex].solvers[solverIndex].color = color;
-      });
-
-    case AppActionType.CopyResultToXSeed:
-      return produce(state, (draft) => {
-        draft.sheets[draft.activeSheetIndex].solvers.forEach((solver) => {
-          if (solver.calculatedXSeed) {
-            solver.xSeed = solver.calculatedXSeed.start;
-          }
-        });
       });
 
     case AppActionType.SetBadPoints:

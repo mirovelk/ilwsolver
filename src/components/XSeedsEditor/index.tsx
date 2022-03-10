@@ -3,13 +3,13 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Add, Circle, ContentCopy, Remove, Square } from '@mui/icons-material';
 import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
+import clipboard from 'clipboardy';
 import Paper from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChromePicker } from 'react-color';
 
 import {
   addXSeedAction,
-  copyResultToXSeedAction,
   getRandomXSeedPartNumber,
   removeXSeedAction,
   setSolverColorAction,
@@ -20,6 +20,7 @@ import {
 } from '../../support/AppStateProvider/reducer';
 import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
 import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
+import { stringifyForMathematica } from '../../util/mathematica';
 
 const LeftControlsWrapper = styled(MaterialPaper)`
   display: inline-flex;
@@ -42,10 +43,20 @@ const XSeedsHeaderControlsWrapper = styled.div`
   justify-content: space-between;
 `;
 
+const HeaderLeft = styled.div`
+  display: flex;
+`;
+const HeaderRight = styled.div`
+  display: flex;
+`;
+
+const CopyButtonsWrapper = styled.div``;
+
 const AddXSeedButtonWrapper = styled.div``;
 
 const XSeedsMWrapper = styled.div`
   display: flex;
+  margin-right: 15px;
   align-items: baseline;
 `;
 
@@ -170,6 +181,14 @@ function XSeedsEditor() {
     [appStateSolvers]
   );
 
+  const allXSeedsCalculated = useMemo(
+    () =>
+      !calculatedXSeeds.some(
+        (calculatedXSeed) => typeof calculatedXSeed === "undefined"
+      ),
+    [calculatedXSeeds]
+  );
+
   const xSeedsM = useMemo(() => xSeeds[0].length, [xSeeds]);
 
   const [xSeedsInput, setXSeedsInput] = useState(stringifyXSeeds(xSeeds));
@@ -286,11 +305,26 @@ function XSeedsEditor() {
     [appDispatch]
   );
 
-  const copyResultToXSeedOnClick = useCallback(
+  const copyResultsStart = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      appDispatch(copyResultToXSeedAction());
+      clipboard.write(
+        stringifyForMathematica(
+          calculatedXSeeds.map((calculatedXSeed) => calculatedXSeed?.start)
+        )
+      );
     },
-    [appDispatch]
+    [calculatedXSeeds]
+  );
+
+  const copyResultsEnd = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      clipboard.write(
+        stringifyForMathematica(
+          calculatedXSeeds.map((calculatedXSeed) => calculatedXSeed?.end)
+        )
+      );
+    },
+    [calculatedXSeeds]
   );
 
   return (
@@ -306,25 +340,71 @@ function XSeedsEditor() {
         </Typography>
 
         <XSeedsHeaderControlsWrapper>
-          <XSeedsMWrapper>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              M=
-            </Typography>
-            <XSeedsMInput
-              value={xSeedsM}
-              variant="standard"
-              type="number"
-              onChange={xSeedsMInputOnChange}
-            />
-          </XSeedsMWrapper>
-          <AddXSeedButtonWrapper>
-            <IconButton onClick={copyResultToXSeedOnClick}>
-              <ContentCopy />
-            </IconButton>
-            <AddXSeedButton onClick={addXSeedOnClick}>
-              <Add />
-            </AddXSeedButton>
-          </AddXSeedButtonWrapper>
+          <HeaderLeft>
+            <CopyButtonsWrapper>
+              <IconButton
+                onClick={copyResultsStart}
+                css={css`
+                  position: relative;
+                `}
+                disabled={!allXSeedsCalculated}
+              >
+                <ContentCopy />
+                <Square
+                  css={css`
+                    width: 13px;
+                    height: 13px;
+                    position: absolute;
+                    bottom: 5px;
+                    right: 5px;
+                    color: #999999;
+                  `}
+                />
+              </IconButton>
+              <IconButton
+                onClick={copyResultsEnd}
+                css={css`
+                  position: relative;
+                `}
+                disabled={!allXSeedsCalculated}
+              >
+                <ContentCopy />
+                <Circle
+                  css={css`
+                    width: 13px;
+                    height: 13px;
+                    position: absolute;
+                    bottom: 5px;
+                    right: 5px;
+                    color: #999999;
+                  `}
+                />
+              </IconButton>
+            </CopyButtonsWrapper>
+          </HeaderLeft>
+          <HeaderRight>
+            <XSeedsMWrapper>
+              <Typography
+                variant="subtitle1"
+                color="text.secondary"
+                gutterBottom
+              >
+                M=
+              </Typography>
+              <XSeedsMInput
+                value={xSeedsM}
+                variant="standard"
+                type="number"
+                onChange={xSeedsMInputOnChange}
+              />
+            </XSeedsMWrapper>
+
+            <AddXSeedButtonWrapper>
+              <AddXSeedButton onClick={addXSeedOnClick}>
+                <Add />
+              </AddXSeedButton>
+            </AddXSeedButtonWrapper>
+          </HeaderRight>
         </XSeedsHeaderControlsWrapper>
       </XSeedsHeader>
 
