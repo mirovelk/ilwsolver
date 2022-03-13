@@ -1,14 +1,14 @@
-/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Add } from '@mui/icons-material';
+import { Add, Close } from '@mui/icons-material';
 import { IconButton, Tab, Tabs } from '@mui/material';
 import React, { useCallback } from 'react';
 
-import { addSheetAction, setActiveSheetAction } from '../../support/AppStateProvider/reducer';
+import { addSheetAction, removeSheetAction, setActiveSheetAction } from '../../support/AppStateProvider/reducer';
 import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
 import useAppStateSheets from '../../support/AppStateProvider/useAppStateSheets';
 
+/** @jsxImportSource @emotion/react */
 const StyledTabs = styled(Tabs)`
   min-height: 35px;
 `;
@@ -34,20 +34,47 @@ function SheetTabs() {
     [appDispatch]
   );
 
+  const removeSheet = useCallback(
+    (e, sheetIndex) => {
+      e.stopPropagation();
+      if (window.confirm("Remove tab?")) {
+        appDispatch(removeSheetAction(sheetIndex));
+      } else {
+        // Do nothing!
+      }
+    },
+    [appDispatch]
+  );
+
   return (
     <div
       css={css`
         display: flex;
       `}
     >
-      <StyledTabs
-        value={activeSheetIndex}
-        onChange={setActiveSheet}
-        variant="scrollable"
-      >
+      <StyledTabs value={activeSheetIndex} onChange={setActiveSheet}>
         {sheets.map((sheet, sheetIndex) => (
           <StyledTab
-            label={sheetIndex + 1}
+            label={
+              <div
+                css={css`
+                  display: flex;
+                  align-items: center;
+                  margin-left: 5px;
+                `}
+              >
+                {sheet.label}
+                {sheets.length > 1 && (
+                  <Close
+                    fontSize="inherit"
+                    onClick={(e) => removeSheet(e, sheetIndex)}
+                    css={css`
+                      margin-left: 5px;
+                    `}
+                  />
+                )}
+              </div>
+            }
             value={sheetIndex}
             key={sheetIndex}
           />

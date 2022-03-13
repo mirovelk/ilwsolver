@@ -26,6 +26,7 @@ enum AppActionType {
   SetOutputZoom,
   AddSheet,
   SetActiveSheet,
+  RemoveSheet,
   SetInputSegments,
   AddInputDrawingPoint,
   SetInputSimplifyTolerance,
@@ -281,6 +282,19 @@ export function setActiveSheetAction(sheetIndex: number): SetActiveSheetAction {
   };
 }
 
+interface RemoveSheetAction extends AppAction {
+  type: AppActionType.RemoveSheet;
+  payload: {
+    sheetIndex: number;
+  };
+}
+export function removeSheetAction(sheetIndex: number): RemoveSheetAction {
+  return {
+    type: AppActionType.RemoveSheet,
+    payload: { sheetIndex },
+  };
+}
+
 export function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
 }
@@ -302,6 +316,7 @@ function getInitialSheet(): Sheet {
   ];
   const colorsBuffer: paper.Color[] = [];
   return {
+    label: 1,
     inputValues: [],
     inputSegments: [],
     inputDrawingPoints: [],
@@ -374,6 +389,7 @@ export interface SolverState {
 export type Solvers = SolverState[];
 
 export interface Sheet {
+  label: number;
   inputSegments: paper.Segment[];
   inputDrawingPoints: paper.Point[];
   inputValues: Complex[];
@@ -599,6 +615,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case AppActionType.AddSheet:
       return produce(state, (draft) => {
         const newSheet = castDraft(getInitialSheet());
+        newSheet.label = state.sheets[draft.sheets.length - 1].label + 1;
+
         const lastSheetSolvers = state.sheets[draft.sheets.length - 1].solvers;
 
         newSheet.solvers = lastSheetSolvers.map((lastSheetSolver) => ({
@@ -622,6 +640,19 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         draft.activeSheetIndex = (
           action as SetActiveSheetAction
         ).payload.sheetIndex;
+      });
+
+    case AppActionType.RemoveSheet:
+      return produce(state, (draft) => {
+        const removedSheetIndex = (action as SetActiveSheetAction).payload
+          .sheetIndex;
+
+        draft.sheets = draft.sheets.filter(
+          (_, index) => index !== removedSheetIndex
+        );
+        if (removedSheetIndex <= draft.activeSheetIndex) {
+          draft.activeSheetIndex -= 1;
+        }
       });
 
     case AppActionType.SetInputSegments:
