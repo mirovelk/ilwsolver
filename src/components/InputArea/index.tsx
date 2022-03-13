@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Ballot, Create, GpsFixed } from '@mui/icons-material';
+import { Ballot, GpsFixed } from '@mui/icons-material';
 import { Checkbox, FormControlLabel, Grid, IconButton, Input, Slider } from '@mui/material';
 import Paper, { Color } from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -280,11 +280,13 @@ function InputArea({
               <IconButton
                 onClick={toggleQPanel}
                 css={css`
-                  font-size: 15px;
+                  font-size: 22px;
+                  width: 40px;
+                  height: 40px;
                 `}
                 color={visiblePanel === Panel.QPanel ? "primary" : "default"}
               >
-                <Create />
+                Q
               </IconButton>
             </Grid>
             <Grid item>
