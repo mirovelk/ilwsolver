@@ -22,7 +22,7 @@ import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
 import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
 import { stringifyForMathematica } from '../../util/mathematica';
 
-const LeftControlsWrapper = styled(MaterialPaper)`
+const Panel = styled(MaterialPaper)`
   display: inline-flex;
   flex-direction: column;
   position: absolute;
@@ -328,7 +328,7 @@ function XSeedsEditor() {
   );
 
   return (
-    <LeftControlsWrapper elevation={3}>
+    <Panel elevation={3}>
       <XSeedsHeader>
         <Typography
           variant="h6"
@@ -555,7 +555,7 @@ function XSeedsEditor() {
         multiline
         helperText={xSeedsInputError ? "Invalid input" : ""}
       />
-    </LeftControlsWrapper>
+    </Panel>
   );
 }
 

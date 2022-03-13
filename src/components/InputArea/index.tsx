@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Ballot, GpsFixed } from '@mui/icons-material';
+import { Ballot, Create, GpsFixed } from '@mui/icons-material';
 import { Checkbox, FormControlLabel, Grid, IconButton, Input, Slider } from '@mui/material';
 import Paper, { Color } from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -31,6 +31,7 @@ import Circle from '../paper/Circle';
 import Path from '../paper/Path';
 import Rectangle from '../paper/Rectangle';
 import PathWithEnds from '../PathWithEnds';
+import QPanel from '../QPanel';
 import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
 
@@ -48,6 +49,11 @@ const drawingPathIsNotDrawingWidth = 1;
 const previousSheetEndPointRectangleColor = new Color(0, 1, 1);
 
 const inputPathColor = new Color(1, 0, 0);
+
+enum Panel {
+  XSeedEditorPanel,
+  QPanel,
+}
 
 function getInputFromPath(
   inputPath: paper.Path,
@@ -113,7 +119,9 @@ function InputArea({
     [appStateInputZoom]
   );
 
-  const [xSeedsEditorVisible, setXSeedsEditorVisible] = useState(false);
+  const [visiblePanel, setVisiblePanel] = useState<Panel | undefined>(
+    undefined
+  );
   const [badPointEditorVisible, setBadPointEditorVisible] = useState(false);
 
   const [isDrawing, setIsDrawing] = useState(false);
@@ -194,8 +202,16 @@ function InputArea({
   ]);
 
   const toggleXSeedsEditor = useCallback(() => {
-    setXSeedsEditorVisible(
-      (previousXSeedsEditorVisible) => !previousXSeedsEditorVisible
+    setVisiblePanel((previousVisiblePanel) =>
+      previousVisiblePanel !== Panel.XSeedEditorPanel
+        ? Panel.XSeedEditorPanel
+        : undefined
+    );
+  }, []);
+
+  const toggleQPanel = useCallback(() => {
+    setVisiblePanel((previousVisiblePanel) =>
+      previousVisiblePanel !== Panel.QPanel ? Panel.QPanel : undefined
     );
   }, []);
 
@@ -207,7 +223,8 @@ function InputArea({
 
   return (
     <>
-      {xSeedsEditorVisible && <XSeedsEditor />}
+      {visiblePanel === Panel.XSeedEditorPanel && <XSeedsEditor />}
+      {visiblePanel === Panel.QPanel && <QPanel />}
       <InteractiveCanvas
         paper={paper}
         id="input"
@@ -252,9 +269,22 @@ function InputArea({
             <Grid item>
               <IconButton
                 onClick={toggleXSeedsEditor}
-                color={xSeedsEditorVisible ? "primary" : "default"}
+                color={
+                  visiblePanel === Panel.XSeedEditorPanel
+                    ? "primary"
+                    : "default"
+                }
               >
                 <Ballot />
+              </IconButton>
+              <IconButton
+                onClick={toggleQPanel}
+                css={css`
+                  font-size: 15px;
+                `}
+                color={visiblePanel === Panel.QPanel ? "primary" : "default"}
+              >
+                <Create />
               </IconButton>
             </Grid>
             <Grid item>
