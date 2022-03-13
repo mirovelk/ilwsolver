@@ -2,7 +2,7 @@ import React, { Dispatch, useMemo } from 'react';
 import { useReducer } from 'react';
 
 import { Complex } from '../../util/complex';
-import { AppAction, appReducer, initialAppState, Sheet, Solvers } from './reducer';
+import { AppAction, appReducer, initialAppState, OutputProjectionVariant, Sheet, Solvers } from './reducer';
 
 export const AppDispatchProviderContext = React.createContext<{
   dispatch: Dispatch<AppAction>;
@@ -47,6 +47,13 @@ export const AppStateOutputZoomProviderContext = React.createContext<{
 }>({
   outputZoom: initialAppState.outputZoom,
 });
+
+export const AppStateOutputProjectionVariantProviderContext =
+  React.createContext<{
+    outputProjectionVariant: OutputProjectionVariant;
+  }>({
+    outputProjectionVariant: initialAppState.outputProjectionVariant,
+  });
 
 export const AppStateSheetsProviderContext = React.createContext<{
   sheets: Sheet[];
@@ -195,7 +202,17 @@ function AppStateProvider({ children }: { children: React.ReactElement }) {
                             [previousSheet]
                           )}
                         >
-                          {children}
+                          <AppStateOutputProjectionVariantProviderContext.Provider
+                            value={useMemo(
+                              () => ({
+                                outputProjectionVariant:
+                                  appState.outputProjectionVariant,
+                              }),
+                              [appState.outputProjectionVariant]
+                            )}
+                          >
+                            {children}
+                          </AppStateOutputProjectionVariantProviderContext.Provider>
                         </AppStatePreviousSheetEndPointProviderContext.Provider>
                       </AppStateInputSimplifyContext.Provider>
                     </AppStateInputDrawingPointsProviderContext.Provider>

@@ -31,6 +31,7 @@ enum AppActionType {
   AddInputDrawingPoint,
   SetInputSimplifyTolerance,
   SetInputSimplifyEnabled,
+  SetOutputProjectionVariant,
 }
 
 export interface AppAction {
@@ -295,12 +296,33 @@ export function removeSheetAction(sheetIndex: number): RemoveSheetAction {
   };
 }
 
+interface SetOutputProjectionVariantAction extends AppAction {
+  type: AppActionType.SetOutputProjectionVariant;
+  payload: {
+    outputProjectionVariant: OutputProjectionVariant;
+  };
+}
+export function setOutputProjectionVariantAction(
+  outputProjectionVariant: number
+): SetOutputProjectionVariantAction {
+  return {
+    type: AppActionType.SetOutputProjectionVariant,
+    payload: { outputProjectionVariant },
+  };
+}
+
 export function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
 }
 
 function getRandomXSeedNumber(): Complex {
   return [getRandomXSeedPartNumber(), getRandomXSeedPartNumber()];
+}
+
+export enum OutputProjectionVariant {
+  V1,
+  V2,
+  V3,
 }
 
 const initialSolver = {
@@ -337,6 +359,7 @@ function getInitialData(): AppState {
     secondaryActiveSheetIndecies: new Set(),
     inputZoom: 1,
     outputZoom: 1,
+    outputProjectionVariant: OutputProjectionVariant.V1,
     badPoints: [
       [-58.0141, 0],
       [-55.6141, 0],
@@ -401,6 +424,7 @@ export interface Sheet {
 export interface AppState {
   inputZoom: number;
   outputZoom: number;
+  outputProjectionVariant: OutputProjectionVariant;
   badPoints: Complex[];
   sheets: Sheet[];
   activeSheetIndex: number;
@@ -681,6 +705,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return produce(state, (draft) => {
         draft.sheets[draft.activeSheetIndex].inputSimplifyEnabled = castDraft(
           (action as SetInputSimplifyEnabledAction).payload.inputSimplifyEnabled
+        );
+      });
+
+    case AppActionType.SetOutputProjectionVariant:
+      return produce(state, (draft) => {
+        draft.outputProjectionVariant = castDraft(
+          (action as SetOutputProjectionVariantAction).payload
+            .outputProjectionVariant
         );
       });
 

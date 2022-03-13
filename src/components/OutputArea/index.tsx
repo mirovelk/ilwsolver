@@ -1,11 +1,21 @@
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
+import { Button, ButtonGroup } from '@mui/material';
 import Paper from 'paper';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { setOutputZoomAction } from '../../support/AppStateProvider/reducer';
+import {
+  OutputProjectionVariant,
+  setOutputProjectionVariantAction,
+  setOutputZoomAction,
+} from '../../support/AppStateProvider/reducer';
 import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
+import useAppStateInputValues from '../../support/AppStateProvider/useAppStateInputValues';
+import useAppStateOutputProjectionVariant from '../../support/AppStateProvider/useAppStateOutputProjectionVariant';
 import useAppStateOutputZoom from '../../support/AppStateProvider/useAppStateOutputZoom';
 import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
 import { ResultInQArray } from '../../support/calc/calc';
+import { add, Complex, complex, divide, multiply, subtract } from '../../util/complex';
 import InteractiveCanvas from '../InteractiveCanvas';
 import PathWithEnds from '../PathWithEnds';
 
@@ -44,9 +54,44 @@ interface OutputPaths {
 
 type OutputsPaths = OutputPaths[];
 
+const complexOne = complex(1);
+const complexSix = complex(6);
+
+function projectV2(x: Complex, q: Complex): Complex {
+  return divide(add(x, complexSix), subtract(complexOne, q));
+}
+
+function projectV3(x: Complex, q: Complex): Complex {
+  return multiply(subtract(complexOne, q), x);
+}
+
+function valueToProjectedValue(
+  x: Complex,
+  q: Complex,
+  projectionVariant: OutputProjectionVariant
+): Complex {
+  switch (projectionVariant) {
+    case OutputProjectionVariant.V1:
+      return x;
+    case OutputProjectionVariant.V2:
+      return projectV2(x, q);
+    case OutputProjectionVariant.V3:
+      return projectV3(x, q);
+    default:
+      return x;
+  }
+}
+
+function valueToPoint(x: Complex): paper.Point {
+  return new Paper.Point(x[0], -x[1]);
+}
+
 function OutputArea({ paper }: { paper: paper.PaperScope }) {
   const { appDispatch } = useAppDispatch();
   const { appStateSolvers } = useAppStateSolvers();
+  const { appStateInputValues } = useAppStateInputValues();
+  const { outputProjectionVariant } = useAppStateOutputProjectionVariant();
+
   const { appStateOutputZoom } = useAppStateOutputZoom();
   const setZoom = useCallback(
     (zoom: number) => {
@@ -60,7 +105,15 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
   useEffect(() => {
     const outputsPaths = appStateSolvers.map((solver, solverIndex) => ({
       paths: (solver?.ouputValues ?? []).map((path) =>
-        path.map(([x, y]) => new Paper.Point(x, -y))
+        path.map((value, valueIndex) =>
+          valueToPoint(
+            valueToProjectedValue(
+              value,
+              appStateInputValues[valueIndex],
+              outputProjectionVariant
+            )
+          )
+        )
       ),
       color: solver.color,
       dashed: !solver.ouputValuesValid,
@@ -76,7 +129,13 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
       viewFitBounds(paper, new Paper.Path(allPaths), setZoom);
     }
     setPoints(outputsPaths);
-  }, [paper, appStateSolvers, setZoom]);
+  }, [
+    paper,
+    appStateSolvers,
+    setZoom,
+    appStateInputValues,
+    outputProjectionVariant,
+  ]);
 
   return (
     <>
@@ -85,7 +144,60 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
         id="output"
         title="Output"
         setZoom={setZoom}
-        topControls={<></>}
+        topControls={
+          <div
+            css={css`
+              display: flex;
+              justify-content: flex-end;
+              width: 100%;
+            `}
+          >
+            <ButtonGroup>
+              <Button
+                variant={
+                  outputProjectionVariant === OutputProjectionVariant.V1
+                    ? "contained"
+                    : "outlined"
+                }
+                onClick={() =>
+                  appDispatch(
+                    setOutputProjectionVariantAction(OutputProjectionVariant.V1)
+                  )
+                }
+              >
+                x
+              </Button>
+              <Button
+                variant={
+                  outputProjectionVariant === OutputProjectionVariant.V2
+                    ? "contained"
+                    : "outlined"
+                }
+                onClick={() =>
+                  appDispatch(
+                    setOutputProjectionVariantAction(OutputProjectionVariant.V2)
+                  )
+                }
+              >
+                x + 6/(1 - q)
+              </Button>
+              <Button
+                variant={
+                  outputProjectionVariant === OutputProjectionVariant.V3
+                    ? "contained"
+                    : "outlined"
+                }
+                onClick={() =>
+                  appDispatch(
+                    setOutputProjectionVariantAction(OutputProjectionVariant.V3)
+                  )
+                }
+              >
+                (1 - q) * x
+              </Button>
+            </ButtonGroup>
+          </div>
+        }
         bottomControls={<></>}
       />
       {points.map((outputPathsPoints, outputPathsPointsIndex) =>

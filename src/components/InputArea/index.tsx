@@ -1,3 +1,4 @@
+/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Ballot, GpsFixed } from '@mui/icons-material';
@@ -286,7 +287,7 @@ function InputArea({
                 `}
                 color={visiblePanel === Panel.QPanel ? "primary" : "default"}
               >
-                Q
+                q
               </IconButton>
             </Grid>
             <Grid item>

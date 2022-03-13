@@ -76,7 +76,7 @@ function QPanel() {
           <ContentCopy />
         </IconButton>
         <Typography variant="h6" color="text.secondary">
-          Q
+          q
         </Typography>
       </Header>
 
@@ -92,7 +92,7 @@ function QPanel() {
             <ContentCopy />
           </IconButton>
           <Typography variant="subtitle1" color="text.secondary">
-            Q<sub>0</sub>
+            q<sub>0</sub>
             {" = "}
             {appStateInputValues.length > 0 ? (
               <>
@@ -116,7 +116,7 @@ function QPanel() {
             <ContentCopy />
           </IconButton>
           <Typography variant="subtitle1" color="text.secondary">
-            Q<sub>n</sub>
+            q<sub>n</sub>
             {" = "}
             {appStateInputValues.length > 0 ? (
               <>
