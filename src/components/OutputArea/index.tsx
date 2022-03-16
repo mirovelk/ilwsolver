@@ -58,7 +58,7 @@ const complexOne = complex(1);
 const complexSix = complex(6);
 
 function projectV2(x: Complex, q: Complex): Complex {
-  return divide(add(x, complexSix), subtract(complexOne, q));
+  return add(x, divide(complexSix, subtract(complexOne, q)));
 }
 
 function projectV3(x: Complex, q: Complex): Complex {
