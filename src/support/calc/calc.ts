@@ -1,14 +1,6 @@
-import { lusolve } from "mathjs";
+import { lusolve } from 'mathjs';
 
-import {
-  add,
-  Complex,
-  complex,
-  copy,
-  minus,
-  multiply,
-  subtract,
-} from "../../util/complex";
+import { add, Complex, complex, copy, minus, multiply, subtract } from '../../util/complex';
 
 const E1 = complex(2);
 const E2 = complex(3);

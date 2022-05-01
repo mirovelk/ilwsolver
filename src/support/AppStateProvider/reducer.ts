@@ -674,7 +674,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         draft.sheets = draft.sheets.filter(
           (_, index) => index !== removedSheetIndex
         );
-        if (removedSheetIndex <= draft.activeSheetIndex) {
+        if (
+          draft.activeSheetIndex !== 0 &&
+          removedSheetIndex <= draft.activeSheetIndex
+        ) {
           draft.activeSheetIndex -= 1;
         }
       });
