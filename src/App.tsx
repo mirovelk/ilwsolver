@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { Delete, Functions } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import Paper from 'paper';
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 
 import InputArea from './components/InputArea';
 import { defaultScaleDownFactor } from './components/InteractiveCanvas/util';

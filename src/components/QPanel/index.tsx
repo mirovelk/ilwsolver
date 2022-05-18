@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 import { ContentCopy } from '@mui/icons-material';
 import { IconButton, Paper as MaterialPaper, Typography } from '@mui/material';
 import clipboard from 'clipboardy';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback } from 'react';
 
 import useAppStateInputValues from '../../support/AppStateProvider/useAppStateInputValues';
 import { stringifyForMathematica } from '../../util/mathematica';
