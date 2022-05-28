@@ -17,7 +17,7 @@ export interface SolverState {
     start: XSeedValue;
     end: XSeedValue;
   };
-  color: paper.Color;
+  color: string; // Paper.Color constructors do not accept components array
   ouputValues?: ResultInQArray;
   ouputValuesValid: boolean;
 }

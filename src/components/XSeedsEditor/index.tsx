@@ -1,5 +1,3 @@
-/** @jsxImportSource @emotion/react */
-// TODO remove macros
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Add, Circle, ContentCopy, Remove, Square } from '@mui/icons-material';
@@ -22,6 +20,8 @@ import { XSeedValue } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { stringifyForMathematica } from '../../util/mathematica';
 
+/** @jsxImportSource @emotion/react */
+// TODO remove macros
 const Panel = styled(MaterialPaper)`
   display: inline-flex;
   flex-direction: column;
@@ -432,7 +432,7 @@ function XSeedsEditor() {
             </XSeedRemoveWrapper>
             <XSeedColorWrapper>
               <XSeedColor
-                seedColor={solvers[xSeedIndex].color}
+                seedColor={new Paper.Color(solvers[xSeedIndex].color)}
                 onClick={() =>
                   setVisibleColorPickerIndex(
                     (previousVisibleColorPickerIndex) =>
@@ -445,7 +445,9 @@ function XSeedsEditor() {
               <XSeedColorPickerWrapper>
                 {visibleColorPickerIndex === xSeedIndex && (
                   <ChromePicker
-                    color={solvers[xSeedIndex].color.toCSS(true)}
+                    color={new Paper.Color(solvers[xSeedIndex].color).toCSS(
+                      true
+                    )}
                     disableAlpha
                     styles={{
                       default: {
@@ -458,7 +460,7 @@ function XSeedsEditor() {
                       dispatch(
                         setSolverColor({
                           solverIndex: xSeedIndex,
-                          color: new Paper.Color(color.hex),
+                          color: new Paper.Color(color.hex).toCSS(true),
                         })
                       );
                     }}

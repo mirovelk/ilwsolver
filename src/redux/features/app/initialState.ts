@@ -13,6 +13,7 @@ export const initialSolver = {
   ouputValuesValid: false,
 };
 
+console.log("initialSolver :>> ", initialSolver);
 export function getInitialSheet(): Sheet {
   const seeds = [
     [complex(2, -3), complex(3, -2)],
@@ -28,7 +29,7 @@ export function getInitialSheet(): Sheet {
     solvers: seeds.map((xSeed) => ({
       ...initialSolver,
       xSeed,
-      color: getNextColorWithBuffer(colorsBuffer),
+      color: getNextColorWithBuffer(colorsBuffer).toCSS(true),
     })),
   };
 }

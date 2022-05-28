@@ -1,5 +1,6 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { castDraft } from 'immer';
+import Paper from 'paper';
 
 import { solveInQArray } from '../../../support/calc/calc';
 import { getDifferentColor, getNextColorWithBuffer } from '../../../util/color';
@@ -73,7 +74,7 @@ export const appSlice = createSlice({
 
       const colorsBuffer = state.sheets[state.activeSheetIndex].solvers
         .slice(0, payloadXSeedsValues.length)
-        .map((solver) => solver.color);
+        .map((solver) => new Paper.Color(solver.color));
 
       if (
         JSON.stringify(previousXSeedsValues) !==
@@ -114,7 +115,7 @@ export const appSlice = createSlice({
                 }
               : {
                   ouputValuesValid: false,
-                  color: getNextColorWithBuffer(colorsBuffer),
+                  color: getNextColorWithBuffer(colorsBuffer).toCSS(true),
                 }),
             xSeed: payloadXSeedValues,
           })
@@ -148,12 +149,12 @@ export const appSlice = createSlice({
     addXSeed: (state) => {
       const M = state.sheets[state.activeSheetIndex].solvers[0].xSeed.length;
       const previousColors = state.sheets[state.activeSheetIndex].solvers.map(
-        (solver) => solver.color
+        (solver) => new Paper.Color(solver.color)
       );
 
       state.sheets[state.activeSheetIndex].solvers.push({
         xSeed: new Array(M).fill(null).map(() => getRandomXSeedNumber()),
-        color: getDifferentColor(previousColors),
+        color: getDifferentColor(previousColors).toCSS(true),
         ouputValues: undefined,
         ouputValuesValid: false,
       });
@@ -195,7 +196,7 @@ export const appSlice = createSlice({
       state,
       action: PayloadAction<{
         solverIndex: number;
-        color: paper.Color;
+        color: string;
       }>
     ) => {
       const { solverIndex, color } = action.payload;

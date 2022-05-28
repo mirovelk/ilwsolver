@@ -116,7 +116,7 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
           )
         )
       ),
-      color: solver.color,
+      color: new Paper.Color(solver.color),
       dashed: !solver.ouputValuesValid,
     }));
     if (
