@@ -27,9 +27,7 @@ const StyledTab = styled(Tab)`
 function SheetTabs() {
   const dispatch = useAppDispatch();
   const activeSheetIndex = useAppSelector(selectActiveSheetIndex); // TODO do differently not to rely on indexes
-  const sheets = useAppSelector(selectSheets);
-
-  // TODO check for re-renders when drawing
+  const sheets = useAppSelector(selectSheets); // TODO triggers re-renders
 
   const addSheetOnClick = useCallback(() => {
     dispatch(addSheet());
