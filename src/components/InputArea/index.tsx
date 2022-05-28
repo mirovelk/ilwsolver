@@ -11,11 +11,9 @@ import {
   addInputDrawingPoint,
   selectActiveSheetInputSimplifyConfig,
   selectActiveSheetIputDrawingPoints,
-  selectActiveSheetIputSegments,
   selectBadPoints,
   selectInputZoom,
-  selectPreviousSheetEndPoint,
-  setInputSegments,
+  selectPreviousSheetEndInputValue,
   setInputSimplifyEnabled,
   setInputSimplifyTolerance,
   setInputValues,
@@ -52,7 +50,7 @@ enum Panel {
   QPanel,
 }
 
-function getInputFromPath(
+function getInputValuesFromPath(
   inputPath: paper.Path,
   inputSteps: number
 ): Complex[] {
@@ -80,11 +78,25 @@ function InputArea({
 
   const badPoints = useAppSelector(selectBadPoints);
   const inputZoom = useAppSelector(selectInputZoom);
-  const inputSegments = useAppSelector(selectActiveSheetIputSegments);
   const inputDrawingPoints = useAppSelector(selectActiveSheetIputDrawingPoints);
   const { enabled: inputSimplifyEnabled, tolerance: inputSimplifyTolerance } =
     useAppSelector(selectActiveSheetInputSimplifyConfig);
-  const previousSheetEndPoint = useAppSelector(selectPreviousSheetEndPoint);
+  const previousSheetEndInputValue = useAppSelector(
+    selectPreviousSheetEndInputValue
+  );
+
+  const [inputSegments, setInputSegments] = useState<paper.Segment[]>([]);
+
+  const previousSheetEndPoint = useMemo(
+    () =>
+      previousSheetEndInputValue
+        ? new Paper.Point([
+            previousSheetEndInputValue[0],
+            -previousSheetEndInputValue[1],
+          ])
+        : undefined,
+    [previousSheetEndInputValue]
+  );
 
   const previousSheetEndPointSize = useMemo(
     () => (1 / inputZoom) * 5,
@@ -187,8 +199,8 @@ function InputArea({
         const paperTolerance = Math.pow(10, inputSimplifyTolerance);
         path.simplify(paperTolerance);
       }
-      dispatch(setInputSegments(path.segments));
-      dispatch(setInputValues(getInputFromPath(path, inputSteps)));
+      setInputSegments(path.segments);
+      dispatch(setInputValues(getInputValuesFromPath(path, inputSteps)));
     }
   }, [
     inputDrawingPoints,

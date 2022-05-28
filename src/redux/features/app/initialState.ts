@@ -22,7 +22,6 @@ export function getInitialSheet(): Sheet {
   return {
     label: 1,
     inputValues: [],
-    inputSegments: [],
     inputDrawingPoints: [],
     inputSimplifyTolerance: SIMPLIFY_INITIAL,
     inputSimplifyEnabled: true,

@@ -26,7 +26,6 @@ export type Solvers = SolverState[];
 
 export interface Sheet {
   label: number;
-  inputSegments: paper.Segment[];
   inputDrawingPoints: paper.Point[];
   inputValues: Complex[];
   inputSimplifyTolerance: number;

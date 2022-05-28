@@ -53,7 +53,6 @@ export const appSlice = createSlice({
     // TODO sync reducer function names and selector names (activeSheet)
     clearInputOuputValues: (state) => {
       state.sheets[state.activeSheetIndex].inputValues = [];
-      state.sheets[state.activeSheetIndex].inputSegments = [];
       state.sheets[state.activeSheetIndex].inputDrawingPoints = [];
       state.sheets[state.activeSheetIndex].solvers.forEach((solver) => {
         solver.ouputValues = [];
@@ -254,12 +253,6 @@ export const appSlice = createSlice({
       }
     },
 
-    setInputSegments: (state, action: PayloadAction<paper.Segment[]>) => {
-      state.sheets[state.activeSheetIndex].inputSegments = castDraft(
-        action.payload
-      );
-    },
-
     addInputDrawingPoint: (state, action: PayloadAction<paper.Point>) => {
       state.sheets[state.activeSheetIndex].inputDrawingPoints.push(
         action.payload
@@ -304,10 +297,6 @@ export const selectActiveSheetIputValues = createSelector(
   [selectActiveSheet],
   (activeSheet) => activeSheet.inputValues
 );
-export const selectActiveSheetIputSegments = createSelector(
-  [selectActiveSheet],
-  (activeSheet) => activeSheet.inputSegments
-);
 export const selectActiveSheetIputDrawingPoints = createSelector(
   [selectActiveSheet],
   (activeSheet) => activeSheet.inputDrawingPoints
@@ -323,14 +312,12 @@ export const selectActiveSheetInputSimplifyConfig = createSelector(
     tolerance: activeSheet.inputSimplifyTolerance,
   })
 );
-export const selectPreviousSheetEndPoint = createSelector(
+export const selectPreviousSheetEndInputValue = createSelector(
   [selectPreviousSheet],
   (previousSheet) =>
     (previousSheet &&
-      previousSheet.inputSegments &&
-      previousSheet.inputSegments[previousSheet.inputSegments.length - 1] &&
-      previousSheet.inputSegments[previousSheet.inputSegments.length - 1]
-        .point) ||
+      previousSheet.inputValues &&
+      previousSheet.inputValues[previousSheet.inputValues.length - 1]) ||
     undefined
 );
 
@@ -345,7 +332,6 @@ export const {
   removeXSeedWithIndex,
   setActiveSheetIndex,
   setBadPoints,
-  setInputSegments,
   setInputSimplifyEnabled,
   setInputSimplifyTolerance,
   setInputValues,
