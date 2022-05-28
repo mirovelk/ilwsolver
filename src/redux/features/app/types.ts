@@ -17,7 +17,7 @@ export interface SolverState {
     start: XSeedValue;
     end: XSeedValue;
   };
-  color: string; // Paper.Color constructors do not accept components array
+  color: string; // Paper.Color constructors do not accept components array, use .toCSS(true)
   ouputValues?: ResultInQArray;
   ouputValuesValid: boolean;
 }

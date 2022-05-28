@@ -8,7 +8,7 @@ export const SIMPLIFY_INITIAL = -3;
 
 export const initialSolver = {
   xSeed: [0, 0],
-  color: new Paper.Color(255, 0, 0),
+  color: new Paper.Color(255, 0, 0).toCSS(true),
   ouputValues: undefined,
   ouputValuesValid: false,
 };
