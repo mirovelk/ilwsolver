@@ -10,6 +10,7 @@ import { ChromePicker } from 'react-color';
 import {
   addXSeed,
   getRandomXSeedPartNumber,
+  removeXSeedWithIndex,
   selectActiveSheetSolvers,
   setSolverColor,
   setXSeedNumberPart,
@@ -265,9 +266,9 @@ function XSeedsEditor() {
     dispatch(addXSeed());
   }, [dispatch]);
 
-  const removeXSeedWithIndex = useCallback(
+  const removeXSeed = useCallback(
     (index: number) => {
-      dispatch(removeXSeed(index));
+      dispatch(removeXSeedWithIndex(index));
     },
     [dispatch]
   );
@@ -425,7 +426,7 @@ function XSeedsEditor() {
               <IconButton
                 size="small"
                 disabled={xSeeds.length < 2}
-                onClick={() => removeXSeedWithIndex(xSeedIndex)}
+                onClick={() => removeXSeed(xSeedIndex)}
               >
                 <Remove fontSize="inherit" />
               </IconButton>
@@ -572,6 +573,3 @@ function XSeedsEditor() {
 }
 
 export default React.memo(XSeedsEditor);
-function removeXSeed(index: number): any {
-  throw new Error("Function not implemented.");
-}
