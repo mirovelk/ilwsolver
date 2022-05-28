@@ -171,7 +171,7 @@ function InputArea({
       // @ts-ignore
       if (e.event.buttons === 1) {
         setIsDrawing(true);
-        dispatch(addInputDrawingPoint(e.point));
+        dispatch(addInputDrawingPoint([e.point.x, e.point.y]));
       }
     };
 
@@ -180,7 +180,7 @@ function InputArea({
       if (oldOnMouseDrag) oldOnMouseDrag(e);
       // @ts-ignore
       if (e.event.buttons === 1) {
-        dispatch(addInputDrawingPoint(e.point));
+        dispatch(addInputDrawingPoint([e.point.x, e.point.y]));
       }
     };
 
@@ -354,7 +354,9 @@ function InputArea({
 
       <DrawingPath
         paper={paper}
-        points={inputDrawingPoints}
+        points={inputDrawingPoints.map(
+          (storedPoint) => new Paper.Point(storedPoint)
+        )}
         strokeColor={
           isDrawing ? drawingPathIsDrawingColor : drawingPathIsNotDrawingColor
         }

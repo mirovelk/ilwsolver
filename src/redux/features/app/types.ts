@@ -11,6 +11,8 @@ export enum OutputProjectionVariant {
 
 export type XSeedValue = PartialComplex[];
 
+export type StoredPoint = [number, number];
+
 export interface SolverState {
   xSeed: XSeedValue;
   calculatedXSeed?: {
@@ -26,7 +28,7 @@ export type Solvers = SolverState[];
 
 export interface Sheet {
   label: number;
-  inputDrawingPoints: paper.Point[];
+  inputDrawingPoints: StoredPoint[];
   inputValues: Complex[];
   inputSimplifyTolerance: number;
   inputSimplifyEnabled: boolean;
@@ -40,5 +42,4 @@ export interface AppState {
   badPoints: Complex[];
   sheets: Sheet[];
   activeSheetIndex: number;
-  secondaryActiveSheetIndecies: Set<number>;
 }

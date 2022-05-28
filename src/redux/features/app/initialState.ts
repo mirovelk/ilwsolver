@@ -13,7 +13,6 @@ export const initialSolver = {
   ouputValuesValid: false,
 };
 
-console.log("initialSolver :>> ", initialSolver);
 export function getInitialSheet(): Sheet {
   const seeds = [
     [complex(2, -3), complex(3, -2)],
@@ -37,7 +36,6 @@ export function getInitialSheet(): Sheet {
 export const initialState: AppState = {
   sheets: [getInitialSheet()],
   activeSheetIndex: 0,
-  secondaryActiveSheetIndecies: new Set(),
   inputZoom: 1,
   outputZoom: 1,
   outputProjectionVariant: OutputProjectionVariant.V1,

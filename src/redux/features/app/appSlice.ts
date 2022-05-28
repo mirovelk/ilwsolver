@@ -8,7 +8,7 @@ import { Complex, getRandomNumberBetween } from '../../../util/complex';
 import { stringifyForMathematica } from '../../../util/mathematica';
 import { RootState } from '../../store';
 import { getInitialSheet, initialSolver, initialState } from './initialState';
-import { OutputProjectionVariant, XSeedValue } from './types';
+import { OutputProjectionVariant, StoredPoint, XSeedValue } from './types';
 
 export function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
@@ -234,7 +234,6 @@ export const appSlice = createSlice({
 
       state.sheets.push(castDraft(newSheet));
       state.activeSheetIndex = state.sheets.length - 1;
-      state.secondaryActiveSheetIndecies = new Set();
     },
 
     setActiveSheetIndex: (state, action: PayloadAction<number>) => {
@@ -254,7 +253,7 @@ export const appSlice = createSlice({
       }
     },
 
-    addInputDrawingPoint: (state, action: PayloadAction<paper.Point>) => {
+    addInputDrawingPoint: (state, action: PayloadAction<StoredPoint>) => {
       state.sheets[state.activeSheetIndex].inputDrawingPoints.push(
         action.payload
       );
