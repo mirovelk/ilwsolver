@@ -1,4 +1,5 @@
 /** @jsxImportSource @emotion/react */
+// TODO remove macros
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Add, Circle, ContentCopy, Remove, Square } from '@mui/icons-material';
@@ -9,17 +10,16 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChromePicker } from 'react-color';
 
 import {
-  addXSeedAction,
+  addXSeed,
   getRandomXSeedPartNumber,
-  removeXSeedAction,
-  setSolverColorAction,
-  setXSeedNumberPartAction,
-  setXSeedsMAction,
-  setXSeedsValuesAction,
-  XSeedValue,
-} from '../../support/AppStateProvider/reducer';
-import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
-import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
+  selectActiveSheetSolvers,
+  setSolverColor,
+  setXSeedNumberPart,
+  setXSeedsM,
+  setXSeedsValues,
+} from '../../redux/features/app/appSlice';
+import { XSeedValue } from '../../redux/features/app/types';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { stringifyForMathematica } from '../../util/mathematica';
 
 const Panel = styled(MaterialPaper)`
@@ -168,17 +168,17 @@ function stringifyXSeeds(xSeeds: XSeedValue[]) {
 }
 
 function XSeedsEditor() {
-  const { appDispatch } = useAppDispatch();
-  const { appStateSolvers } = useAppStateSolvers();
+  const dispatch = useAppDispatch();
+  const solvers = useAppSelector(selectActiveSheetSolvers);
 
   const xSeeds = useMemo(
-    () => appStateSolvers.map((solver) => solver.xSeed),
-    [appStateSolvers]
+    () => solvers.map((solver) => solver.xSeed),
+    [solvers]
   );
 
   const calculatedXSeeds = useMemo(
-    () => appStateSolvers.map((solver) => solver.calculatedXSeed),
-    [appStateSolvers]
+    () => solvers.map((solver) => solver.calculatedXSeed),
+    [solvers]
   );
 
   const allXSeedsCalculated = useMemo(
@@ -233,7 +233,7 @@ function XSeedsEditor() {
           )
         ) {
           setXSeedsInputError(false);
-          appDispatch(setXSeedsValuesAction(xSeedsParsed));
+          dispatch(setXSeedsValues(xSeedsParsed));
         } else {
           throw new Error("invalid input");
         }
@@ -241,7 +241,7 @@ function XSeedsEditor() {
         setXSeedsInputError(true);
       }
     },
-    [appDispatch]
+    [dispatch]
   );
 
   const xSeedInputOnBlur = useCallback(
@@ -255,21 +255,21 @@ function XSeedsEditor() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newM = parseInt(e.currentTarget.value);
       if (typeof newM === "number" && !isNaN(newM) && newM > 0) {
-        appDispatch(setXSeedsMAction(newM));
+        dispatch(setXSeedsM(newM));
       }
     },
-    [appDispatch]
+    [dispatch]
   );
 
   const addXSeedOnClick = useCallback(() => {
-    appDispatch(addXSeedAction());
-  }, [appDispatch]);
+    dispatch(addXSeed());
+  }, [dispatch]);
 
   const removeXSeedWithIndex = useCallback(
     (index: number) => {
-      appDispatch(removeXSeedAction(index));
+      dispatch(removeXSeed(index));
     },
-    [appDispatch]
+    [dispatch]
   );
 
   const xSeedOnChange = useCallback(
@@ -281,11 +281,16 @@ function XSeedsEditor() {
         e.currentTarget.value.trim() === ""
           ? undefined
           : parseFloat(e.currentTarget.value);
-      appDispatch(
-        setXSeedNumberPartAction(xSeedIndex, cIndex, cPartIndex, value)
+      dispatch(
+        setXSeedNumberPart({
+          solverIndex: xSeedIndex,
+          xSeedNumberIndex: cIndex,
+          xSeedNumberPartIndex: cPartIndex,
+          value: value,
+        })
       );
     },
-    [appDispatch]
+    [dispatch]
   );
 
   // fill in random numbers instead of nulls
@@ -298,11 +303,16 @@ function XSeedsEditor() {
         e.currentTarget.value.trim() === ""
           ? getRandomXSeedPartNumber()
           : parseFloat(e.currentTarget.value);
-      appDispatch(
-        setXSeedNumberPartAction(xSeedIndex, cIndex, cPartIndex, value)
+      dispatch(
+        setXSeedNumberPart({
+          solverIndex: xSeedIndex,
+          xSeedNumberIndex: cIndex,
+          xSeedNumberPartIndex: cPartIndex,
+          value: value,
+        })
       );
     },
-    [appDispatch]
+    [dispatch]
   );
 
   const copyResultsStart = useCallback(
@@ -422,7 +432,7 @@ function XSeedsEditor() {
             </XSeedRemoveWrapper>
             <XSeedColorWrapper>
               <XSeedColor
-                seedColor={appStateSolvers[xSeedIndex].color}
+                seedColor={solvers[xSeedIndex].color}
                 onClick={() =>
                   setVisibleColorPickerIndex(
                     (previousVisibleColorPickerIndex) =>
@@ -435,7 +445,7 @@ function XSeedsEditor() {
               <XSeedColorPickerWrapper>
                 {visibleColorPickerIndex === xSeedIndex && (
                   <ChromePicker
-                    color={appStateSolvers[xSeedIndex].color.toCSS(true)}
+                    color={solvers[xSeedIndex].color.toCSS(true)}
                     disableAlpha
                     styles={{
                       default: {
@@ -445,11 +455,11 @@ function XSeedsEditor() {
                       },
                     }}
                     onChange={(color) => {
-                      appDispatch(
-                        setSolverColorAction(
-                          xSeedIndex,
-                          new Paper.Color(color.hex)
-                        )
+                      dispatch(
+                        setSolverColor({
+                          solverIndex: xSeedIndex,
+                          color: new Paper.Color(color.hex),
+                        })
                       );
                     }}
                   />
@@ -560,3 +570,6 @@ function XSeedsEditor() {
 }
 
 export default React.memo(XSeedsEditor);
+function removeXSeed(index: number): any {
+  throw new Error("Function not implemented.");
+}

@@ -9,13 +9,13 @@ import { defaultScaleDownFactor } from './components/InteractiveCanvas/util';
 import OutputArea from './components/OutputArea';
 import { inputPaper, outputPaper } from './papers';
 import {
-  calculateAllOutputPathsAction,
-  clearInputOuputValuesAction,
-  setInputZoomAction,
-  setOutputZoomAction,
-} from './support/AppStateProvider/reducer';
-import useAppDispatch from './support/AppStateProvider/useAppDispatch';
-import useAppStateInputValues from './support/AppStateProvider/useAppStateInputValues';
+  calculateAllOutputPaths,
+  clearInputOuputValues,
+  selectActiveSheetIputValues,
+  setInputZoom,
+  setOutputZoom,
+} from './redux/features/app/appSlice';
+import { useAppDispatch, useAppSelector } from './redux/store';
 import StyleProvider from './support/style/StyleProvider';
 
 const Wrapper = styled.div`
@@ -92,15 +92,15 @@ const StyledDelete = styled(Delete)`
 const INPUT_STEPS = 1000;
 
 function App() {
-  const { appDispatch } = useAppDispatch();
-  const { appStateInputValues } = useAppStateInputValues();
+  const dispatch = useAppDispatch();
+  const activeSheetInputValues = useAppSelector(selectActiveSheetIputValues);
 
   const process = useCallback(() => {
-    appDispatch(calculateAllOutputPathsAction());
-  }, [appDispatch]);
+    dispatch(calculateAllOutputPaths());
+  }, [dispatch]);
 
   const clear = useCallback(() => {
-    appDispatch(clearInputOuputValuesAction());
+    dispatch(clearInputOuputValues());
 
     inputPaper.view.center = new Paper.Point(0, 0);
     outputPaper.view.center = new Paper.Point(0, 0);
@@ -109,14 +109,14 @@ function App() {
       defaultScaleDownFactor *
         Math.min(inputPaper.view.bounds.right, inputPaper.view.bounds.bottom)
     );
-    appDispatch(setInputZoomAction(inputPaper.view.zoom));
+    dispatch(setInputZoom(inputPaper.view.zoom));
 
     outputPaper.view.scale(
       defaultScaleDownFactor *
         Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
     );
-    appDispatch(setOutputZoomAction(outputPaper.view.zoom));
-  }, [appDispatch]);
+    dispatch(setOutputZoom(outputPaper.view.zoom));
+  }, [dispatch]);
 
   return (
     <StyleProvider>
@@ -127,7 +127,7 @@ function App() {
               size="large"
               color="inherit"
               onClick={process}
-              disabled={appStateInputValues.length === 0}
+              disabled={activeSheetInputValues.length === 0}
             >
               <StyledFunctions fontSize="inherit" />
             </RunButton>

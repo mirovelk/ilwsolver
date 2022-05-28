@@ -3,9 +3,8 @@ import styled from '@emotion/styled';
 import { Paper as MaterialPaper, TextField, Typography } from '@mui/material';
 import React, { useCallback, useState } from 'react';
 
-import { setBadPointsAction } from '../../support/AppStateProvider/reducer';
-import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
-import useAppStateBadPoints from '../../support/AppStateProvider/useAppStateBadPoints';
+import { selectBadPoints, setBadPoints } from '../../redux/features/app/appSlice';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex } from '../../util/complex';
 
 const Wrapper = styled(MaterialPaper)`
@@ -46,11 +45,12 @@ function stringifyBadPoints(points: Complex[]) {
 }
 
 function BadPointEditor() {
-  const { appDispatch } = useAppDispatch();
-  const { appStateBadPoints } = useAppStateBadPoints();
+  const dispatch = useAppDispatch();
+
+  const badPoints = useAppSelector(selectBadPoints);
 
   const [badPointsInput, setBadPointsInput] = useState(
-    stringifyBadPoints(appStateBadPoints)
+    stringifyBadPoints(badPoints)
   );
   const [badPointsInputError, setBadPointsInputError] = useState(false);
 
@@ -72,7 +72,7 @@ function BadPointEditor() {
           )
         ) {
           setBadPointsInputError(false);
-          appDispatch(setBadPointsAction(badPointsParsed));
+          dispatch(setBadPoints(badPointsParsed));
         } else {
           throw new Error("invalid input");
         }
@@ -80,7 +80,7 @@ function BadPointEditor() {
         setBadPointsInputError(true);
       }
     },
-    [appDispatch]
+    [dispatch]
   );
 
   return (

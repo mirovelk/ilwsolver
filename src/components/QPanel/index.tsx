@@ -6,7 +6,8 @@ import { IconButton, Paper as MaterialPaper, Typography } from '@mui/material';
 import clipboard from 'clipboardy';
 import React, { useCallback } from 'react';
 
-import useAppStateInputValues from '../../support/AppStateProvider/useAppStateInputValues';
+import { selectActiveSheetIputValues } from '../../redux/features/app/appSlice';
+import { useAppSelector } from '../../redux/store';
 import { stringifyForMathematica } from '../../util/mathematica';
 
 const Panel = styled(MaterialPaper)`
@@ -36,31 +37,29 @@ const Row = styled.div`
 const iconSpacing = "10px";
 
 function QPanel() {
-  const { appStateInputValues } = useAppStateInputValues();
+  const inputValues = useAppSelector(selectActiveSheetIputValues);
 
   const copyInput = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      clipboard.write(stringifyForMathematica(appStateInputValues));
+      clipboard.write(stringifyForMathematica(inputValues));
     },
-    [appStateInputValues]
+    [inputValues]
   );
 
   const copyQ0 = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      clipboard.write(stringifyForMathematica(appStateInputValues[0]));
+      clipboard.write(stringifyForMathematica(inputValues[0]));
     },
-    [appStateInputValues]
+    [inputValues]
   );
 
   const copyQN = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       clipboard.write(
-        stringifyForMathematica(
-          appStateInputValues[appStateInputValues.length - 1]
-        )
+        stringifyForMathematica(inputValues[inputValues.length - 1])
       );
     },
-    [appStateInputValues]
+    [inputValues]
   );
 
   return (
@@ -71,7 +70,7 @@ function QPanel() {
           css={css`
             margin-right: ${iconSpacing};
           `}
-          disabled={!(appStateInputValues.length > 0)}
+          disabled={!(inputValues.length > 0)}
         >
           <ContentCopy />
         </IconButton>
@@ -87,17 +86,17 @@ function QPanel() {
             css={css`
               margin-right: ${iconSpacing};
             `}
-            disabled={!(appStateInputValues.length > 0)}
+            disabled={!(inputValues.length > 0)}
           >
             <ContentCopy />
           </IconButton>
           <Typography variant="subtitle1" color="text.secondary">
             q<sub>0</sub>
             {" = "}
-            {appStateInputValues.length > 0 ? (
+            {inputValues.length > 0 ? (
               <>
                 {" { "}
-                {appStateInputValues[0][0]}, {appStateInputValues[0][1]}
+                {inputValues[0][0]}, {inputValues[0][1]}
                 {" } "}
               </>
             ) : (
@@ -111,18 +110,18 @@ function QPanel() {
             css={css`
               margin-right: ${iconSpacing};
             `}
-            disabled={!(appStateInputValues.length > 0)}
+            disabled={!(inputValues.length > 0)}
           >
             <ContentCopy />
           </IconButton>
           <Typography variant="subtitle1" color="text.secondary">
             q<sub>n</sub>
             {" = "}
-            {appStateInputValues.length > 0 ? (
+            {inputValues.length > 0 ? (
               <>
                 {" { "}
-                {appStateInputValues[appStateInputValues.length - 1][0]},{" "}
-                {appStateInputValues[appStateInputValues.length - 1][1]}
+                {inputValues[inputValues.length - 1][0]},{" "}
+                {inputValues[inputValues.length - 1][1]}
                 {" } "}
               </>
             ) : (

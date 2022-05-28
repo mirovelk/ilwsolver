@@ -5,15 +5,15 @@ import Paper from 'paper';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
-  OutputProjectionVariant,
-  setOutputProjectionVariantAction,
-  setOutputZoomAction,
-} from '../../support/AppStateProvider/reducer';
-import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
-import useAppStateInputValues from '../../support/AppStateProvider/useAppStateInputValues';
-import useAppStateOutputProjectionVariant from '../../support/AppStateProvider/useAppStateOutputProjectionVariant';
-import useAppStateOutputZoom from '../../support/AppStateProvider/useAppStateOutputZoom';
-import useAppStateSolvers from '../../support/AppStateProvider/useAppStateSolvers';
+  selectActiveSheetIputValues,
+  selectActiveSheetSolvers,
+  selectOutputProjectionVariant,
+  selectOutputZoom,
+  setOutputProjectionVariant,
+  setOutputZoom,
+} from '../../redux/features/app/appSlice';
+import { OutputProjectionVariant } from '../../redux/features/app/types';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { ResultInQArray } from '../../support/calc/calc';
 import { add, Complex, complex, divide, multiply, subtract } from '../../util/complex';
 import InteractiveCanvas from '../InteractiveCanvas';
@@ -87,29 +87,30 @@ function valueToPoint(x: Complex): paper.Point {
 }
 
 function OutputArea({ paper }: { paper: paper.PaperScope }) {
-  const { appDispatch } = useAppDispatch();
-  const { appStateSolvers } = useAppStateSolvers();
-  const { appStateInputValues } = useAppStateInputValues();
-  const { outputProjectionVariant } = useAppStateOutputProjectionVariant();
+  const dispatch = useAppDispatch();
 
-  const { appStateOutputZoom } = useAppStateOutputZoom();
+  const solvers = useAppSelector(selectActiveSheetSolvers);
+  const inputValues = useAppSelector(selectActiveSheetIputValues);
+  const outputProjectionVariant = useAppSelector(selectOutputProjectionVariant);
+  const outputZoom = useAppSelector(selectOutputZoom);
+
   const setZoom = useCallback(
     (zoom: number) => {
-      appDispatch(setOutputZoomAction(zoom));
+      dispatch(setOutputZoom(zoom));
     },
-    [appDispatch]
+    [dispatch]
   );
   const [points, setPoints] = useState<OutputsPaths>([]);
 
   // convert ouput Complex array to Path points
   useEffect(() => {
-    const outputsPaths = appStateSolvers.map((solver, solverIndex) => ({
+    const outputsPaths = solvers.map((solver, solverIndex) => ({
       paths: (solver?.ouputValues ?? []).map((path) =>
         path.map((value, valueIndex) =>
           valueToPoint(
             valueToProjectedValue(
               value,
-              appStateInputValues[valueIndex],
+              inputValues[valueIndex],
               outputProjectionVariant
             )
           )
@@ -129,13 +130,7 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
       viewFitBounds(paper, new Paper.Path(allPaths), setZoom);
     }
     setPoints(outputsPaths);
-  }, [
-    paper,
-    appStateSolvers,
-    setZoom,
-    appStateInputValues,
-    outputProjectionVariant,
-  ]);
+  }, [paper, solvers, setZoom, inputValues, outputProjectionVariant]);
 
   return (
     <>
@@ -160,8 +155,8 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
                     : "outlined"
                 }
                 onClick={() =>
-                  appDispatch(
-                    setOutputProjectionVariantAction(OutputProjectionVariant.V1)
+                  dispatch(
+                    setOutputProjectionVariant(OutputProjectionVariant.V1)
                   )
                 }
               >
@@ -174,8 +169,8 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
                     : "outlined"
                 }
                 onClick={() =>
-                  appDispatch(
-                    setOutputProjectionVariantAction(OutputProjectionVariant.V2)
+                  dispatch(
+                    setOutputProjectionVariant(OutputProjectionVariant.V2)
                   )
                 }
               >
@@ -188,8 +183,8 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
                     : "outlined"
                 }
                 onClick={() =>
-                  appDispatch(
-                    setOutputProjectionVariantAction(OutputProjectionVariant.V3)
+                  dispatch(
+                    setOutputProjectionVariant(OutputProjectionVariant.V3)
                   )
                 }
               >
@@ -206,7 +201,7 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
             <PathWithEnds
               key={`${outputPathsPointsIndex}-${outputPathPointsIndex}`}
               paper={paper}
-              zoom={appStateOutputZoom}
+              zoom={outputZoom}
               points={outputPathPoints}
               strokeColor={outputPathsPoints.color}
               strokeWidth={OUTPUT_PATH_WIDTH}

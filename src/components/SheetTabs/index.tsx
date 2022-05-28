@@ -4,9 +4,14 @@ import { Add, Close } from '@mui/icons-material';
 import { IconButton, Tab, Tabs } from '@mui/material';
 import React, { useCallback } from 'react';
 
-import { addSheetAction, removeSheetAction, setActiveSheetAction } from '../../support/AppStateProvider/reducer';
-import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
-import useAppStateSheets from '../../support/AppStateProvider/useAppStateSheets';
+import {
+  addSheet,
+  removeSheetWithIndex,
+  selectActiveSheetIndex,
+  selectSheets,
+  setActiveSheetIndex,
+} from '../../redux/features/app/appSlice';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
 
 /** @jsxImportSource @emotion/react */
 const StyledTabs = styled(Tabs)`
@@ -20,30 +25,33 @@ const StyledTab = styled(Tab)`
 `;
 
 function SheetTabs() {
-  const { appDispatch } = useAppDispatch();
-  const { sheets, activeSheetIndex } = useAppStateSheets();
+  const dispatch = useAppDispatch();
+  const activeSheetIndex = useAppSelector(selectActiveSheetIndex); // TODO do differently not to rely on indexes
+  const sheets = useAppSelector(selectSheets);
 
-  const addSheet = useCallback(() => {
-    appDispatch(addSheetAction());
-  }, [appDispatch]);
+  // TODO check for re-renders when drawing
 
-  const setActiveSheet = useCallback(
+  const addSheetOnClick = useCallback(() => {
+    dispatch(addSheet());
+  }, [dispatch]);
+
+  const setActiveSheetOnClick = useCallback(
     (_e, value) => {
-      appDispatch(setActiveSheetAction(value));
+      dispatch(setActiveSheetIndex(value));
     },
-    [appDispatch]
+    [dispatch]
   );
 
-  const removeSheet = useCallback(
+  const removeSheetOnClick = useCallback(
     (e, sheetIndex) => {
       e.stopPropagation();
       if (window.confirm("Remove tab?")) {
-        appDispatch(removeSheetAction(sheetIndex));
+        dispatch(removeSheetWithIndex(sheetIndex));
       } else {
         // Do nothing!
       }
     },
-    [appDispatch]
+    [dispatch]
   );
 
   return (
@@ -52,7 +60,7 @@ function SheetTabs() {
         display: flex;
       `}
     >
-      <StyledTabs value={activeSheetIndex} onChange={setActiveSheet}>
+      <StyledTabs value={activeSheetIndex} onChange={setActiveSheetOnClick}>
         {sheets.map((sheet, sheetIndex) => (
           <StyledTab
             label={
@@ -67,7 +75,7 @@ function SheetTabs() {
                 {sheets.length > 1 && (
                   <Close
                     fontSize="inherit"
-                    onClick={(e) => removeSheet(e, sheetIndex)}
+                    onClick={(e) => removeSheetOnClick(e, sheetIndex)}
                     css={css`
                       margin-left: 5px;
                     `}
@@ -81,7 +89,7 @@ function SheetTabs() {
         ))}
       </StyledTabs>
       <span>
-        <IconButton onClick={addSheet}>
+        <IconButton onClick={addSheetOnClick}>
           <Add />
         </IconButton>
       </span>

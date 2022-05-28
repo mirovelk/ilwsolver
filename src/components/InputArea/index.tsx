@@ -8,23 +8,20 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { inputStrokeWidth } from '../../papers';
 import {
-  addInputDrawingPointAction,
-  setInputSegmentsAction,
-  setInputSimplifyEnabledAction,
-  setInputSimplifyToleranceAction,
-  setInputValuesAction,
-  setInputZoomAction,
-  SIMPLIFY_MAX,
-  SIMPLIFY_MIN,
-  SIMPLIFY_STEP,
-} from '../../support/AppStateProvider/reducer';
-import useAppDispatch from '../../support/AppStateProvider/useAppDispatch';
-import useAppStateBadPoints from '../../support/AppStateProvider/useAppStateBadPoints';
-import useAppStateInputDrawingPoints from '../../support/AppStateProvider/useAppStateInputDrawingPoints';
-import useAppStateInputSegments from '../../support/AppStateProvider/useAppStateInputSegments';
-import useAppStateInputSimplifyTolerance from '../../support/AppStateProvider/useAppStateInputSimplify';
-import useAppStateInputZoom from '../../support/AppStateProvider/useAppStateInputZoom';
-import useAppStatePreviousSheetEndPoint from '../../support/AppStateProvider/useAppStatePreviousSheetEndPoint';
+  addInputDrawingPoint,
+  selectActiveSheetInputSimplifyConfig,
+  selectActiveSheetIputDrawingPoints,
+  selectActiveSheetIputSegments,
+  selectBadPoints,
+  selectInputZoom,
+  selectPreviousSheetEndPoint,
+  setInputSegments,
+  setInputSimplifyEnabled,
+  setInputSimplifyTolerance,
+  setInputValues,
+  setInputZoom,
+} from '../../redux/features/app/appSlice';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex, complex } from '../../util/complex';
 import BadPointEditor from '../BadPointEditor';
 import InteractiveCanvas from '../InteractiveCanvas';
@@ -36,7 +33,6 @@ import QPanel from '../QPanel';
 import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
 
-/** @jsxImportSource @emotion/react */
 const DrawingPath = styled(Path)``;
 
 const ControlsWrapper = styled(Grid)`
@@ -69,6 +65,10 @@ function getInputFromPath(
   return inputPoints.map((point) => complex(point.x, -point.y)); // flip y
 }
 
+const SIMPLIFY_MIN = -10;
+const SIMPLIFY_MAX = 10;
+const SIMPLIFY_STEP = 0.0001;
+
 function InputArea({
   paper,
   inputSteps,
@@ -76,18 +76,19 @@ function InputArea({
   paper: paper.PaperScope;
   inputSteps: number;
 }) {
-  const { appDispatch } = useAppDispatch();
-  const { appStateBadPoints } = useAppStateBadPoints();
-  const { appStateInputZoom } = useAppStateInputZoom();
-  const { inputSegments } = useAppStateInputSegments();
-  const { inputDrawingPoints } = useAppStateInputDrawingPoints();
-  const { inputSimplifyTolerance, inputSimplifyEnabled } =
-    useAppStateInputSimplifyTolerance();
+  const dispatch = useAppDispatch();
 
-  const { previousSheetEndPoint } = useAppStatePreviousSheetEndPoint();
+  const badPoints = useAppSelector(selectBadPoints);
+  const inputZoom = useAppSelector(selectInputZoom);
+  const inputSegments = useAppSelector(selectActiveSheetIputSegments);
+  const inputDrawingPoints = useAppSelector(selectActiveSheetIputDrawingPoints);
+  const { enabled: inputSimplifyEnabled, tolerance: inputSimplifyTolerance } =
+    useAppSelector(selectActiveSheetInputSimplifyConfig);
+  const previousSheetEndPoint = useAppSelector(selectPreviousSheetEndPoint);
+
   const previousSheetEndPointSize = useMemo(
-    () => (1 / appStateInputZoom) * 5,
-    [appStateInputZoom]
+    () => (1 / inputZoom) * 5,
+    [inputZoom]
   );
   const previousSheetEndPointRectangle = useMemo(
     () =>
@@ -102,23 +103,19 @@ function InputArea({
     [paper.Rectangle, previousSheetEndPoint, previousSheetEndPointSize]
   );
 
-  const badPoints = useMemo(
-    () =>
-      appStateBadPoints.map((point) => new Paper.Point(point[0], -point[1])),
-    [appStateBadPoints]
+  const badPaperPoints = useMemo(
+    () => badPoints.map((point) => new Paper.Point(point[0], -point[1])),
+    [badPoints]
   );
 
   const setZoom = useCallback(
     (zoom: number) => {
-      appDispatch(setInputZoomAction(zoom));
+      dispatch(setInputZoom(zoom));
     },
-    [appDispatch]
+    [dispatch]
   );
 
-  const badPointRadius = useMemo(
-    () => (1 / appStateInputZoom) * 2,
-    [appStateInputZoom]
-  );
+  const badPointRadius = useMemo(() => (1 / inputZoom) * 2, [inputZoom]);
 
   const [visiblePanel, setVisiblePanel] = useState<Panel | undefined>(
     undefined
@@ -130,29 +127,29 @@ function InputArea({
   const handleSimplifySliderChange = useCallback(
     (_event: Event, newValue: number | number[]) => {
       if (typeof newValue === "number")
-        appDispatch(setInputSimplifyToleranceAction(newValue));
+        dispatch(setInputSimplifyTolerance(newValue));
     },
-    [appDispatch]
+    [dispatch]
   );
 
   const handleSimplifyInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      appDispatch(
-        setInputSimplifyToleranceAction(
+      dispatch(
+        setInputSimplifyTolerance(
           event.target.value === "" ? SIMPLIFY_MIN : Number(event.target.value)
         )
       );
     },
-    [appDispatch]
+    [dispatch]
   );
 
   const handleSimplifyInputBlur = useCallback(() => {
     if (inputSimplifyTolerance < SIMPLIFY_MIN) {
-      appDispatch(setInputSimplifyToleranceAction(SIMPLIFY_MIN));
+      dispatch(setInputSimplifyTolerance(SIMPLIFY_MIN));
     } else if (inputSimplifyTolerance > SIMPLIFY_MAX) {
-      appDispatch(setInputSimplifyToleranceAction(SIMPLIFY_MAX));
+      dispatch(setInputSimplifyTolerance(SIMPLIFY_MAX));
     }
-  }, [appDispatch, inputSimplifyTolerance]);
+  }, [dispatch, inputSimplifyTolerance]);
 
   // init paper events
   useEffect(() => {
@@ -162,7 +159,7 @@ function InputArea({
       // @ts-ignore
       if (e.event.buttons === 1) {
         setIsDrawing(true);
-        appDispatch(addInputDrawingPointAction(e.point));
+        dispatch(addInputDrawingPoint(e.point));
       }
     };
 
@@ -171,7 +168,7 @@ function InputArea({
       if (oldOnMouseDrag) oldOnMouseDrag(e);
       // @ts-ignore
       if (e.event.buttons === 1) {
-        appDispatch(addInputDrawingPointAction(e.point));
+        dispatch(addInputDrawingPoint(e.point));
       }
     };
 
@@ -180,7 +177,7 @@ function InputArea({
       if (oldOnMouseUp) oldOnMouseUp(e);
       setIsDrawing(false);
     };
-  }, [paper, appDispatch]);
+  }, [paper, dispatch]);
 
   // calculate input path on drawing path or other parameter change (after finishing drawing)
   useEffect(() => {
@@ -190,8 +187,8 @@ function InputArea({
         const paperTolerance = Math.pow(10, inputSimplifyTolerance);
         path.simplify(paperTolerance);
       }
-      appDispatch(setInputSegmentsAction(path.segments));
-      appDispatch(setInputValuesAction(getInputFromPath(path, inputSteps)));
+      dispatch(setInputSegments(path.segments));
+      dispatch(setInputValues(getInputFromPath(path, inputSteps)));
     }
   }, [
     inputDrawingPoints,
@@ -199,7 +196,7 @@ function InputArea({
     inputSimplifyEnabled,
     inputSimplifyTolerance,
     inputSteps,
-    appDispatch,
+    dispatch,
   ]);
 
   const toggleXSeedsEditor = useCallback(() => {
@@ -297,9 +294,7 @@ function InputArea({
                   <Checkbox
                     checked={inputSimplifyEnabled}
                     onChange={() =>
-                      appDispatch(
-                        setInputSimplifyEnabledAction(!inputSimplifyEnabled)
-                      )
+                      dispatch(setInputSimplifyEnabled(!inputSimplifyEnabled))
                     }
                   />
                 }
@@ -357,7 +352,7 @@ function InputArea({
       />
       <PathWithEnds
         paper={paper}
-        zoom={appStateInputZoom}
+        zoom={inputZoom}
         segments={inputSegments}
         strokeColor={inputPathColor}
         strokeWidth={inputStrokeWidth}
@@ -365,7 +360,7 @@ function InputArea({
         fullySelected={!isDrawing}
       />
       {/* keep bad points on top */}
-      {badPoints.map((point) => (
+      {badPaperPoints.map((point) => (
         <Circle
           paper={paper}
           center={point}
