@@ -1,19 +1,11 @@
-import { complex } from "../../util/complex";
-import {
-  solveInQ,
-  matrixComplexToReal,
-  eqns,
-  eqnsd,
-  vectorComplexToReal,
-  vectorRealToComplex,
-  transpose,
-} from "./calc";
+import { complex } from '../../util/complex';
+import { eqns, eqnsd, matrixComplexToReal, solveInQ, transpose, vectorComplexToReal, vectorRealToComplex } from './calc';
 
-test("eqns returns correct value for M=1", () => {
+test('eqns returns correct value for M=1', () => {
   expect(eqns([[0.5, 0.25]], [0.5, 0.25])).toEqual([[9.28125, 5.921875]]);
 });
 
-test("eqns returns correct value for M=3", () => {
+test('eqns returns correct value for M=3', () => {
   expect(
     eqns(
       [
@@ -30,7 +22,7 @@ test("eqns returns correct value for M=3", () => {
   ]);
 });
 
-test("eqnsd returns correct value for M=3", () => {
+test('eqnsd returns correct value for M=3', () => {
   expect(
     eqnsd(
       [
@@ -69,17 +61,17 @@ test("eqnsd returns correct value for M=3", () => {
   ]);
 });
 
-test("eqnsd returns correct value for M=1", () => {
+test('eqnsd returns correct value for M=1', () => {
   expect(eqnsd([[0.5, 0.25]], [0.5, 0.25])).toEqual([[[-1.125, -2.75]]]);
 });
 
-test("solveInQ returns correct value for M=1", () => {
+test('solveInQ returns correct value for M=1', () => {
   expect(solveInQ([[0.5, 0.25]], [0.5, 0.25])).toEqual([
     [3.804535746476545, 0.15110607406879045],
   ]);
 });
 
-test("solveInQ returns correct value for M=2", () => {
+test('solveInQ returns correct value for M=2', () => {
   expect(
     solveInQ(
       [
@@ -94,7 +86,7 @@ test("solveInQ returns correct value for M=2", () => {
   ]);
 });
 
-test("solveInQ returns correct value for M=3", () => {
+test('solveInQ returns correct value for M=3', () => {
   expect(
     solveInQ(
       [
@@ -111,7 +103,7 @@ test("solveInQ returns correct value for M=3", () => {
   ]);
 });
 
-test("converts complex matrix to real", () => {
+test('converts complex matrix to real', () => {
   expect(
     matrixComplexToReal([
       [complex(1, 2), complex(3, 4)],
@@ -125,20 +117,20 @@ test("converts complex matrix to real", () => {
   ]);
 });
 
-test("converts complex vector to real", () => {
+test('converts complex vector to real', () => {
   expect(vectorComplexToReal([complex(1, 2), complex(3, 4)])).toEqual([
     1, 3, 2, 4,
   ]);
 });
 
-test("converts rela vector to complex", () => {
+test('converts rela vector to complex', () => {
   const complexVector = [complex(1, 2), complex(3, 4), complex(5, 6)];
   expect(vectorRealToComplex(vectorComplexToReal(complexVector))).toEqual(
     complexVector
   );
 });
 
-test("transposes matrix", () => {
+test('transposes matrix', () => {
   expect(
     transpose([
       [1, 2],

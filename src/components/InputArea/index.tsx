@@ -1,8 +1,14 @@
-/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Ballot, GpsFixed } from '@mui/icons-material';
-import { Checkbox, FormControlLabel, Grid, IconButton, Input, Slider } from '@mui/material';
+import {
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  Input,
+  Slider,
+} from '@mui/material';
 import Paper, { Color } from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -138,7 +144,7 @@ function InputArea({
 
   const handleSimplifySliderChange = useCallback(
     (_event: Event, newValue: number | number[]) => {
-      if (typeof newValue === "number")
+      if (typeof newValue === 'number')
         dispatch(setInputSimplifyTolerance(newValue));
     },
     [dispatch]
@@ -148,7 +154,7 @@ function InputArea({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       dispatch(
         setInputSimplifyTolerance(
-          event.target.value === "" ? SIMPLIFY_MIN : Number(event.target.value)
+          event.target.value === '' ? SIMPLIFY_MIN : Number(event.target.value)
         )
       );
     },
@@ -168,6 +174,7 @@ function InputArea({
     const oldOnMouseDown = paper.view.onMouseDown;
     paper.view.onMouseDown = (e: paper.MouseEvent) => {
       if (oldOnMouseDown) oldOnMouseDown(e);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       if (e.event.buttons === 1) {
         setIsDrawing(true);
@@ -178,6 +185,7 @@ function InputArea({
     const oldOnMouseDrag = paper.view.onMouseDrag;
     paper.view.onMouseDrag = (e: paper.MouseEvent) => {
       if (oldOnMouseDrag) oldOnMouseDrag(e);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       if (e.event.buttons === 1) {
         dispatch(addInputDrawingPoint([e.point.x, e.point.y]));
@@ -254,7 +262,7 @@ function InputArea({
               <div>
                 <IconButton
                   onClick={toggleBadPointEditor}
-                  color={badPointEditorVisible ? "primary" : "default"}
+                  color={badPointEditorVisible ? 'primary' : 'default'}
                 >
                   <GpsFixed />
                 </IconButton>
@@ -281,8 +289,8 @@ function InputArea({
                 onClick={toggleXSeedsEditor}
                 color={
                   visiblePanel === Panel.XSeedEditorPanel
-                    ? "primary"
-                    : "default"
+                    ? 'primary'
+                    : 'default'
                 }
               >
                 <Ballot />
@@ -294,7 +302,7 @@ function InputArea({
                   width: 40px;
                   height: 40px;
                 `}
-                color={visiblePanel === Panel.QPanel ? "primary" : "default"}
+                color={visiblePanel === Panel.QPanel ? 'primary' : 'default'}
               >
                 q
               </IconButton>
@@ -315,7 +323,7 @@ function InputArea({
             <Grid item xs>
               <Slider
                 value={
-                  typeof inputSimplifyTolerance === "number"
+                  typeof inputSimplifyTolerance === 'number'
                     ? inputSimplifyTolerance
                     : SIMPLIFY_MIN
                 }
@@ -336,7 +344,7 @@ function InputArea({
                   step: SIMPLIFY_STEP,
                   min: SIMPLIFY_MIN,
                   max: SIMPLIFY_MAX,
-                  type: "number",
+                  type: 'number',
                 }}
               />
             </Grid>

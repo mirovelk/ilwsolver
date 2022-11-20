@@ -1,7 +1,12 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Add, Circle, ContentCopy, Remove, Square } from '@mui/icons-material';
-import { IconButton, Paper as MaterialPaper, TextField, Typography } from '@mui/material';
+import {
+  IconButton,
+  Paper as MaterialPaper,
+  TextField,
+  Typography,
+} from '@mui/material';
 import clipboard from 'clipboardy';
 import Paper from 'paper';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -21,8 +26,6 @@ import { XSeedValue } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { stringifyForMathematica } from '../../util/mathematica';
 
-/** @jsxImportSource @emotion/react */
-// TODO remove macros
 const Panel = styled(MaterialPaper)`
   display: inline-flex;
   flex-direction: column;
@@ -83,6 +86,7 @@ const XSeedContent = styled.div`
 const XSeedRoot = styled(MaterialPaper)`
   display: flex;
   padding: 5px;
+
   &:not(:last-child) {
     margin-right: 10px;
   }
@@ -91,6 +95,7 @@ const XSeedRoot = styled(MaterialPaper)`
 const XSeedRootPart = styled(MaterialPaper)`
   padding: 5px;
   width: 100px;
+
   &:not(:last-child) {
     margin-right: 5px;
   }
@@ -105,7 +110,7 @@ const XSeedWrapper = styled.div`
   align-items: flex-start;
 `;
 
-const controlOffset = "10px";
+const controlOffset = '10px';
 
 const XSeedRemoveWrapper = styled.div`
   margin-top: ${controlOffset};
@@ -138,28 +143,28 @@ const XSeedColorPickerWrapper = styled.div`
 `;
 
 function parseXSeeds(input: string): XSeedValue[] {
-  return JSON.parse(input.replaceAll("{", "[").replaceAll("}", "]"));
+  return JSON.parse(input.replaceAll('{', '[').replaceAll('}', ']'));
 }
 
 function stringifyXSeedValues(xSeeds: XSeedValue[]) {
-  let output = "";
-  output += "{";
+  let output = '';
+  output += '{';
   xSeeds.forEach((xSeed, xSeedIndex) => {
-    output += "{";
-    output += "\n";
+    output += '{';
+    output += '\n';
     xSeed.forEach((c, cIndex) => {
-      output += "  { ";
+      output += '  { ';
       output += c[0];
-      output += ", ";
+      output += ', ';
       output += c[1];
-      output += " }";
-      if (cIndex < xSeed.length - 1) output += ",";
+      output += ' }';
+      if (cIndex < xSeed.length - 1) output += ',';
     });
-    output += "\n";
-    output += "}";
-    if (xSeedIndex < xSeeds.length - 1) output += ",";
+    output += '\n';
+    output += '}';
+    if (xSeedIndex < xSeeds.length - 1) output += ',';
   });
-  output += "}";
+  output += '}';
 
   return output;
 }
@@ -185,7 +190,7 @@ function XSeedsEditor() {
   const allXSeedsCalculated = useMemo(
     () =>
       !calculatedXSeeds.some(
-        (calculatedXSeed) => typeof calculatedXSeed === "undefined"
+        (calculatedXSeed) => typeof calculatedXSeed === 'undefined'
       ),
     [calculatedXSeeds]
   );
@@ -228,15 +233,15 @@ function XSeedsEditor() {
               xSeed.every(
                 (c) =>
                   c.length === 2 &&
-                  typeof c[0] === "number" &&
-                  typeof c[1] === "number"
+                  typeof c[0] === 'number' &&
+                  typeof c[1] === 'number'
               )
           )
         ) {
           setXSeedsInputError(false);
           dispatch(setXSeedsValues(xSeedsParsed));
         } else {
-          throw new Error("invalid input");
+          throw new Error('invalid input');
         }
       } catch {
         setXSeedsInputError(true);
@@ -246,7 +251,7 @@ function XSeedsEditor() {
   );
 
   const xSeedInputOnBlur = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
+    (_e: React.FocusEvent<HTMLInputElement>) => {
       setXSeedsInputEditing(false);
     },
     [setXSeedsInputEditing]
@@ -255,7 +260,7 @@ function XSeedsEditor() {
   const xSeedsMInputOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newM = parseInt(e.currentTarget.value);
-      if (typeof newM === "number" && !isNaN(newM) && newM > 0) {
+      if (typeof newM === 'number' && !isNaN(newM) && newM > 0) {
         dispatch(setXSeedsM(newM));
       }
     },
@@ -279,7 +284,7 @@ function XSeedsEditor() {
       const cIndex = parseInt(e.target.dataset.cIndex as string);
       const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
       const value =
-        e.currentTarget.value.trim() === ""
+        e.currentTarget.value.trim() === ''
           ? undefined
           : parseFloat(e.currentTarget.value);
       dispatch(
@@ -301,7 +306,7 @@ function XSeedsEditor() {
       const cIndex = parseInt(e.target.dataset.cIndex as string);
       const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
       const value =
-        e.currentTarget.value.trim() === ""
+        e.currentTarget.value.trim() === ''
           ? getRandomXSeedPartNumber()
           : parseFloat(e.currentTarget.value);
       dispatch(
@@ -317,7 +322,7 @@ function XSeedsEditor() {
   );
 
   const copyResultsStart = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (_e: React.MouseEvent<HTMLButtonElement>) => {
       clipboard.write(
         stringifyForMathematica(
           calculatedXSeeds.map((calculatedXSeed) => calculatedXSeed?.start)
@@ -328,7 +333,7 @@ function XSeedsEditor() {
   );
 
   const copyResultsEnd = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (_e: React.MouseEvent<HTMLButtonElement>) => {
       clipboard.write(
         stringifyForMathematica(
           calculatedXSeeds.map((calculatedXSeed) => calculatedXSeed?.end)
@@ -345,7 +350,7 @@ function XSeedsEditor() {
           variant="h6"
           color="text.secondary"
           gutterBottom
-          style={{ marginRight: "20px" }}
+          style={{ marginRight: '20px' }}
         >
           xSeeds
         </Typography>
@@ -368,7 +373,7 @@ function XSeedsEditor() {
                     position: absolute;
                     bottom: 5px;
                     right: 5px;
-                    color: #999999;
+                    color: #999;
                   `}
                 />
               </IconButton>
@@ -387,7 +392,7 @@ function XSeedsEditor() {
                     position: absolute;
                     bottom: 5px;
                     right: 5px;
-                    color: #999999;
+                    color: #999;
                   `}
                 />
               </IconButton>
@@ -453,7 +458,7 @@ function XSeedsEditor() {
                     styles={{
                       default: {
                         picker: {
-                          background: "#111111",
+                          background: '#111111',
                         },
                       },
                     }}
@@ -475,14 +480,14 @@ function XSeedsEditor() {
                   {c.map((cPart, cPartIndex) => (
                     <XSeedRootPart elevation={0} key={cPartIndex}>
                       <XSeedRootPartInput
-                        value={typeof cPart !== "undefined" ? cPart : ""}
+                        value={typeof cPart !== 'undefined' ? cPart : ''}
                         variant="standard"
                         type="number"
                         inputProps={{
                           step: 0.1,
-                          "data-x-seed-index": xSeedIndex,
-                          "data-c-index": cIndex,
-                          "data-c-part-index": cPartIndex,
+                          'data-x-seed-index': xSeedIndex,
+                          'data-c-index': cIndex,
+                          'data-c-part-index': cPartIndex,
                         }}
                         onChange={xSeedOnChange}
                         onBlur={xSeedOnBlur}
@@ -494,7 +499,7 @@ function XSeedsEditor() {
                             css={css`
                               margin-top: 3px;
                               overflow: hidden;
-                              color: #999999;
+                              color: #999;
                               font-size: 13px;
                               white-space: nowrap;
                               display: flex;
@@ -510,12 +515,9 @@ function XSeedsEditor() {
                                 top: -1px;
                               `}
                             />
-                            {
-                              // @ts-ignore
-                              calculatedXSeeds[xSeedIndex]?.start[cIndex][
-                                cPartIndex
-                              ].toExponential(3)
-                            }
+                            {calculatedXSeeds?.[xSeedIndex]?.start[cIndex][
+                              cPartIndex
+                            ]?.toExponential(3)}
                           </div>
                         )}
 
@@ -525,7 +527,7 @@ function XSeedsEditor() {
                           <div
                             css={css`
                               overflow: hidden;
-                              color: #999999;
+                              color: #999;
                               font-size: 13px;
                               white-space: nowrap;
                               display: flex;
@@ -541,12 +543,9 @@ function XSeedsEditor() {
                                 top: -1px;
                               `}
                             />
-                            {
-                              // @ts-ignore
-                              calculatedXSeeds[xSeedIndex]?.end[cIndex][
-                                cPartIndex
-                              ].toExponential(3)
-                            }
+                            {calculatedXSeeds?.[xSeedIndex]?.end[cIndex][
+                              cPartIndex
+                            ]?.toExponential(3)}
                           </div>
                         )}
                     </XSeedRootPart>
@@ -566,7 +565,7 @@ function XSeedsEditor() {
         onChange={xSeedInputOnChange}
         onBlur={xSeedInputOnBlur}
         multiline
-        helperText={xSeedsInputError ? "Invalid input" : ""}
+        helperText={xSeedsInputError ? 'Invalid input' : ''}
       />
     </Panel>
   );

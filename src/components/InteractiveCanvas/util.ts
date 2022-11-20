@@ -62,28 +62,30 @@ export function initPanning(
   paper: paper.PaperScope,
   wrapperRef: HTMLDivElement
 ) {
-  wrapperRef.addEventListener("contextmenu", (e) => e.preventDefault());
+  wrapperRef.addEventListener('contextmenu', (e) => e.preventDefault());
 
   const tool = new Tool();
 
   tool.onMouseDown = function (e: paper.ToolEvent) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (e.event.buttons === 2) {
-      paper.view.element.style.cursor = "grab";
+      paper.view.element.style.cursor = 'grab';
     }
   };
 
   tool.onMouseDrag = function (e: paper.ToolEvent) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (e.event.buttons === 2) {
-      paper.view.element.style.cursor = "grabbing";
+      paper.view.element.style.cursor = 'grabbing';
       const delta = e.point.subtract(e.downPoint);
       paper.view.center = paper.view.center.subtract(delta);
     }
   };
 
-  tool.onMouseUp = function (e: paper.ToolEvent) {
-    paper.view.element.style.cursor = "crosshair";
+  tool.onMouseUp = function (_e: paper.ToolEvent) {
+    paper.view.element.style.cursor = 'crosshair';
   };
 }
 
@@ -92,9 +94,9 @@ export function initZooming(
   wrapperRef: HTMLDivElement,
   setZoom: (zoom: number) => void
 ) {
-  wrapperRef.addEventListener("wheel", (e: WheelEvent) => {
+  wrapperRef.addEventListener('wheel', (e: WheelEvent) => {
     let newZoom = paper.view.zoom;
-    let oldZoom = paper.view.zoom;
+    const oldZoom = paper.view.zoom;
 
     if (e.deltaY > 0) {
       newZoom = paper.view.zoom * 1.05;

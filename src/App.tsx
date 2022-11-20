@@ -1,3 +1,5 @@
+import { hot } from 'react-hot-loader/root';
+
 import styled from '@emotion/styled';
 import { Delete, Functions } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
@@ -33,6 +35,7 @@ const AreasWrapper = styled.div`
 
 const AreaWrapper = styled.div`
   flex: 1 0 0;
+
   &:not(:last-child) {
     margin-right: 20px;
   }
@@ -59,30 +62,34 @@ const ClearButtonWrapper = styled.div`
 `;
 
 const StyledFunctions = styled(Functions)`
-  color: rgb(18, 18, 18);
+  color: rgb(18 18 18);
   font-size: 1.3em;
 `;
 
 const RunButton = styled(IconButton)`
-  background: rgb(102, 187, 106);
-  border: 10px solid rgb(18, 18, 18);
+  background: rgb(102 187 106);
+  border: 10px solid rgb(18 18 18);
+
   &:hover {
-    background-color: rgb(56, 142, 60);;
+    background-color: rgb(56 142 60);
   }
 
   &:disabled {
-    background-color: rgb(30, 30, 30);
+    background-color: rgb(30 30 30);
+  }
 `;
 
 const ClearButton = styled(IconButton)`
-  background: rgb(18, 18, 18);
-  border: 10px solid rgb(18, 18, 18);
+  background: rgb(18 18 18);
+  border: 10px solid rgb(18 18 18);
+
   &:hover {
-    background-color: rgb(244, 67, 54);
+    background-color: rgb(244 67 54);
   }
 
   &:disabled {
-    background-color: rgb(30, 30, 30);
+    background-color: rgb(30 30 30);
+  }
 `;
 
 const StyledDelete = styled(Delete)`
@@ -151,4 +158,4 @@ function App() {
   );
 }
 
-export default App;
+export default hot(App);

@@ -1,4 +1,3 @@
-/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import { Button, ButtonGroup } from '@mui/material';
 import Paper from 'paper';
@@ -15,7 +14,14 @@ import {
 import { OutputProjectionVariant } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { ResultInQArray } from '../../support/calc/calc';
-import { add, Complex, complex, divide, multiply, subtract } from '../../util/complex';
+import {
+  add,
+  Complex,
+  complex,
+  divide,
+  multiply,
+  subtract,
+} from '../../util/complex';
 import InteractiveCanvas from '../InteractiveCanvas';
 import PathWithEnds from '../PathWithEnds';
 
@@ -104,7 +110,7 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
 
   // convert ouput Complex array to Path points
   useEffect(() => {
-    const outputsPaths = solvers.map((solver, solverIndex) => ({
+    const outputsPaths = solvers.map((solver) => ({
       paths: (solver?.ouputValues ?? []).map((path) =>
         path.map((value, valueIndex) =>
           valueToPoint(
@@ -151,8 +157,8 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
               <Button
                 variant={
                   outputProjectionVariant === OutputProjectionVariant.V1
-                    ? "contained"
-                    : "outlined"
+                    ? 'contained'
+                    : 'outlined'
                 }
                 onClick={() =>
                   dispatch(
@@ -165,8 +171,8 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
               <Button
                 variant={
                   outputProjectionVariant === OutputProjectionVariant.V2
-                    ? "contained"
-                    : "outlined"
+                    ? 'contained'
+                    : 'outlined'
                 }
                 onClick={() =>
                   dispatch(
@@ -179,8 +185,8 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
               <Button
                 variant={
                   outputProjectionVariant === OutputProjectionVariant.V3
-                    ? "contained"
-                    : "outlined"
+                    ? 'contained'
+                    : 'outlined'
                 }
                 onClick={() =>
                   dispatch(

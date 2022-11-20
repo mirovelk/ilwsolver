@@ -1,6 +1,5 @@
-/** @jsxImportSource @emotion/react */
 import Paper from 'paper';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import Circle from '../paper/Circle';
 import Path from '../paper/Path';

@@ -1,6 +1,14 @@
 import { lusolve } from 'mathjs';
 
-import { add, Complex, complex, copy, minus, multiply, subtract } from '../../util/complex';
+import {
+  add,
+  Complex,
+  complex,
+  copy,
+  minus,
+  multiply,
+  subtract,
+} from '../../util/complex';
 
 const E1 = complex(2);
 const E2 = complex(3);
@@ -11,7 +19,7 @@ const AR: Complex[] = [complex(3), complex(2)]; // length N
 
 // input vector M, output vector M
 export function eqns(input: Complex[], q: Complex): Complex[] {
-  let result: Complex[] = [];
+  const result: Complex[] = [];
   for (let i = 0; i < input.length; i++) {
     let tmp1 = copy(q);
     let tmp2 = complex(1);
@@ -43,7 +51,7 @@ export function eqns(input: Complex[], q: Complex): Complex[] {
 // input vector M, output matrix MxM
 export function eqnsd(input: Complex[], q: Complex): Complex[][] {
   // empty matrix M*M
-  let result: Complex[][] = new Array(input.length)
+  const result: Complex[][] = new Array(input.length)
     .fill(undefined)
     .map(() => new Array(input.length).fill(undefined));
 
@@ -241,6 +249,7 @@ export function subtractComplexVectors(a: Complex[], b: Complex[]): Complex[] {
   return a.map((ai, i) => subtract(ai, b[i]));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function transpose(matrix: any[][]) {
   return matrix[0].map((_col, i) => matrix.map((row) => row[i]));
 }

@@ -1,9 +1,11 @@
-/** @jsxImportSource @emotion/react */
 import styled from '@emotion/styled';
 import { Paper as MaterialPaper, TextField, Typography } from '@mui/material';
 import React, { useCallback, useState } from 'react';
 
-import { selectBadPoints, setBadPoints } from '../../redux/features/app/appSlice';
+import {
+  selectBadPoints,
+  setBadPoints,
+} from '../../redux/features/app/appSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex } from '../../util/complex';
 
@@ -23,23 +25,23 @@ const BadPointsInput = styled(TextField)`
 `;
 
 function parseBadPoints(input: string): Complex[] {
-  return JSON.parse(input.replaceAll("{", "[").replaceAll("}", "]"));
+  return JSON.parse(input.replaceAll('{', '[').replaceAll('}', ']'));
 }
 
 function stringifyBadPoints(points: Complex[]) {
-  let output = "";
-  output += "{";
-  output += "\n";
+  let output = '';
+  output += '{';
+  output += '\n';
   points.forEach((point, pointIndex) => {
-    output += "    { ";
+    output += '    { ';
     output += point[0];
-    output += ", ";
+    output += ', ';
     output += point[1];
-    output += " }";
-    if (pointIndex < points.length - 1) output += ", ";
-    output += "\n";
+    output += ' }';
+    if (pointIndex < points.length - 1) output += ', ';
+    output += '\n';
   });
-  output += "}";
+  output += '}';
 
   return output;
 }
@@ -67,14 +69,14 @@ function BadPointEditor() {
             (badPoint) =>
               Array.isArray(badPoint) &&
               badPoint.length === 2 &&
-              typeof badPoint[0] === "number" &&
-              typeof badPoint[1] === "number"
+              typeof badPoint[0] === 'number' &&
+              typeof badPoint[1] === 'number'
           )
         ) {
           setBadPointsInputError(false);
           dispatch(setBadPoints(badPointsParsed));
         } else {
-          throw new Error("invalid input");
+          throw new Error('invalid input');
         }
       } catch {
         setBadPointsInputError(true);
@@ -90,7 +92,7 @@ function BadPointEditor() {
           variant="h6"
           color="text.secondary"
           gutterBottom
-          style={{ marginRight: "20px" }}
+          style={{ marginRight: '20px' }}
         >
           Points
         </Typography>
@@ -101,7 +103,7 @@ function BadPointEditor() {
         error={badPointsInputError}
         onChange={badPointsInputOnChange}
         multiline
-        helperText={badPointsInputError ? "Invalid input" : ""}
+        helperText={badPointsInputError ? 'Invalid input' : ''}
       />
     </Wrapper>
   );

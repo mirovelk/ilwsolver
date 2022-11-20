@@ -1,4 +1,3 @@
-/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { ContentCopy } from '@mui/icons-material';
@@ -34,27 +33,27 @@ const Row = styled.div`
   height: 45px;
 `;
 
-const iconSpacing = "10px";
+const iconSpacing = '10px';
 
 function QPanel() {
   const inputValues = useAppSelector(selectActiveSheetIputValues);
 
   const copyInput = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (_e: React.MouseEvent<HTMLButtonElement>) => {
       clipboard.write(stringifyForMathematica(inputValues));
     },
     [inputValues]
   );
 
   const copyQ0 = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (_e: React.MouseEvent<HTMLButtonElement>) => {
       clipboard.write(stringifyForMathematica(inputValues[0]));
     },
     [inputValues]
   );
 
   const copyQN = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (_e: React.MouseEvent<HTMLButtonElement>) => {
       clipboard.write(
         stringifyForMathematica(inputValues[inputValues.length - 1])
       );
@@ -92,15 +91,15 @@ function QPanel() {
           </IconButton>
           <Typography variant="subtitle1" color="text.secondary">
             q<sub>0</sub>
-            {" = "}
+            {' = '}
             {inputValues.length > 0 ? (
               <>
-                {" { "}
+                {' { '}
                 {inputValues[0][0]}, {inputValues[0][1]}
-                {" } "}
+                {' } '}
               </>
             ) : (
-              "undefined"
+              'undefined'
             )}
           </Typography>
         </Row>
@@ -116,16 +115,16 @@ function QPanel() {
           </IconButton>
           <Typography variant="subtitle1" color="text.secondary">
             q<sub>n</sub>
-            {" = "}
+            {' = '}
             {inputValues.length > 0 ? (
               <>
-                {" { "}
-                {inputValues[inputValues.length - 1][0]},{" "}
+                {' { '}
+                {inputValues[inputValues.length - 1][0]},{' '}
                 {inputValues[inputValues.length - 1][1]}
-                {" } "}
+                {' } '}
               </>
             ) : (
-              "undefined"
+              'undefined'
             )}
           </Typography>
         </Row>

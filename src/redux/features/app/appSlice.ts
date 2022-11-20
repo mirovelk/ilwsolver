@@ -19,7 +19,7 @@ function getRandomXSeedNumber(): Complex {
 }
 
 export const appSlice = createSlice({
-  name: "app",
+  name: 'app',
   initialState,
   reducers: {
     calculateAllOutputPaths: (state) => {

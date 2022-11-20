@@ -39,9 +39,9 @@ function Path({
     if (pathRef.current) {
       pathRef.current.removeSegments(0, pathRef.current.segments.length);
       // preffer segments before points
-      if (typeof segments !== "undefined") {
+      if (typeof segments !== 'undefined') {
         pathRef.current.segments = segments;
-      } else if (typeof points !== "undefined") {
+      } else if (typeof points !== 'undefined') {
         pathRef.current.segments = points.map(
           (point) => new Paper.Segment(point)
         );

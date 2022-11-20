@@ -1,6 +1,5 @@
-/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import styled from '@emotion/styled/macro';
+import styled from '@emotion/styled';
 import {
   KeyboardArrowDown,
   KeyboardArrowLeft,
@@ -49,6 +48,7 @@ const OnCanvasControlsWrapper = styled.div`
   transition: all 0.3s;
   opacity: 0.3;
   z-index: 1000;
+
   &:hover {
     opacity: 1;
   }
@@ -96,6 +96,7 @@ const StatusCursor = styled.div`
 
 const StatusCursorRow = styled.div`
   display: flex;
+
   &:not(:last-child) {
     margin-bottom: 5px;
   }
@@ -105,13 +106,13 @@ const StatusCursorX = styled(StatusCursorRow)``;
 const StatusCursorY = styled(StatusCursorRow)``;
 
 const StatusCursorValue = styled.div`
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0 0 0 70%);
   border-radius: 4px;
   padding: 0 5px;
 `;
 
 const StatusCursorLabel = styled.div`
-  color: rgba(200, 200, 200, 1);
+  color: rgba(200 200 200 100%);
   width: 20px;
 `;
 
@@ -128,6 +129,7 @@ const CanvasWrapper = styled(MaterialPaper)`
     ${StatusCursor} {
       display: block;
     }
+
     ${OnCanvasControlsWrapper} {
       display: flex;
     }
@@ -197,6 +199,7 @@ function InteractiveCanvas({
         if (
           statusCursorXValueRef.current &&
           statusCursorYValueRef.current &&
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           e.event.buttons === 1
         ) {

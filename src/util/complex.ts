@@ -1,6 +1,6 @@
 export type Complex = [r: number, i: number];
 
-export function complex(r: number, i: number = 0): Complex {
+export function complex(r: number, i = 0): Complex {
   return [r, i];
 }
 

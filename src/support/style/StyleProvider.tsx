@@ -1,6 +1,5 @@
 import { css, Global } from '@emotion/react';
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
-import React from 'react';
 
 interface Props {
   children: JSX.Element;
@@ -8,7 +7,7 @@ interface Props {
 
 const darkTheme = createTheme({
   palette: {
-    mode: "dark",
+    mode: 'dark',
   },
 });
 

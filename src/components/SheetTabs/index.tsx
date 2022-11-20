@@ -13,7 +13,6 @@ import {
 } from '../../redux/features/app/appSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 
-/** @jsxImportSource @emotion/react */
 const StyledTabs = styled(Tabs)`
   min-height: 35px;
 `;
@@ -43,7 +42,7 @@ function SheetTabs() {
   const removeSheetOnClick = useCallback(
     (e, sheetIndex) => {
       e.stopPropagation();
-      if (window.confirm("Remove tab?")) {
+      if (window.confirm('Remove tab?')) {
         dispatch(removeSheetWithIndex(sheetIndex));
       } else {
         // Do nothing!
