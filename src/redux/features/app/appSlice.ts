@@ -174,7 +174,7 @@ export const appSlice = createSlice({
         solverIndex: number;
         xSeedNumberIndex: number;
         xSeedNumberPartIndex: number;
-        value?: number;
+        value: number;
       }>
     ) => {
       const { solverIndex, xSeedNumberIndex, xSeedNumberPartIndex, value } =

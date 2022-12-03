@@ -14,7 +14,6 @@ import { ChromePicker } from 'react-color';
 
 import {
   addXSeed,
-  getRandomXSeedPartNumber,
   removeXSeedWithIndex,
   selectActiveSheetSolvers,
   setSolverColor,
@@ -69,7 +68,7 @@ const XSeedsMInput = styled(TextField)`
   margin-left: 5px;
 `;
 
-const XSeedInput = styled(TextField)``;
+const XSeedTextarea = styled(TextField)``;
 
 const XSeedsWrapper = styled.div`
   display: flex;
@@ -78,12 +77,12 @@ const XSeedsWrapper = styled.div`
   margin-bottom: 10px;
 `;
 
-const XSeedContent = styled.div`
+const XSeedInputs = styled.div`
   display: flex;
   margin-bottom: 10px;
 `;
 
-const XSeedRoot = styled(MaterialPaper)`
+const XSeedComplex = styled(MaterialPaper)`
   display: flex;
   padding: 5px;
 
@@ -92,7 +91,7 @@ const XSeedRoot = styled(MaterialPaper)`
   }
 `;
 
-const XSeedRootPart = styled(MaterialPaper)`
+const XSeedComplexPart = styled(MaterialPaper)`
   padding: 5px;
   width: 100px;
 
@@ -101,7 +100,7 @@ const XSeedRootPart = styled(MaterialPaper)`
   }
 `;
 
-const XSeedRootPartInput = styled(TextField)``;
+const XSeedComplexPartInput = styled(TextField)``;
 
 const AddXSeedButton = styled(IconButton)``;
 
@@ -197,28 +196,30 @@ function XSeedsEditor() {
 
   const xSeedsM = useMemo(() => xSeeds[0].length, [xSeeds]);
 
-  const [xSeedsInput, setXSeedsInput] = useState(stringifyXSeeds(xSeeds));
-  const [xSeedsInputEditing, setXSeedsInputEditing] = useState(false);
-  const [xSeedsInputError, setXSeedsInputError] = useState(false);
+  const [xSeedsTextareaValue, setXSeedsTextareaValue] = useState(
+    stringifyXSeeds(xSeeds)
+  );
+  const [xSeedsTextareaEditing, setXSeedsTextareaEditing] = useState(false);
+  const [xSeedsTextareaError, setXSeedsTextareaError] = useState(false);
 
   const [visibleColorPickerIndex, setVisibleColorPickerIndex] = useState<
     number | null
   >(null);
 
-  // reflect xSeeds changes back into editing area when not editing
+  // reflect xSeeds changes back into textarea area when not editing
   useEffect(() => {
-    if (!xSeedsInputEditing) {
-      setXSeedsInput(stringifyXSeeds(xSeeds));
-      setXSeedsInputError(false);
+    if (!xSeedsTextareaEditing) {
+      setXSeedsTextareaValue(stringifyXSeeds(xSeeds));
+      setXSeedsTextareaError(false);
     }
-  }, [xSeeds, xSeedsInputEditing]);
+  }, [xSeeds, xSeedsTextareaEditing]);
 
-  const xSeedInputOnChange = useCallback(
+  const xSeedTextareaOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setXSeedsInputEditing(true);
+      setXSeedsTextareaEditing(true);
 
       const value = e.currentTarget.value;
-      setXSeedsInput(value);
+      setXSeedsTextareaValue(value);
 
       try {
         const xSeedsParsed = parseXSeeds(value);
@@ -238,23 +239,23 @@ function XSeedsEditor() {
               )
           )
         ) {
-          setXSeedsInputError(false);
+          setXSeedsTextareaError(false);
           dispatch(setXSeedsValues(xSeedsParsed));
         } else {
           throw new Error('invalid input');
         }
       } catch {
-        setXSeedsInputError(true);
+        setXSeedsTextareaError(true);
       }
     },
     [dispatch]
   );
 
-  const xSeedInputOnBlur = useCallback(
+  const xSeedTextareaOnBlur = useCallback(
     (_e: React.FocusEvent<HTMLInputElement>) => {
-      setXSeedsInputEditing(false);
+      setXSeedsTextareaEditing(false);
     },
-    [setXSeedsInputEditing]
+    [setXSeedsTextareaEditing]
   );
 
   const xSeedsMInputOnChange = useCallback(
@@ -278,43 +279,21 @@ function XSeedsEditor() {
     [dispatch]
   );
 
-  const xSeedOnChange = useCallback(
+  const xSeedComplexPartInputOnChange = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
       const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
       const cIndex = parseInt(e.target.dataset.cIndex as string);
       const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
       const value =
         e.currentTarget.value.trim() === ''
-          ? undefined
+          ? 0 // coplex part can not be undefined
           : parseFloat(e.currentTarget.value);
       dispatch(
         setXSeedNumberPart({
           solverIndex: xSeedIndex,
           xSeedNumberIndex: cIndex,
           xSeedNumberPartIndex: cPartIndex,
-          value: value,
-        })
-      );
-    },
-    [dispatch]
-  );
-
-  // fill in random numbers instead of nulls
-  const xSeedOnBlur = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
-      const cIndex = parseInt(e.target.dataset.cIndex as string);
-      const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
-      const value =
-        e.currentTarget.value.trim() === ''
-          ? getRandomXSeedPartNumber()
-          : parseFloat(e.currentTarget.value);
-      dispatch(
-        setXSeedNumberPart({
-          solverIndex: xSeedIndex,
-          xSeedNumberIndex: cIndex,
-          xSeedNumberPartIndex: cPartIndex,
-          value: value,
+          value,
         })
       );
     },
@@ -474,12 +453,12 @@ function XSeedsEditor() {
                 )}
               </XSeedColorPickerWrapper>
             </XSeedColorWrapper>
-            <XSeedContent key={xSeedIndex}>
+            <XSeedInputs key={xSeedIndex}>
               {xSeed.map((c, cIndex) => (
-                <XSeedRoot elevation={0} key={cIndex}>
+                <XSeedComplex elevation={0} key={cIndex}>
                   {c.map((cPart, cPartIndex) => (
-                    <XSeedRootPart elevation={0} key={cPartIndex}>
-                      <XSeedRootPartInput
+                    <XSeedComplexPart elevation={0} key={cPartIndex}>
+                      <XSeedComplexPartInput
                         value={typeof cPart !== 'undefined' ? cPart : ''}
                         variant="standard"
                         type="number"
@@ -489,8 +468,7 @@ function XSeedsEditor() {
                           'data-c-index': cIndex,
                           'data-c-part-index': cPartIndex,
                         }}
-                        onChange={xSeedOnChange}
-                        onBlur={xSeedOnBlur}
+                        onChange={xSeedComplexPartInputOnChange}
                       />
                       {calculatedXSeeds &&
                         calculatedXSeeds[xSeedIndex] &&
@@ -548,24 +526,24 @@ function XSeedsEditor() {
                             ]?.toExponential(3)}
                           </div>
                         )}
-                    </XSeedRootPart>
+                    </XSeedComplexPart>
                   ))}
-                </XSeedRoot>
+                </XSeedComplex>
               ))}
-            </XSeedContent>
+            </XSeedInputs>
           </XSeedWrapper>
         ))}
       </XSeedsWrapper>
       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
         Edit:
       </Typography>
-      <XSeedInput
-        value={xSeedsInput}
-        error={xSeedsInputError}
-        onChange={xSeedInputOnChange}
-        onBlur={xSeedInputOnBlur}
+      <XSeedTextarea
+        value={xSeedsTextareaValue}
+        error={xSeedsTextareaError}
+        onChange={xSeedTextareaOnChange}
+        onBlur={xSeedTextareaOnBlur}
         multiline
-        helperText={xSeedsInputError ? 'Invalid input' : ''}
+        helperText={xSeedsTextareaError ? 'Invalid input' : ''}
       />
     </Panel>
   );

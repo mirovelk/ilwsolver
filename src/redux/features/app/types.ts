@@ -1,15 +1,13 @@
 import { ResultInQArray } from '../../../support/calc/calc';
 import { Complex } from '../../../util/complex';
 
-export type PartialComplex = [r?: number, i?: number]; // TODO separate into 2 fields (working copy and final xSeed)
-
 export enum OutputProjectionVariant {
   V1,
   V2,
   V3,
 }
 
-export type XSeedValue = PartialComplex[];
+export type XSeedValue = Complex[];
 
 export type StoredPoint = [number, number];
 
