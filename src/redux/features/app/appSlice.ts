@@ -25,7 +25,7 @@ export const appSlice = createSlice({
     calculateAllOutputPaths: (state) => {
       state.sheets[state.activeSheetIndex].solvers.forEach((solver) => {
         const ouptputValues = solveInQArray(
-          solver.xSeed as Complex[], // TODO remove when types are more tight
+          solver.xSeed,
           state.sheets[state.activeSheetIndex].inputValues
         );
         solver.ouputValues = ouptputValues;
