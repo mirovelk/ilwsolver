@@ -12,7 +12,7 @@ import OutputArea from './components/OutputArea';
 import { inputPaper, outputPaper } from './papers';
 import {
   calculateAllOutputPaths,
-  clearInputOuputValues,
+  clearActiveSheetInputOuputValues,
   selectActiveSheetIputValues,
   setInputZoom,
   setOutputZoom,
@@ -107,7 +107,7 @@ function App() {
   }, [dispatch]);
 
   const clear = useCallback(() => {
-    dispatch(clearInputOuputValues());
+    dispatch(clearActiveSheetInputOuputValues());
 
     inputPaper.view.center = new Paper.Point(0, 0);
     outputPaper.view.center = new Paper.Point(0, 0);

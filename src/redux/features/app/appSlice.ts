@@ -51,8 +51,7 @@ export const appSlice = createSlice({
       // );
     },
 
-    // TODO sync reducer function names and selector names (activeSheet)
-    clearInputOuputValues: (state) => {
+    clearActiveSheetInputOuputValues: (state) => {
       state.sheets[state.activeSheetIndex].inputValues = [];
       state.sheets[state.activeSheetIndex].inputDrawingPoints = [];
       state.sheets[state.activeSheetIndex].solvers.forEach((solver) => {
@@ -327,7 +326,7 @@ export const {
   addSheet,
   addXSeed,
   calculateAllOutputPaths,
-  clearInputOuputValues,
+  clearActiveSheetInputOuputValues,
   removeSheetWithIndex,
   removeXSeedWithIndex,
   setActiveSheetIndex,
