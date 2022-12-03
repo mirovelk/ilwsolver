@@ -106,6 +106,9 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
     ],
     devServer: {
       hot: true,
+      client: {
+        overlay: false,
+      },
     },
   };
 };
