@@ -1,6 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { castDraft } from 'immer';
 import Paper from 'paper';
+import equal from 'fast-deep-equal';
 
 import { solveInQArray } from '../../../support/calc/calc';
 import { getDifferentColor, getNextColorWithBuffer } from '../../../util/color';
@@ -66,58 +67,46 @@ export const appSlice = createSlice({
     },
 
     setXSeedsValues: (state, action: PayloadAction<XSeedValue[]>) => {
+      // optimized to not re-render if the values are the same and the ouput is valid
       const payloadXSeedsValues = action.payload;
-      const previousXSeedsValues = state.sheets[
-        state.activeSheetIndex
-      ].solvers.map((solver) => solver.xSeed);
+      const prevXSeedsValues = state.sheets[state.activeSheetIndex].solvers.map(
+        (solver) => solver.xSeed
+      );
 
-      const colorsBuffer = state.sheets[state.activeSheetIndex].solvers
-        .slice(0, payloadXSeedsValues.length)
-        .map((solver) => new Paper.Color(solver.color));
+      // only continue if there's any change in the xSeeds values
+      if (!equal(payloadXSeedsValues, prevXSeedsValues)) {
+        const colorsBuffer = state.sheets[state.activeSheetIndex].solvers
+          .slice(0, payloadXSeedsValues.length)
+          .map((solver) => new Paper.Color(solver.color));
+        const prevSolvers = state.sheets[state.activeSheetIndex].solvers;
 
-      if (
-        JSON.stringify(previousXSeedsValues) !==
-        JSON.stringify(payloadXSeedsValues)
-      ) {
-        // TODO refactor
         state.sheets[state.activeSheetIndex].solvers = payloadXSeedsValues.map(
-          (payloadXSeedValues, payloadXSeedValuesIndex) => ({
-            ...(payloadXSeedValuesIndex <
-            state.sheets[state.activeSheetIndex].solvers.length
-              ? {
-                  ...state.sheets[state.activeSheetIndex].solvers[
-                    payloadXSeedValuesIndex
-                  ],
-                  ouputValuesValid:
-                    state.sheets[state.activeSheetIndex].solvers[
-                      payloadXSeedValuesIndex
-                    ].ouputValuesValid &&
-                    JSON.stringify(
-                      state.sheets[state.activeSheetIndex].solvers[
-                        payloadXSeedValuesIndex
-                      ].xSeed
-                    ) === JSON.stringify(payloadXSeedValues),
-                  calculatedXSeed:
-                    JSON.stringify(
-                      state.sheets[state.activeSheetIndex].solvers[
-                        payloadXSeedValuesIndex
-                      ].xSeed
-                    ) === JSON.stringify(payloadXSeedValues)
-                      ? state.sheets[state.activeSheetIndex].solvers[
-                          payloadXSeedValuesIndex
-                        ].calculatedXSeed
-                      : undefined,
-                  color:
-                    state.sheets[state.activeSheetIndex].solvers[
-                      payloadXSeedValuesIndex
-                    ].color,
-                }
-              : {
+          (payloadXSeedValues, payloadXSeedValuesIndex) => {
+            // try to reuse the previous solver if it exists
+            if (payloadXSeedValuesIndex < prevSolvers.length) {
+              const prevSolver = prevSolvers[payloadXSeedValuesIndex];
+              // if the xSeed values are the same, reuse the previous solver
+              if (equal(payloadXSeedValues, prevSolver.xSeed)) {
+                return prevSolver;
+              } else {
+                // if the xSeed values are different, create a new solver
+                return {
+                  ...prevSolver,
                   ouputValuesValid: false,
-                  color: getNextColorWithBuffer(colorsBuffer).toCSS(true),
-                }),
-            xSeed: payloadXSeedValues,
-          })
+                  calculatedXSeed: undefined,
+                  color: prevSolver.color,
+                  xSeed: payloadXSeedValues,
+                };
+              }
+            } else {
+              // there's more xSeed values than solvers, create a new solver
+              return {
+                ouputValuesValid: false,
+                color: getNextColorWithBuffer(colorsBuffer).toCSS(true),
+                xSeed: payloadXSeedValues,
+              };
+            }
+          }
         );
       }
     },
