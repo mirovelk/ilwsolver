@@ -47,12 +47,18 @@ function Star({
   ]);
 
   useEffect(() => {
-    if (pathRef.current) {
+    if (pathRef.current && onClick) {
       pathRef.current.onClick = (event: paper.MouseEvent) => {
-        if (onClick) onClick(event);
+        onClick(event);
+      };
+      pathRef.current.onMouseEnter = function () {
+        paper.view.element.style.cursor = 'pointer';
+      };
+      pathRef.current.onMouseLeave = function () {
+        paper.view.element.style.cursor = 'crosshair';
       };
     }
-  }, [onClick]);
+  }, [onClick, paper.view]);
 
   return null;
 }

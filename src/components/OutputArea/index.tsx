@@ -26,7 +26,7 @@ import InteractiveCanvas from '../InteractiveCanvas';
 import PathWithEnds from '../PathWithEnds';
 
 const OUTPUT_PATH_UNSELECTED_WIDTH = 2;
-const OUTPUT_PATH_WIDTH = 4;
+const OUTPUT_PATH_WIDTH = 3;
 
 function viewFitBounds(
   paper: paper.PaperScope,
@@ -243,7 +243,8 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
 
             const color = new paper.Color(outputPathsPoints.color);
             if (shoudSuppress) {
-              color.brightness -= 0.7;
+              color.saturation -= 0.7;
+              color.brightness -= 0.2;
             }
 
             return (
