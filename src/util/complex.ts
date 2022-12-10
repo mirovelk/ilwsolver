@@ -35,6 +35,10 @@ export function minus(a: Complex): Complex {
   return complex(-a[0], -a[1]);
 }
 
+export function abs(a: Complex): number {
+  return Math.sqrt(a[0] * a[0] + a[1] * a[1]);
+}
+
 export function getRandomNumberBetween(min: number, max: number) {
   return parseFloat((Math.random() * (max - min + 1) + min).toFixed(3));
 }

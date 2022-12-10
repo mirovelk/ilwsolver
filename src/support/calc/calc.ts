@@ -1,6 +1,7 @@
 import { lusolve } from 'mathjs';
 
 import {
+  abs,
   add,
   Complex,
   complex,
@@ -280,15 +281,23 @@ export function transpose(matrix: any[][]) {
 export type ResultInQ = Complex[]; // length = M
 export type ResultInQArray = ResultInQ[];
 
+function complexVectorAbsSum(vector: Complex[]): number {
+  return vector.reduce((acc, c) => acc + abs(c), 0);
+}
+
+const precision = 1e-10;
+
 // xSeed.length === M
 export function solveInQ(
   xSeed: Complex[],
   q: Complex,
   config: CalcConfig
 ): ResultInQ {
-  let tmp = xSeed.map((xSeed) => copy(xSeed));
+  let tmp = xSeed.map((c) => copy(c));
+  let tmpAbsSum = complexVectorAbsSum(tmp);
 
   // count iterations
+
   for (let i = 0; i < 20; i++) {
     const A = matrixComplexToReal(eqnsd(tmp, q, config));
     const b = vectorComplexToReal(eqns(tmp, q, config));
@@ -297,6 +306,14 @@ export function solveInQ(
     const x = vectorRealToComplex(solvedRealX);
 
     tmp = subtractComplexVectors(tmp, x);
+
+    const newTmpAbsSum = complexVectorAbsSum(tmp);
+
+    if (Math.abs(newTmpAbsSum - tmpAbsSum) < precision) {
+      break;
+    }
+
+    tmpAbsSum = newTmpAbsSum;
   }
 
   return tmp;
