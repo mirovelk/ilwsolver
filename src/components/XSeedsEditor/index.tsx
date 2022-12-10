@@ -141,6 +141,31 @@ const XSeedColorPickerWrapper = styled.div`
   z-index: 4000;
 `;
 
+const XSeedStartIcon = styled(Square)`
+  width: 13px;
+  height: 13px;
+  position: relative;
+  margin-right: 4px;
+  top: -1px;
+`;
+
+const XSeedEndIcon = styled(Circle)`
+  width: 13px;
+  height: 13px;
+  position: relative;
+  margin-right: 4px;
+  top: -1px;
+`;
+
+const XSeedCalculatedValue = styled.div`
+  overflow: hidden;
+  color: #999;
+  font-size: 13px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+`;
+
 function parseXSeeds(input: string): XSeedValue[] {
   return JSON.parse(input.replaceAll('{', '[').replaceAll('}', ']'));
 }
@@ -172,6 +197,7 @@ function stringifyXSeeds(xSeeds: XSeedValue[]) {
   return stringifyXSeedValues(xSeeds);
 }
 
+// TODO refactor into smaller components
 function XSeedsEditor() {
   const dispatch = useAppDispatch();
   const solvers = useAppSelector(selectActiveSheetSolvers);
@@ -459,7 +485,7 @@ function XSeedsEditor() {
                   {c.map((cPart, cPartIndex) => (
                     <XSeedComplexPart elevation={0} key={cPartIndex}>
                       <XSeedComplexPartInput
-                        value={typeof cPart !== 'undefined' ? cPart : ''}
+                        value={cPart}
                         variant="standard"
                         type="number"
                         inputProps={{
@@ -473,58 +499,27 @@ function XSeedsEditor() {
                       {calculatedXSeeds &&
                         calculatedXSeeds[xSeedIndex] &&
                         calculatedXSeeds[xSeedIndex]?.start && (
-                          <div
+                          <XSeedCalculatedValue
                             css={css`
                               margin-top: 3px;
-                              overflow: hidden;
-                              color: #999;
-                              font-size: 13px;
-                              white-space: nowrap;
-                              display: flex;
-                              align-items: center;
                             `}
                           >
-                            <Square
-                              css={css`
-                                width: 13px;
-                                height: 13px;
-                                position: relative;
-                                margin-right: 4px;
-                                top: -1px;
-                              `}
-                            />
+                            <XSeedStartIcon />
                             {calculatedXSeeds?.[xSeedIndex]?.start[cIndex][
                               cPartIndex
                             ]?.toExponential(3)}
-                          </div>
+                          </XSeedCalculatedValue>
                         )}
 
                       {calculatedXSeeds &&
                         calculatedXSeeds[xSeedIndex] &&
                         calculatedXSeeds[xSeedIndex]?.end && (
-                          <div
-                            css={css`
-                              overflow: hidden;
-                              color: #999;
-                              font-size: 13px;
-                              white-space: nowrap;
-                              display: flex;
-                              align-items: center;
-                            `}
-                          >
-                            <Circle
-                              css={css`
-                                width: 13px;
-                                height: 13px;
-                                position: relative;
-                                margin-right: 4px;
-                                top: -1px;
-                              `}
-                            />
+                          <XSeedCalculatedValue>
+                            <XSeedEndIcon />
                             {calculatedXSeeds?.[xSeedIndex]?.end[cIndex][
                               cPartIndex
                             ]?.toExponential(3)}
-                          </div>
+                          </XSeedCalculatedValue>
                         )}
                     </XSeedComplexPart>
                   ))}

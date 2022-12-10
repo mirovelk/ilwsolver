@@ -3,9 +3,13 @@ import { castDraft } from 'immer';
 import Paper from 'paper';
 import equal from 'fast-deep-equal';
 
-import { solveInQArray } from '../../../support/calc/calc';
+import { solveInQArray, Ax, Ex } from '../../../support/calc/calc';
 import { getDifferentColor, getNextColorWithBuffer } from '../../../util/color';
-import { Complex, getRandomNumberBetween } from '../../../util/complex';
+import {
+  complex,
+  Complex,
+  getRandomNumberBetween,
+} from '../../../util/complex';
 import { stringifyForMathematica } from '../../../util/mathematica';
 import { RootState } from '../../store';
 import { getInitialSheet, initialSolver, initialState } from './initialState';
@@ -27,7 +31,8 @@ export const appSlice = createSlice({
       state.sheets[state.activeSheetIndex].solvers.forEach((solver) => {
         const ouptputValues = solveInQArray(
           solver.xSeed,
-          state.sheets[state.activeSheetIndex].inputValues
+          state.sheets[state.activeSheetIndex].inputValues,
+          state.calcConfig
         );
         solver.ouputValues = ouptputValues;
         solver.calculatedXSeed = {
@@ -263,11 +268,55 @@ export const appSlice = createSlice({
     ) => {
       state.outputProjectionVariant = action.payload;
     },
+
+    setCalcConfigExCPart(
+      state,
+      action: PayloadAction<{
+        cPartValue: number;
+        cPartIndex: number;
+        Ex: keyof Ex;
+      }>
+    ) {
+      const { cPartValue, cPartIndex, Ex } = action.payload;
+      state.calcConfig.Ex[Ex][cPartIndex] = cPartValue;
+      // TODO reset everything else
+    },
+
+    setCalcConfigAxN(state, action: PayloadAction<{ N: number }>) {
+      const { N } = action.payload;
+      const prevN = state.calcConfig.Ax.AL.length;
+
+      if (prevN < N) {
+        state.calcConfig.Ax.AL.push(complex(0));
+        state.calcConfig.Ax.AR.push(complex(0));
+      } else if (prevN > N && N > 0) {
+        state.calcConfig.Ax.AL.pop();
+        state.calcConfig.Ax.AR.pop();
+      }
+    },
+
+    setCalcConfigAxArrayCPart(
+      state,
+      action: PayloadAction<{
+        cPartValue: number;
+        cPartIndex: number;
+        axCIndex: number;
+        Ax: keyof Ax;
+      }>
+    ) {
+      const { cPartValue, cPartIndex, axCIndex: AxCIndex, Ax } = action.payload;
+      state.calcConfig.Ax[Ax][AxCIndex][cPartIndex] = cPartValue;
+      // TODO reset everything else
+    },
   },
 });
 
 // Selectors
 export const selectBadPoints = (state: RootState) => state.app.badPoints;
+
+export const selectCalcConfig = (state: RootState) => state.app.calcConfig;
+export const selectN = (state: RootState) => state.app.calcConfig.Ax.AL.length;
+
 export const selectInputZoom = (state: RootState) => state.app.inputZoom;
 export const selectOutputZoom = (state: RootState) => state.app.outputZoom;
 export const selectOutputProjectionVariant = (state: RootState) =>
@@ -309,7 +358,8 @@ export const selectPreviousSheetEndInputValue = createSelector(
     undefined
 );
 
-// Action creators are generated for each case reducer function
+const { actions, reducer } = appSlice;
+
 export const {
   addInputDrawingPoint,
   addSheet,
@@ -330,6 +380,9 @@ export const {
   setXSeedNumberPart,
   setXSeedsM,
   setXSeedsValues,
-} = appSlice.actions;
+  setCalcConfigExCPart,
+  setCalcConfigAxN,
+  setCalcConfigAxArrayCPart,
+} = actions;
 
-export default appSlice.reducer;
+export default reducer;

@@ -1,8 +1,30 @@
 import { complex } from '../../util/complex';
-import { eqns, eqnsd, matrixComplexToReal, solveInQ, transpose, vectorComplexToReal, vectorRealToComplex } from './calc';
+import {
+  eqns,
+  eqnsd,
+  matrixComplexToReal,
+  solveInQ,
+  transpose,
+  vectorComplexToReal,
+  vectorRealToComplex,
+} from './calc';
+
+const testCalcConfig = {
+  Ex: {
+    E1: complex(2),
+    E2: complex(3),
+    E3: complex(-5),
+  },
+  Ax: {
+    AL: [complex(6), complex(5)],
+    AR: [complex(3), complex(2)],
+  },
+};
 
 test('eqns returns correct value for M=1', () => {
-  expect(eqns([[0.5, 0.25]], [0.5, 0.25])).toEqual([[9.28125, 5.921875]]);
+  expect(eqns([[0.5, 0.25]], [0.5, 0.25], testCalcConfig)).toEqual([
+    [9.28125, 5.921875],
+  ]);
 });
 
 test('eqns returns correct value for M=3', () => {
@@ -13,7 +35,8 @@ test('eqns returns correct value for M=3', () => {
         [0.4, 0.3],
         [0.3, 0.4],
       ],
-      [0.5, 0.25]
+      [0.5, 0.25],
+      testCalcConfig
     )
   ).toEqual([
     [11905.258487440005, 3175.397525280002],
@@ -31,7 +54,8 @@ test('eqnsd returns correct value for M=3', () => {
         [0.3, 0.4],
         [0.2, 0.5],
       ],
-      [0.25, 0.5]
+      [0.25, 0.5],
+      testCalcConfig
     )
   ).toEqual([
     [
@@ -62,11 +86,13 @@ test('eqnsd returns correct value for M=3', () => {
 });
 
 test('eqnsd returns correct value for M=1', () => {
-  expect(eqnsd([[0.5, 0.25]], [0.5, 0.25])).toEqual([[[-1.125, -2.75]]]);
+  expect(eqnsd([[0.5, 0.25]], [0.5, 0.25], testCalcConfig)).toEqual([
+    [[-1.125, -2.75]],
+  ]);
 });
 
 test('solveInQ returns correct value for M=1', () => {
-  expect(solveInQ([[0.5, 0.25]], [0.5, 0.25])).toEqual([
+  expect(solveInQ([[0.5, 0.25]], [0.5, 0.25], testCalcConfig)).toEqual([
     [3.804535746476545, 0.15110607406879045],
   ]);
 });
@@ -78,7 +104,8 @@ test('solveInQ returns correct value for M=2', () => {
         [3.8, 0.18],
         [-3.4, -4.2],
       ],
-      [0.5, 0.25]
+      [0.5, 0.25],
+      testCalcConfig
     )
   ).toEqual([
     [3.8146494871248335, 0.1866977852491028],
@@ -94,7 +121,8 @@ test('solveInQ returns correct value for M=3', () => {
         [6, 0.4],
         [2.9, 0.4],
       ],
-      [0.5, 0.25]
+      [0.5, 0.25],
+      testCalcConfig
     )
   ).toEqual([
     [1.0740858432655949, -0.4934167579564011],

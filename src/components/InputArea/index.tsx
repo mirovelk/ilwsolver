@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Ballot, GpsFixed } from '@mui/icons-material';
+import { Ballot, GpsFixed, Settings } from '@mui/icons-material';
 import {
   Checkbox,
   FormControlLabel,
@@ -28,6 +28,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex, complex } from '../../util/complex';
 import BadPointEditor from '../BadPointEditor';
+import CalcConfigEditor from '../CalcConfigEditor';
 import InteractiveCanvas from '../InteractiveCanvas';
 import Circle from '../paper/Circle';
 import Path from '../paper/Path';
@@ -52,8 +53,10 @@ const previousSheetEndPointRectangleColor = new Color(0, 1, 1);
 const inputPathColor = new Color(1, 0, 0);
 
 enum Panel {
-  XSeedEditorPanel,
-  QPanel,
+  XSeedEditor = 'XSeedEditorPanel',
+  Q = 'QPanel',
+  BadPoints = 'BadPointsPanel',
+  CalcConfig = 'CalcConfigEditor',
 }
 
 function getInputValuesFromPath(
@@ -67,6 +70,10 @@ function getInputValuesFromPath(
     inputPoints.push(inputPath.getPointAt(i));
   }
   return inputPoints.map((point) => complex(point.x, -point.y)); // flip y
+}
+
+function getPanelToggleColor(panel: Panel, activePanel: Panel | undefined) {
+  return panel === activePanel ? 'primary' : 'default';
 }
 
 const SIMPLIFY_MIN = -10;
@@ -135,10 +142,7 @@ function InputArea({
 
   const badPointRadius = useMemo(() => (1 / inputZoom) * 2, [inputZoom]);
 
-  const [visiblePanel, setVisiblePanel] = useState<Panel | undefined>(
-    undefined
-  );
-  const [badPointEditorVisible, setBadPointEditorVisible] = useState(false);
+  const [activePanel, setActivePanel] = useState<Panel | undefined>();
 
   const [isDrawing, setIsDrawing] = useState(false);
 
@@ -219,30 +223,21 @@ function InputArea({
     dispatch,
   ]);
 
-  const toggleXSeedsEditor = useCallback(() => {
-    setVisiblePanel((previousVisiblePanel) =>
-      previousVisiblePanel !== Panel.XSeedEditorPanel
-        ? Panel.XSeedEditorPanel
-        : undefined
-    );
-  }, []);
-
-  const toggleQPanel = useCallback(() => {
-    setVisiblePanel((previousVisiblePanel) =>
-      previousVisiblePanel !== Panel.QPanel ? Panel.QPanel : undefined
-    );
-  }, []);
-
-  const toggleBadPointEditor = useCallback(() => {
-    setBadPointEditorVisible(
-      (previousBadPointEditorVisible) => !previousBadPointEditorVisible
-    );
+  const togglePanel = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    if ('panel' in e.currentTarget.dataset) {
+      const clickedPanelToggle = e.currentTarget.dataset.panel as Panel;
+      setActivePanel((previousActivePanel) =>
+        previousActivePanel !== clickedPanelToggle
+          ? clickedPanelToggle
+          : undefined
+      );
+    }
   }, []);
 
   return (
     <>
-      {visiblePanel === Panel.XSeedEditorPanel && <XSeedsEditor />}
-      {visiblePanel === Panel.QPanel && <QPanel />}
+      {activePanel === Panel.XSeedEditor && <XSeedsEditor />}
+      {activePanel === Panel.Q && <QPanel />}
       <InteractiveCanvas
         paper={paper}
         id="input"
@@ -261,24 +256,31 @@ function InputArea({
               <SheetTabs />
               <div>
                 <IconButton
-                  onClick={toggleBadPointEditor}
-                  color={badPointEditorVisible ? 'primary' : 'default'}
+                  onClick={togglePanel}
+                  data-panel={Panel.BadPoints}
+                  color={getPanelToggleColor(Panel.BadPoints, activePanel)}
                 >
                   <GpsFixed />
                 </IconButton>
-              </div>
-              {badPointEditorVisible && (
-                <div
-                  css={css`
-                    position: absolute;
-                    z-index: 2000;
-                    top: 45px;
-                    right: 10px;
-                  `}
+                <IconButton
+                  onClick={togglePanel}
+                  data-panel={Panel.CalcConfig}
+                  color={getPanelToggleColor(Panel.CalcConfig, activePanel)}
                 >
-                  <BadPointEditor />
-                </div>
-              )}
+                  <Settings />
+                </IconButton>
+              </div>
+              <div
+                css={css`
+                  position: absolute;
+                  z-index: 2000;
+                  top: 45px;
+                  left: 0;
+                `}
+              >
+                {activePanel === Panel.BadPoints && <BadPointEditor />}
+                {activePanel === Panel.CalcConfig && <CalcConfigEditor />}
+              </div>
             </div>
           </>
         }
@@ -286,23 +288,21 @@ function InputArea({
           <ControlsWrapper container spacing={2} alignItems="center">
             <Grid item>
               <IconButton
-                onClick={toggleXSeedsEditor}
-                color={
-                  visiblePanel === Panel.XSeedEditorPanel
-                    ? 'primary'
-                    : 'default'
-                }
+                onClick={togglePanel}
+                data-panel={Panel.XSeedEditor}
+                color={getPanelToggleColor(Panel.XSeedEditor, activePanel)}
               >
                 <Ballot />
               </IconButton>
               <IconButton
-                onClick={toggleQPanel}
+                onClick={togglePanel}
+                data-panel={Panel.Q}
                 css={css`
                   font-size: 22px;
                   width: 40px;
                   height: 40px;
                 `}
-                color={visiblePanel === Panel.QPanel ? 'primary' : 'default'}
+                color={getPanelToggleColor(Panel.Q, activePanel)}
               >
                 q
               </IconButton>

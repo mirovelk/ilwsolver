@@ -1,4 +1,4 @@
-import { ResultInQArray } from '../../../support/calc/calc';
+import { CalcConfig, ResultInQArray } from '../../../support/calc/calc';
 import { Complex } from '../../../util/complex';
 
 export enum OutputProjectionVariant {
@@ -11,12 +11,14 @@ export type XSeedValue = Complex[];
 
 export type StoredPoint = [number, number];
 
+export interface CalculatedXSeed {
+  start: XSeedValue;
+  end: XSeedValue;
+}
+
 export interface SolverState {
   xSeed: XSeedValue;
-  calculatedXSeed?: {
-    start: XSeedValue;
-    end: XSeedValue;
-  };
+  calculatedXSeed?: CalculatedXSeed; // TODO could be selector
   color: string; // Paper.Color constructors do not accept components array, use .toCSS(true)
   ouputValues?: ResultInQArray;
   ouputValuesValid: boolean;
@@ -38,6 +40,7 @@ export interface AppState {
   outputZoom: number;
   outputProjectionVariant: OutputProjectionVariant;
   badPoints: Complex[];
+  calcConfig: CalcConfig;
   sheets: Sheet[];
   activeSheetIndex: number;
 }

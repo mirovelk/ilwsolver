@@ -109,4 +109,4 @@ function BadPointEditor() {
   );
 }
 
-export default React.memo(BadPointEditor);
+export default BadPointEditor;

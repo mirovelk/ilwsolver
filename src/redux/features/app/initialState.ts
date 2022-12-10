@@ -13,6 +13,18 @@ export const initialSolver = {
   ouputValuesValid: false,
 };
 
+export const initialCalcConfig = {
+  Ex: {
+    E1: complex(2),
+    E2: complex(3),
+    E3: complex(-5),
+  },
+  Ax: {
+    AL: [complex(6), complex(5)],
+    AR: [complex(3), complex(2)],
+  },
+};
+
 export function getInitialSheet(): Sheet {
   const seeds = [
     [complex(2, -3), complex(3, -2)],
@@ -39,6 +51,7 @@ export const initialState: AppState = {
   inputZoom: 1,
   outputZoom: 1,
   outputProjectionVariant: OutputProjectionVariant.V1,
+  calcConfig: initialCalcConfig,
   badPoints: [
     [-58.0141, 0],
     [-55.6141, 0],

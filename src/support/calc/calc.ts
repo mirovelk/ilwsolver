@@ -10,15 +10,31 @@ import {
   subtract,
 } from '../../util/complex';
 
-const E1 = complex(2);
-const E2 = complex(3);
-const E3 = complex(-5);
+export interface Ex {
+  E1: Complex;
+  E2: Complex;
+  E3: Complex;
+}
 
-const AL: Complex[] = [complex(6), complex(5)]; // length N
-const AR: Complex[] = [complex(3), complex(2)]; // length N
+export interface Ax {
+  AL: Complex[];
+  AR: Complex[];
+}
+
+export interface CalcConfig {
+  Ex: Ex;
+  Ax: Ax;
+}
 
 // input vector M, output vector M
-export function eqns(input: Complex[], q: Complex): Complex[] {
+export function eqns(
+  input: Complex[],
+  q: Complex,
+  config: CalcConfig
+): Complex[] {
+  const { E1, E2, E3 } = config.Ex;
+  const { AL, AR } = config.Ax;
+
   const result: Complex[] = [];
   for (let i = 0; i < input.length; i++) {
     let tmp1 = copy(q);
@@ -49,7 +65,14 @@ export function eqns(input: Complex[], q: Complex): Complex[] {
 }
 
 // input vector M, output matrix MxM
-export function eqnsd(input: Complex[], q: Complex): Complex[][] {
+export function eqnsd(
+  input: Complex[],
+  q: Complex,
+  config: CalcConfig
+): Complex[][] {
+  const { E1, E2, E3 } = config.Ex;
+  const { AL, AR } = config.Ax;
+
   // empty matrix M*M
   const result: Complex[][] = new Array(input.length)
     .fill(undefined)
@@ -258,13 +281,17 @@ export type ResultInQ = Complex[]; // length = M
 export type ResultInQArray = ResultInQ[];
 
 // xSeed.length === M
-export function solveInQ(xSeed: Complex[], q: Complex): ResultInQ {
+export function solveInQ(
+  xSeed: Complex[],
+  q: Complex,
+  config: CalcConfig
+): ResultInQ {
   let tmp = xSeed.map((xSeed) => copy(xSeed));
 
   // count iterations
   for (let i = 0; i < 20; i++) {
-    const A = matrixComplexToReal(eqnsd(tmp, q));
-    const b = vectorComplexToReal(eqns(tmp, q));
+    const A = matrixComplexToReal(eqnsd(tmp, q, config));
+    const b = vectorComplexToReal(eqns(tmp, q, config));
 
     const solvedRealX = lusolve(A, b) as number[];
     const x = vectorRealToComplex(solvedRealX);
@@ -277,14 +304,15 @@ export function solveInQ(xSeed: Complex[], q: Complex): ResultInQ {
 
 export function solveInQArray(
   xSeed: Complex[],
-  qArray: Complex[]
+  qArray: Complex[],
+  config: CalcConfig
 ): ResultInQArray {
   const output: Complex[][] = [];
 
   output.push(xSeed); // initial value = xSeed
 
   for (let i = 0; i < qArray.length; i++) {
-    output.push(solveInQ(output[output.length - 1], qArray[i]));
+    output.push(solveInQ(output[output.length - 1], qArray[i], config));
   }
 
   return transpose(output.slice(1));
