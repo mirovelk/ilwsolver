@@ -10,6 +10,7 @@ function Star({
   fillColor = new Paper.Color(255, 255, 0),
   strokeColor,
   strokeWidth = 1,
+  onClick,
 }: {
   paper: paper.PaperScope;
   center: paper.Point;
@@ -19,6 +20,7 @@ function Star({
   fillColor?: paper.Color;
   strokeColor?: paper.Color;
   strokeWidth?: number;
+  onClick?: (event: paper.MouseEvent) => void;
 }) {
   const pathRef = useRef<paper.Path>();
 
@@ -43,6 +45,14 @@ function Star({
     radius1,
     radius2,
   ]);
+
+  useEffect(() => {
+    if (pathRef.current) {
+      pathRef.current.onClick = (event: paper.MouseEvent) => {
+        if (onClick) onClick(event);
+      };
+    }
+  }, [onClick]);
 
   return null;
 }

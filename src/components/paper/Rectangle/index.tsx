@@ -7,12 +7,14 @@ function Rectangle({
   fillColor = new Paper.Color(255, 255, 0),
   strokeColor,
   strokeWidth = 1,
+  onClick,
 }: {
   paper: paper.PaperScope;
   rectangle: paper.Rectangle;
   fillColor?: paper.Color;
   strokeColor?: paper.Color;
   strokeWidth?: number;
+  onClick?: (event: paper.MouseEvent) => void;
 }) {
   const pathRef = useRef<paper.Path>();
 
@@ -28,6 +30,14 @@ function Rectangle({
       if (pathRef.current) pathRef.current.remove();
     };
   }, [paper, rectangle, fillColor, strokeColor, strokeWidth]);
+
+  useEffect(() => {
+    if (pathRef.current) {
+      pathRef.current.onClick = (event: paper.MouseEvent) => {
+        if (onClick) onClick(event);
+      };
+    }
+  }, [onClick]);
 
   return null;
 }

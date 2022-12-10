@@ -144,6 +144,7 @@ function InteractiveCanvas({
   bottomControls,
   setZoom,
   children,
+  onClick,
 }: {
   paper: paper.PaperScope;
   id: string;
@@ -152,6 +153,7 @@ function InteractiveCanvas({
   bottomControls: JSX.Element;
   setZoom: (zoom: number) => void;
   children?: React.ReactNode;
+  onClick?: (e: paper.MouseEvent) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -231,6 +233,14 @@ function InteractiveCanvas({
       };
     }
   }, [paper, setZoom]);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      paper.view.onClick = (event: paper.MouseEvent) => {
+        if (onClick) onClick(event);
+      };
+    }
+  }, [onClick, paper.view]);
 
   return (
     <Wrapper>

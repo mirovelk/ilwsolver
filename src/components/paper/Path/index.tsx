@@ -11,6 +11,7 @@ function Path({
   selected = false,
   fullySelected = false,
   dashArray = [],
+  onClick,
 }: {
   paper: paper.PaperScope;
   points?: paper.Point[];
@@ -21,6 +22,7 @@ function Path({
   selected?: boolean;
   fullySelected?: boolean;
   dashArray?: number[];
+  onClick?: (event: paper.MouseEvent) => void;
 }) {
   const pathRef = useRef<paper.Path>();
 
@@ -49,6 +51,14 @@ function Path({
       if (fullySelected) pathRef.current.fullySelected = true;
     }
   }, [points, segments, fullySelected, selected]);
+
+  useEffect(() => {
+    if (pathRef.current) {
+      pathRef.current.onClick = (event: paper.MouseEvent) => {
+        if (onClick) onClick(event);
+      };
+    }
+  }, [onClick]);
 
   useEffect(() => {
     if (pathRef.current) {

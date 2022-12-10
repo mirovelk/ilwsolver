@@ -16,6 +16,7 @@ function PathWithEnds({
   selected = false,
   fullySelected = false,
   dashArray = [],
+  onClick,
 }: {
   paper: paper.PaperScope;
   zoom: number;
@@ -27,6 +28,7 @@ function PathWithEnds({
   selected?: boolean;
   fullySelected?: boolean;
   dashArray?: number[];
+  onClick?: (event: paper.MouseEvent) => void;
 }) {
   const startPointSegments =
     segments && segments.length > 0 && segments[0].point;
@@ -71,12 +73,14 @@ function PathWithEnds({
         fullySelected={fullySelected}
         selected={selected}
         dashArray={dashArray}
+        onClick={onClick}
       />
       {startPointRectangle && (
         <Rectangle
           paper={paper}
           rectangle={startPointRectangle}
           fillColor={endColor}
+          onClick={onClick}
         />
       )}
       {endPoint && (
@@ -85,6 +89,7 @@ function PathWithEnds({
           center={endPoint}
           radius={endPointRadius}
           fillColor={endColor}
+          onClick={onClick}
         />
       )}
     </>

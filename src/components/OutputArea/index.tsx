@@ -25,7 +25,8 @@ import {
 import InteractiveCanvas from '../InteractiveCanvas';
 import PathWithEnds from '../PathWithEnds';
 
-const OUTPUT_PATH_WIDTH = 3;
+const OUTPUT_PATH_UNSELECTED_WIDTH = 2;
+const OUTPUT_PATH_WIDTH = 4;
 
 function viewFitBounds(
   paper: paper.PaperScope,
@@ -138,6 +139,34 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
     setPoints(outputsPaths);
   }, [paper, solvers, setZoom, inputValues, outputProjectionVariant]);
 
+  const [selectedPath, setSelectedPath] = useState<{
+    outputPathsPointsIndex: number;
+    outputPathPointsIndex: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setSelectedPath(null);
+  }, [solvers]);
+
+  const onOutputPathClick = useCallback(
+    (outputPathsPointsIndex: number, outputPathPointsIndex: number) => {
+      setSelectedPath({
+        outputPathsPointsIndex,
+        outputPathPointsIndex,
+      });
+    },
+    []
+  );
+
+  const onCanvasClick = useCallback((event: paper.MouseEvent) => {
+    // dirty check if the click was on the canvas and not on a path
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (typeof event.target.viewSize !== 'undefined') {
+      setSelectedPath(null);
+    }
+  }, []);
+
   return (
     <>
       <InteractiveCanvas
@@ -145,6 +174,7 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
         id="output"
         title="Output"
         setZoom={setZoom}
+        onClick={onCanvasClick}
         topControls={
           <div
             css={css`
@@ -203,18 +233,41 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
       />
       {points.map((outputPathsPoints, outputPathsPointsIndex) =>
         outputPathsPoints.paths.map(
-          (outputPathPoints, outputPathPointsIndex) => (
-            <PathWithEnds
-              key={`${outputPathsPointsIndex}-${outputPathPointsIndex}`}
-              paper={paper}
-              zoom={outputZoom}
-              points={outputPathPoints}
-              strokeColor={outputPathsPoints.color}
-              strokeWidth={OUTPUT_PATH_WIDTH}
-              fullySelected={false}
-              dashArray={outputPathsPoints.dashed ? [10, 8] : []}
-            />
-          )
+          (outputPathPoints, outputPathPointsIndex) => {
+            const anySelected = selectedPath !== null;
+            const thisSelected =
+              selectedPath?.outputPathPointsIndex === outputPathPointsIndex &&
+              selectedPath?.outputPathsPointsIndex === outputPathsPointsIndex;
+
+            const shoudSuppress = anySelected && !thisSelected;
+
+            const color = new paper.Color(outputPathsPoints.color);
+            if (shoudSuppress) {
+              color.brightness -= 0.7;
+            }
+
+            return (
+              <PathWithEnds
+                key={`${outputPathsPointsIndex}-${outputPathPointsIndex}`}
+                paper={paper}
+                zoom={outputZoom}
+                points={outputPathPoints}
+                strokeColor={color}
+                strokeWidth={
+                  shoudSuppress
+                    ? OUTPUT_PATH_UNSELECTED_WIDTH
+                    : OUTPUT_PATH_WIDTH
+                }
+                fullySelected={false}
+                dashArray={outputPathsPoints.dashed ? [10, 8] : []}
+                onClick={onOutputPathClick.bind(
+                  null,
+                  outputPathsPointsIndex,
+                  outputPathPointsIndex
+                )}
+              />
+            );
+          }
         )
       )}
     </>
