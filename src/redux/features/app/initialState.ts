@@ -46,6 +46,7 @@ export function getInitialSheet(): Sheet {
 }
 
 export const initialState: AppState = {
+  solvingInProgress: false,
   sheets: [getInitialSheet()],
   activeSheetIndex: 0,
   inputZoom: 1,

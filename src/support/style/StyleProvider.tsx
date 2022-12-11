@@ -2,7 +2,7 @@ import { css, Global } from '@emotion/react';
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 
 interface Props {
-  children: JSX.Element;
+  children: React.ReactNode;
 }
 
 const darkTheme = createTheme({

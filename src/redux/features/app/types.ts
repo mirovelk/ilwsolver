@@ -36,6 +36,7 @@ export interface Sheet {
 }
 
 export interface AppState {
+  solvingInProgress: boolean;
   inputZoom: number;
   outputZoom: number;
   outputProjectionVariant: OutputProjectionVariant;

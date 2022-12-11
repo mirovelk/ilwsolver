@@ -1,9 +1,22 @@
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  PayloadAction,
+} from '@reduxjs/toolkit';
 import { castDraft } from 'immer';
 import Paper from 'paper';
 import equal from 'fast-deep-equal';
+// @ts-ignore
+import calcWorker from 'workerize-loader!../../../support/calc/calc';
 
-import { solveInQArray, Ax, Ex } from '../../../support/calc/calc';
+import {
+  Ax,
+  Ex,
+  ResultInQArray,
+  CalcConfig,
+  solveInQArray,
+} from '../../../support/calc/calc';
 import { getDifferentColor, getNextColorWithBuffer } from '../../../util/color';
 import {
   complex,
@@ -22,6 +35,27 @@ export function getRandomXSeedPartNumber(): number {
 function getRandomXSeedNumber(): Complex {
   return [getRandomXSeedPartNumber(), getRandomXSeedPartNumber()];
 }
+
+export const solveAllInQArray = createAsyncThunk(
+  'app/solveInQArray',
+  async ({
+    allXSeeds,
+    inputValues,
+    config,
+  }: {
+    allXSeeds: Array<Complex[]>;
+    inputValues: Complex[];
+    config: CalcConfig;
+  }): Promise<ResultInQArray[]> => {
+    const workers = allXSeeds.map((xSeed) => {
+      const calcWorkerInstance = calcWorker();
+      return calcWorkerInstance.solveInQArray(xSeed, inputValues, config);
+    });
+
+    const results = (await Promise.all(workers)) as ResultInQArray[];
+    return results;
+  }
+);
 
 export const appSlice = createSlice({
   name: 'app',
@@ -309,9 +343,53 @@ export const appSlice = createSlice({
       // TODO reset everything else
     },
   },
+
+  extraReducers: (builder) => {
+    builder.addCase(solveAllInQArray.pending, (state) => {
+      state.solvingInProgress = true;
+    });
+    builder.addCase(solveAllInQArray.rejected, (state, action) => {
+      state.solvingInProgress = false;
+      console.log(action);
+    });
+    builder.addCase(solveAllInQArray.fulfilled, (state, action) => {
+      state.solvingInProgress = false;
+
+      // map calculation results back to the solvers
+      const allOuptputValues = action.payload;
+
+      allOuptputValues.forEach((ouptputValues, ouptputValuesIndex) => {
+        const solver =
+          state.sheets[state.activeSheetIndex].solvers[ouptputValuesIndex];
+        solver.ouputValues = ouptputValues;
+        solver.calculatedXSeed = {
+          start: solver.ouputValues.map((output) => output[0]),
+          end: solver.ouputValues.map((output) => output[output.length - 1]),
+        };
+        solver.ouputValuesValid = true;
+      });
+      console.log(
+        stringifyForMathematica(
+          state.sheets[state.activeSheetIndex].inputValues
+        )
+      );
+      // console.log(
+      //   JSON.stringify(
+      //     nextState.sheets[nextState.activeSheetIndex].solvers.map(
+      //       (solver) => solver.ouputValues
+      //     )
+      //   )
+      //     .replaceAll("[", "{")
+      //     .replaceAll("]", "}")
+      // );
+    });
+  },
 });
 
 // Selectors
+export const selectSolvingInprogress = (state: RootState) =>
+  state.app.solvingInProgress;
+
 export const selectBadPoints = (state: RootState) => state.app.badPoints;
 
 export const selectCalcConfig = (state: RootState) => state.app.calcConfig;
@@ -364,7 +442,6 @@ export const {
   addInputDrawingPoint,
   addSheet,
   addXSeed,
-  calculateAllOutputPaths,
   clearActiveSheetInputOuputValues,
   removeSheetWithIndex,
   removeXSeedWithIndex,

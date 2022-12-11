@@ -2,7 +2,7 @@ import { hot } from 'react-hot-loader/root';
 
 import styled from '@emotion/styled';
 import { Delete, Functions } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
+import { CircularProgress, IconButton } from '@mui/material';
 import Paper from 'paper';
 import { useCallback } from 'react';
 
@@ -11,17 +11,20 @@ import { defaultScaleDownFactor } from './components/InteractiveCanvas/util';
 import OutputArea from './components/OutputArea';
 import { inputPaper, outputPaper } from './papers';
 import {
-  calculateAllOutputPaths,
   clearActiveSheetInputOuputValues,
   selectActiveSheetIputValues,
+  selectActiveSheetSolvers,
+  selectCalcConfig,
+  selectSolvingInprogress,
   setInputZoom,
   setOutputZoom,
+  solveAllInQArray,
 } from './redux/features/app/appSlice';
 import { useAppDispatch, useAppSelector } from './redux/store';
 import StyleProvider from './support/style/StyleProvider';
 
 const Wrapper = styled.div`
-  position: realtive;
+  position: relative;
   height: 100%;
 `;
 
@@ -79,6 +82,14 @@ const RunButton = styled(IconButton)`
   }
 `;
 
+const RunButtonGlyphWrapper = styled.div`
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 const ClearButton = styled(IconButton)`
   background: rgb(18 18 18);
   border: 10px solid rgb(18 18 18);
@@ -100,11 +111,28 @@ const INPUT_STEPS = 1000;
 
 function App() {
   const dispatch = useAppDispatch();
+  const solvingInProgress = useAppSelector(selectSolvingInprogress);
   const activeSheetInputValues = useAppSelector(selectActiveSheetIputValues);
+  const activeSheetSolvers = useAppSelector(selectActiveSheetSolvers);
+  const calcConfig = useAppSelector(selectCalcConfig);
 
   const process = useCallback(() => {
-    dispatch(calculateAllOutputPaths());
-  }, [dispatch]);
+    if (!solvingInProgress) {
+      dispatch(
+        solveAllInQArray({
+          allXSeeds: activeSheetSolvers.map((solver) => solver.xSeed),
+          inputValues: activeSheetInputValues,
+          config: calcConfig,
+        })
+      );
+    }
+  }, [
+    activeSheetInputValues,
+    activeSheetSolvers,
+    calcConfig,
+    dispatch,
+    solvingInProgress,
+  ]);
 
   const clear = useCallback(() => {
     dispatch(clearActiveSheetInputOuputValues());
@@ -134,9 +162,14 @@ function App() {
               size="large"
               color="inherit"
               onClick={process}
-              disabled={activeSheetInputValues.length === 0}
+              disabled={
+                activeSheetInputValues.length === 0 || solvingInProgress
+              }
             >
-              <StyledFunctions fontSize="inherit" />
+              <RunButtonGlyphWrapper>
+                {solvingInProgress && <CircularProgress size={35} />}
+                {!solvingInProgress && <StyledFunctions fontSize="inherit" />}
+              </RunButtonGlyphWrapper>
             </RunButton>
           </RunButtonWrapper>
           <ClearButtonWrapper>
