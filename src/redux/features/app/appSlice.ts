@@ -75,11 +75,11 @@ export const appSlice = createSlice({
         };
         solver.ouputValuesValid = true;
       });
-      console.log(
-        stringifyForMathematica(
-          state.sheets[state.activeSheetIndex].inputValues
-        )
-      );
+      // console.log(
+      //   stringifyForMathematica(
+      //     state.sheets[state.activeSheetIndex].inputValues
+      //   )
+      // );
       // console.log(
       //   JSON.stringify(
       //     nextState.sheets[nextState.activeSheetIndex].solvers.map(
