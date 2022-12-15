@@ -6,10 +6,10 @@ import React, { useCallback } from 'react';
 
 import {
   addSheet,
-  removeSheetWithIndex,
-  selectActiveSheetIndex,
-  selectSheets,
-  setActiveSheetIndex,
+  removeSheetWithId,
+  selectActiveSheetId,
+  selectSheetIds,
+  setActiveSheetId,
 } from '../../redux/features/app/appSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 
@@ -25,8 +25,8 @@ const StyledTab = styled(Tab)`
 
 function SheetTabs() {
   const dispatch = useAppDispatch();
-  const activeSheetIndex = useAppSelector(selectActiveSheetIndex); // TODO do differently not to rely on indexes
-  const sheets = useAppSelector(selectSheets); // TODO triggers re-renders
+  const activeSheetId = useAppSelector(selectActiveSheetId);
+  const sheetIds = useAppSelector(selectSheetIds);
 
   const addSheetOnClick = useCallback(() => {
     dispatch(addSheet());
@@ -34,7 +34,7 @@ function SheetTabs() {
 
   const setActiveSheetOnClick = useCallback(
     (_e, value) => {
-      dispatch(setActiveSheetIndex(value));
+      dispatch(setActiveSheetId(value));
     },
     [dispatch]
   );
@@ -43,7 +43,7 @@ function SheetTabs() {
     (e, sheetIndex) => {
       e.stopPropagation();
       if (window.confirm('Remove tab?')) {
-        dispatch(removeSheetWithIndex(sheetIndex));
+        dispatch(removeSheetWithId(sheetIndex));
       } else {
         // Do nothing!
       }
@@ -57,8 +57,8 @@ function SheetTabs() {
         display: flex;
       `}
     >
-      <StyledTabs value={activeSheetIndex} onChange={setActiveSheetOnClick}>
-        {sheets.map((sheet, sheetIndex) => (
+      <StyledTabs value={activeSheetId} onChange={setActiveSheetOnClick}>
+        {sheetIds.map((sheetId) => (
           <StyledTab
             label={
               <div
@@ -68,11 +68,11 @@ function SheetTabs() {
                   margin-left: 5px;
                 `}
               >
-                {sheet.label}
-                {sheets.length > 1 && (
+                {sheetId}
+                {sheetIds.length > 1 && (
                   <Close
                     fontSize="inherit"
-                    onClick={(e) => removeSheetOnClick(e, sheetIndex)}
+                    onClick={(e) => removeSheetOnClick(e, sheetId)}
                     css={css`
                       margin-left: 5px;
                     `}
@@ -80,8 +80,8 @@ function SheetTabs() {
                 )}
               </div>
             }
-            value={sheetIndex}
-            key={sheetIndex}
+            value={sheetId}
+            key={sheetId}
           />
         ))}
       </StyledTabs>

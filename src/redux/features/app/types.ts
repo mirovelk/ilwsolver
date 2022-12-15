@@ -1,3 +1,4 @@
+import { EntityId, EntityState } from '@reduxjs/toolkit';
 import { CalcConfig, ResultInQArray } from '../../../support/calc/calc';
 import { Complex } from '../../../util/complex';
 
@@ -27,7 +28,7 @@ export interface SolverState {
 export type Solvers = SolverState[];
 
 export interface Sheet {
-  label: number;
+  id: EntityId;
   inputDrawingPoints: StoredPoint[];
   inputValues: Complex[];
   inputSimplifyTolerance: number;
@@ -42,6 +43,6 @@ export interface AppState {
   outputProjectionVariant: OutputProjectionVariant;
   badPoints: Complex[];
   calcConfig: CalcConfig;
-  sheets: Sheet[];
-  activeSheetIndex: number;
+  sheets: EntityState<Sheet>;
+  activeSheetId: EntityId;
 }
