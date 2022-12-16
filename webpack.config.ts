@@ -36,11 +36,11 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
     target: ['browserslist'],
     devtool: 'source-map',
     output: {
-      path: path.resolve(__dirname, 'build/~prochazkat/ilwsolver/'),
+      path: path.resolve(__dirname, 'build'),
       filename: 'resources/js/[chunkhash].bundle.js',
       clean: true,
       assetModuleFilename: 'resources/assets/[hash].[name][ext]',
-      publicPath: isProduction ? '/~prochazkat/ilwsolver/' : '/',
+      publicPath: isProduction ? './' : '/',
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
