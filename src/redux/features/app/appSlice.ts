@@ -53,6 +53,7 @@ function buildInitialSheet(sheet?: Partial<Sheet>): Sheet {
     inputSimplifyTolerance: SIMPLIFY_INITIAL,
     inputSimplifyEnabled: true,
     solvers: [],
+    xSeedHasError: false,
     ...sheet,
   };
 }
@@ -213,7 +214,7 @@ export const appSlice = createSlice({
         solverIds.map((solverId) => ({
           id: solverId,
           changes: {
-            outputValues: [],
+            outputValues: undefined,
             outputValuesValid: false,
           },
         }))
@@ -367,22 +368,20 @@ export const appSlice = createSlice({
       solversAdapter.removeOne(state.solvers, solverId);
     },
 
-    setXSeedNumberPart: (
+    setXSeedNumber: (
       state,
       action: PayloadAction<{
         solverId: SolverId;
         xSeedNumberIndex: number;
-        xSeedNumberPartIndex: number;
-        value: number;
+        value: Complex;
       }>
     ) => {
-      const { solverId, xSeedNumberIndex, xSeedNumberPartIndex, value } =
-        action.payload;
+      const { solverId, xSeedNumberIndex, value } = action.payload;
 
       const draftXSeed = state.solvers.entities[solverId]?.xSeed;
       if (!draftXSeed) throw new Error('xSeed not found');
 
-      draftXSeed[xSeedNumberIndex][xSeedNumberPartIndex] = value;
+      draftXSeed[xSeedNumberIndex] = value;
 
       const update = {
         id: solverId,
@@ -572,6 +571,13 @@ export const appSlice = createSlice({
       }));
       solversAdapter.updateMany(state.solvers, updates);
     },
+
+    activeSheetXSeedHasError(state, action: PayloadAction<boolean>) {
+      sheetsAdapter.updateOne(state.sheets, {
+        id: state.activeSheetId,
+        changes: { xSeedHasError: action.payload },
+      });
+    },
   },
 
   extraReducers: (builder) => {
@@ -650,6 +656,11 @@ export const selectActiveSheetIputValues = createSelector(
   (activeSheet) => activeSheet.inputValues
 );
 
+export const selectActiveSheetXSeedHasError = createSelector(
+  [selectActiveSheet],
+  (activeSheet) => activeSheet.xSeedHasError
+);
+
 export const selectActiveSheetIputDrawingPoints = createSelector(
   [selectActiveSheet],
   (activeSheet) => activeSheet.inputDrawingPoints
@@ -700,12 +711,13 @@ export const {
   setOutputProjectionVariant,
   setOutputZoom,
   setSolverColor,
-  setXSeedNumberPart,
+  setXSeedNumber,
   setXSeedsM,
   setXSeedsValues,
   setCalcConfigExCPart,
   setCalcConfigAxN,
   setCalcConfigAxArrayCPart,
+  activeSheetXSeedHasError,
 } = actions;
 
 export default reducer;

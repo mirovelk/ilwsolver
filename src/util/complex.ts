@@ -1,3 +1,5 @@
+import { complex as mathComplex } from 'mathjs';
+
 export type Complex = [r: number, i: number];
 
 export function complex(r: number, i = 0): Complex {
@@ -48,4 +50,31 @@ export function getRandomComplexNumber(min: number, max: number): Complex {
     getRandomNumberBetween(min, max),
     getRandomNumberBetween(min, max)
   );
+}
+
+function stringifyNumber(number: number, precision: number): string {
+  return number
+    .toExponential(precision)
+    .replaceAll('.000', '') // unnecessary
+    .replaceAll('e+0', '') // unnecessary
+    .replaceAll('e', '*^'); // used by mathematica
+}
+
+export function stringifyComplex(complex: Complex, precision = 3): string {
+  const str = stringifyNumber(complex[0], precision);
+  if (complex[1] < 0) {
+    return `${str}-${stringifyNumber(-complex[1], precision)}i`;
+  } else if (complex[1] > 0) {
+    return `${str}+${stringifyNumber(complex[1], precision)}i`;
+  } else {
+    return str;
+  }
+}
+
+export function parseComplex(str: string): Complex {
+  const c = [0, 0] as Complex;
+  const parsed = mathComplex(str.replaceAll('*^', 'e'));
+  c[0] = parsed.re;
+  c[1] = parsed.im;
+  return c;
 }

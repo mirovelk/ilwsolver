@@ -31,6 +31,7 @@ export interface Sheet {
   inputSimplifyTolerance: number;
   inputSimplifyEnabled: boolean;
   solvers: SolverId[];
+  xSeedHasError: boolean;
 }
 
 export interface AppState {

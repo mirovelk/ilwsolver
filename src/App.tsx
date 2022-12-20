@@ -14,6 +14,7 @@ import {
   clearActiveSheetInputOutputValues,
   selectActiveSheetIputValues,
   selectActiveSheetSolvers,
+  selectActiveSheetXSeedHasError,
   selectCalcConfig,
   selectSolvingInprogress,
   setInputZoom,
@@ -114,6 +115,9 @@ function App() {
   const solvingInProgress = useAppSelector(selectSolvingInprogress);
   const activeSheetInputValues = useAppSelector(selectActiveSheetIputValues);
   const activeSheetSolvers = useAppSelector(selectActiveSheetSolvers);
+  const activeSheetXSeedHasError = useAppSelector(
+    selectActiveSheetXSeedHasError
+  );
   const calcConfig = useAppSelector(selectCalcConfig);
 
   const process = useCallback(() => {
@@ -163,7 +167,9 @@ function App() {
               color="inherit"
               onClick={process}
               disabled={
-                activeSheetInputValues.length === 0 || solvingInProgress
+                activeSheetXSeedHasError ||
+                activeSheetInputValues.length === 0 ||
+                solvingInProgress
               }
             >
               <RunButtonGlyphWrapper>

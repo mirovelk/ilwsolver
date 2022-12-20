@@ -102,6 +102,7 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
         typescript: {
           configFile: path.join(__dirname, 'tsconfig.json'),
         },
+        devServer: false,
       }),
     ],
     devServer: {

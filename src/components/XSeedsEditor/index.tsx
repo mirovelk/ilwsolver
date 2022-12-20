@@ -13,18 +13,21 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChromePicker } from 'react-color';
 
 import {
+  activeSheetXSeedHasError,
   addSolverToActiveSheet,
   removeSolverFromActiveSheet,
   selectActiveSheetSolvers,
   selectM,
   setSolverColor,
-  setXSeedNumberPart,
+  setXSeedNumber,
   setXSeedsM,
   setXSeedsValues,
 } from '../../redux/features/app/appSlice';
 import { SolverId, XSeedValue } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { Complex, stringifyComplex } from '../../util/complex';
 import { stringifyForMathematica } from '../../util/mathematica';
+import ComplexEditor from '../ComplexEditor';
 
 const Panel = styled(MaterialPaper)`
   display: inline-flex;
@@ -80,45 +83,29 @@ const XSeedsWrapper = styled.div`
 
 const XSeedInputs = styled.div`
   display: flex;
-  margin-bottom: 10px;
 `;
 
-const XSeedComplex = styled(MaterialPaper)`
-  display: flex;
-  padding: 5px;
-
-  &:not(:last-child) {
-    margin-right: 10px;
-  }
+const XSeedComplexWrapper = styled.div`
+  margin-right: 10px;
 `;
-
-const XSeedComplexPart = styled(MaterialPaper)`
-  padding: 5px;
-  width: 100px;
-
-  &:not(:last-child) {
-    margin-right: 5px;
-  }
-`;
-
-const XSeedComplexPartInput = styled(TextField)``;
 
 const AddXSeedButton = styled(IconButton)``;
 
 const XSeedWrapper = styled.div`
   display: flex;
   align-items: flex-start;
+  margin-bottom: 10px;
 `;
 
-const controlOffset = '10px';
+const controlsOffset = '5px';
 
 const XSeedRemoveWrapper = styled.div`
-  margin-top: ${controlOffset};
+  margin-top: ${controlsOffset};
   margin-right: 10px;
 `;
 
 const XSeedColorWrapper = styled.div`
-  margin-top: ${controlOffset};
+  margin-top: ${controlsOffset};
   position: relative;
   margin-right: 8px;
   display: flex;
@@ -296,21 +283,13 @@ function XSeedsEditor() {
     [dispatch]
   );
 
-  const xSeedComplexPartInputOnChange = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      const solverId = e.target.dataset.solverId as SolverId;
-      const cIndex = parseInt(e.target.dataset.cIndex as string);
-      const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
-      const value =
-        e.currentTarget.value.trim() === ''
-          ? 0 // coplex part can not be undefined
-          : parseFloat(e.currentTarget.value);
+  const xSeedComplexOnEditFinished = useCallback(
+    (solverId: SolverId, xSeedCIndex: number, xSeedCValue: Complex) => {
       dispatch(
-        setXSeedNumberPart({
+        setXSeedNumber({
           solverId,
-          xSeedNumberIndex: cIndex,
-          xSeedNumberPartIndex: cPartIndex,
-          value,
+          xSeedNumberIndex: xSeedCIndex,
+          value: xSeedCValue,
         })
       );
     },
@@ -476,45 +455,43 @@ function XSeedsEditor() {
             </XSeedColorWrapper>
             <XSeedInputs>
               {solver.xSeed.map((c, cIndex) => (
-                <XSeedComplex elevation={0} key={cIndex}>
-                  {c.map((cPart, cPartIndex) => (
-                    <XSeedComplexPart elevation={0} key={cPartIndex}>
-                      <XSeedComplexPartInput
-                        value={cPart}
-                        variant="standard"
-                        type="number"
-                        inputProps={{
-                          step: 0.1,
-                          'data-solver-id': solver.id,
-                          'data-c-index': cIndex,
-                          'data-c-part-index': cPartIndex,
-                        }}
-                        onChange={xSeedComplexPartInputOnChange}
-                      />
-                      {solver.outputValues && (
-                        <XSeedCalculatedValue
-                          css={css`
-                            margin-top: 3px;
-                          `}
-                        >
-                          <XSeedStartIcon />
-                          {solver.outputValues
-                            .map((output) => output[0])
-                            [cIndex][cPartIndex]?.toExponential(3)}
-                        </XSeedCalculatedValue>
-                      )}
+                <XSeedComplexWrapper key={cIndex}>
+                  <ComplexEditor
+                    value={c}
+                    onEditFinished={(value) => {
+                      xSeedComplexOnEditFinished(solver.id, cIndex, value);
+                    }}
+                    showError={() => {
+                      dispatch(activeSheetXSeedHasError(true));
+                    }}
+                    hideError={() => {
+                      dispatch(activeSheetXSeedHasError(false));
+                    }}
+                  />
 
-                      {solver.outputValues && (
-                        <XSeedCalculatedValue>
-                          <XSeedEndIcon />
-                          {solver.outputValues
-                            .map((output) => output[output.length - 1])
-                            [cIndex][cPartIndex]?.toExponential(3)}
-                        </XSeedCalculatedValue>
-                      )}
-                    </XSeedComplexPart>
-                  ))}
-                </XSeedComplex>
+                  {solver.outputValues && (
+                    <>
+                      <XSeedCalculatedValue
+                        css={css`
+                          margin-top: 3px;
+                        `}
+                      >
+                        <XSeedStartIcon />
+                        {stringifyComplex(
+                          solver.outputValues.map((output) => output[0])[cIndex]
+                        )}
+                      </XSeedCalculatedValue>
+                      <XSeedCalculatedValue>
+                        <XSeedEndIcon />
+                        {stringifyComplex(
+                          solver.outputValues.map(
+                            (output) => output[output.length - 1]
+                          )[cIndex]
+                        )}
+                      </XSeedCalculatedValue>
+                    </>
+                  )}
+                </XSeedComplexWrapper>
               ))}
             </XSeedInputs>
           </XSeedWrapper>
