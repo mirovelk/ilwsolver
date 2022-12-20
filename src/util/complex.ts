@@ -42,7 +42,7 @@ export function abs(a: Complex): number {
 }
 
 export function getRandomNumberBetween(min: number, max: number) {
-  return parseFloat((Math.random() * (max - min + 1) + min).toFixed(3));
+  return parseFloat((Math.random() * (max - min + 1) + min).toFixed(20));
 }
 
 export function getRandomComplexNumber(min: number, max: number): Complex {
@@ -52,20 +52,20 @@ export function getRandomComplexNumber(min: number, max: number): Complex {
   );
 }
 
-function stringifyNumber(number: number, precision: number): string {
+function stringifyNumber(number: number, full: boolean): string {
   return number
-    .toExponential(precision)
+    .toExponential(!full ? 3 : undefined)
     .replaceAll('.000', '') // unnecessary
     .replaceAll('e+0', '') // unnecessary
     .replaceAll('e', '*^'); // used by mathematica
 }
 
-export function stringifyComplex(complex: Complex, precision = 3): string {
-  const str = stringifyNumber(complex[0], precision);
+export function stringifyComplex(complex: Complex, full = false): string {
+  const str = stringifyNumber(complex[0], full);
   if (complex[1] < 0) {
-    return `${str}-${stringifyNumber(-complex[1], precision)}i`;
+    return `${str}-${stringifyNumber(-complex[1], full)}i`;
   } else if (complex[1] > 0) {
-    return `${str}+${stringifyNumber(complex[1], precision)}i`;
+    return `${str}+${stringifyNumber(complex[1], full)}i`;
   } else {
     return str;
   }

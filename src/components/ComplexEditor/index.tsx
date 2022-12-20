@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { Paper as MaterialPaper, TextField } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 
@@ -25,38 +25,34 @@ function ComplexEditor({
   const [inputValue, setInputValue] = useState(stringifyComplex(value));
   const [inputValueValid, setInputValueValid] = useState(true);
 
-  // on inputValue change, pase, validate, call onEditFinished
-  useEffect(() => {
-    try {
-      const parsedValue = parseComplex(inputValue);
-      setInputValueValid(true);
-      hideError && hideError();
-      if (parsedValue[0] !== value[0] || parsedValue[1] !== value[1])
-        onEditFinished(parsedValue);
-    } catch {
-      setInputValueValid(false);
-      showError && showError();
-    }
-  }, [hideError, inputValue, onEditFinished, showError, value]);
-
   const inputOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputValue(e.currentTarget.value);
+      const inputValue = e.currentTarget.value;
+      setInputValue(inputValue);
+      try {
+        const parsedValue = parseComplex(inputValue);
+        setInputValueValid(true);
+        hideError && hideError();
+        if (parsedValue[0] !== value[0] || parsedValue[1] !== value[1])
+          onEditFinished(parsedValue);
+      } catch {
+        setInputValueValid(false);
+        showError && showError();
+      }
     },
-    [setInputValue]
+    [hideError, onEditFinished, showError, value]
   );
 
-  // just for formatting
+  // for formatting after edit
   const inputOnBlur = useCallback(
     (_e: React.FocusEvent<HTMLInputElement>) => {
       try {
-        const parsedValue = parseComplex(inputValue);
-        setInputValue(stringifyComplex(parsedValue));
+        setInputValue(stringifyComplex(value));
       } catch {
         // do nothing
       }
     },
-    [inputValue]
+    [value]
   );
 
   return (
