@@ -13,15 +13,16 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChromePicker } from 'react-color';
 
 import {
-  addXSeed,
-  removeXSeedWithIndex,
+  addSolverToActiveSheet,
+  removeSolverFromActiveSheet,
   selectActiveSheetSolvers,
+  selectM,
   setSolverColor,
   setXSeedNumberPart,
   setXSeedsM,
   setXSeedsValues,
 } from '../../redux/features/app/appSlice';
-import { XSeedValue } from '../../redux/features/app/types';
+import { SolverId, XSeedValue } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { stringifyForMathematica } from '../../util/mathematica';
 
@@ -201,26 +202,17 @@ function stringifyXSeeds(xSeeds: XSeedValue[]) {
 function XSeedsEditor() {
   const dispatch = useAppDispatch();
   const solvers = useAppSelector(selectActiveSheetSolvers);
+  const M = useAppSelector(selectM);
 
   const xSeeds = useMemo(
     () => solvers.map((solver) => solver.xSeed),
     [solvers]
   );
 
-  const calculatedXSeeds = useMemo(
-    () => solvers.map((solver) => solver.calculatedXSeed),
+  const allXSeedsCalculated = useMemo(
+    () => !solvers.some((solver) => typeof solver.outputValues === 'undefined'),
     [solvers]
   );
-
-  const allXSeedsCalculated = useMemo(
-    () =>
-      !calculatedXSeeds.some(
-        (calculatedXSeed) => typeof calculatedXSeed === 'undefined'
-      ),
-    [calculatedXSeeds]
-  );
-
-  const xSeedsM = useMemo(() => xSeeds[0].length, [xSeeds]);
 
   const [xSeedsTextareaValue, setXSeedsTextareaValue] = useState(
     stringifyXSeeds(xSeeds)
@@ -228,9 +220,8 @@ function XSeedsEditor() {
   const [xSeedsTextareaEditing, setXSeedsTextareaEditing] = useState(false);
   const [xSeedsTextareaError, setXSeedsTextareaError] = useState(false);
 
-  const [visibleColorPickerIndex, setVisibleColorPickerIndex] = useState<
-    number | null
-  >(null);
+  const [visibleColorPickerSolverId, setVisibleColorPickerSolverId] =
+    useState<SolverId | null>(null);
 
   // reflect xSeeds changes back into textarea area when not editing
   useEffect(() => {
@@ -295,19 +286,19 @@ function XSeedsEditor() {
   );
 
   const addXSeedOnClick = useCallback(() => {
-    dispatch(addXSeed());
+    dispatch(addSolverToActiveSheet());
   }, [dispatch]);
 
   const removeXSeed = useCallback(
-    (index: number) => {
-      dispatch(removeXSeedWithIndex(index));
+    (solverId: SolverId) => {
+      dispatch(removeSolverFromActiveSheet(solverId));
     },
     [dispatch]
   );
 
   const xSeedComplexPartInputOnChange = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
-      const xSeedIndex = parseInt(e.target.dataset.xSeedIndex as string);
+      const solverId = e.target.dataset.solverId as SolverId;
       const cIndex = parseInt(e.target.dataset.cIndex as string);
       const cPartIndex = parseInt(e.target.dataset.cPartIndex as string);
       const value =
@@ -316,7 +307,7 @@ function XSeedsEditor() {
           : parseFloat(e.currentTarget.value);
       dispatch(
         setXSeedNumberPart({
-          solverIndex: xSeedIndex,
+          solverId,
           xSeedNumberIndex: cIndex,
           xSeedNumberPartIndex: cPartIndex,
           value,
@@ -328,24 +319,30 @@ function XSeedsEditor() {
 
   const copyResultsStart = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
-      clipboard.write(
-        stringifyForMathematica(
-          calculatedXSeeds.map((calculatedXSeed) => calculatedXSeed?.start)
-        )
-      );
+      if (allXSeedsCalculated) {
+        const starts = solvers.map((solver) => {
+          const ouputValues = solver.outputValues;
+          if (!ouputValues) throw new Error('ouputValues not found');
+          return ouputValues.map((output) => output[0]);
+        });
+        clipboard.write(stringifyForMathematica(starts));
+      }
     },
-    [calculatedXSeeds]
+    [allXSeedsCalculated, solvers]
   );
 
   const copyResultsEnd = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
-      clipboard.write(
-        stringifyForMathematica(
-          calculatedXSeeds.map((calculatedXSeed) => calculatedXSeed?.end)
-        )
-      );
+      if (allXSeedsCalculated) {
+        const ends = solvers.map((solver) => {
+          const ouputValues = solver.outputValues;
+          if (!ouputValues) throw new Error('ouputValues not found');
+          return ouputValues.map((output) => output[output.length - 1]);
+        });
+        clipboard.write(stringifyForMathematica(ends));
+      }
     },
-    [calculatedXSeeds]
+    [allXSeedsCalculated, solvers]
   );
 
   return (
@@ -413,7 +410,7 @@ function XSeedsEditor() {
                 M=
               </Typography>
               <XSeedsMInput
-                value={xSeedsM}
+                value={M}
                 variant="standard"
                 type="number"
                 onChange={xSeedsMInputOnChange}
@@ -430,35 +427,33 @@ function XSeedsEditor() {
       </XSeedsHeader>
 
       <XSeedsWrapper>
-        {xSeeds.map((xSeed, xSeedIndex) => (
-          <XSeedWrapper key={xSeedIndex}>
+        {solvers.map((solver) => (
+          <XSeedWrapper key={solver.id}>
             <XSeedRemoveWrapper>
               <IconButton
                 size="small"
                 disabled={xSeeds.length < 2}
-                onClick={() => removeXSeed(xSeedIndex)}
+                onClick={() => removeXSeed(solver.id)}
               >
                 <Remove fontSize="inherit" />
               </IconButton>
             </XSeedRemoveWrapper>
             <XSeedColorWrapper>
               <XSeedColor
-                seedColor={new Paper.Color(solvers[xSeedIndex].color)}
+                seedColor={new Paper.Color(solver.color)}
                 onClick={() =>
-                  setVisibleColorPickerIndex(
-                    (previousVisibleColorPickerIndex) =>
-                      previousVisibleColorPickerIndex !== xSeedIndex
-                        ? xSeedIndex
+                  setVisibleColorPickerSolverId(
+                    (previousVisibleColorPickerSolverId) =>
+                      previousVisibleColorPickerSolverId !== solver.id
+                        ? solver.id
                         : null
                   )
                 }
               />
               <XSeedColorPickerWrapper>
-                {visibleColorPickerIndex === xSeedIndex && (
+                {visibleColorPickerSolverId === solver.id && (
                   <ChromePicker
-                    color={new Paper.Color(solvers[xSeedIndex].color).toCSS(
-                      true
-                    )}
+                    color={new Paper.Color(solver.color).toCSS(true)}
                     disableAlpha
                     styles={{
                       default: {
@@ -470,7 +465,7 @@ function XSeedsEditor() {
                     onChange={(color) => {
                       dispatch(
                         setSolverColor({
-                          solverIndex: xSeedIndex,
+                          solverId: solver.id,
                           color: new Paper.Color(color.hex).toCSS(true),
                         })
                       );
@@ -479,8 +474,8 @@ function XSeedsEditor() {
                 )}
               </XSeedColorPickerWrapper>
             </XSeedColorWrapper>
-            <XSeedInputs key={xSeedIndex}>
-              {xSeed.map((c, cIndex) => (
+            <XSeedInputs>
+              {solver.xSeed.map((c, cIndex) => (
                 <XSeedComplex elevation={0} key={cIndex}>
                   {c.map((cPart, cPartIndex) => (
                     <XSeedComplexPart elevation={0} key={cPartIndex}>
@@ -490,37 +485,33 @@ function XSeedsEditor() {
                         type="number"
                         inputProps={{
                           step: 0.1,
-                          'data-x-seed-index': xSeedIndex,
+                          'data-solver-id': solver.id,
                           'data-c-index': cIndex,
                           'data-c-part-index': cPartIndex,
                         }}
                         onChange={xSeedComplexPartInputOnChange}
                       />
-                      {calculatedXSeeds &&
-                        calculatedXSeeds[xSeedIndex] &&
-                        calculatedXSeeds[xSeedIndex]?.start && (
-                          <XSeedCalculatedValue
-                            css={css`
-                              margin-top: 3px;
-                            `}
-                          >
-                            <XSeedStartIcon />
-                            {calculatedXSeeds?.[xSeedIndex]?.start[cIndex][
-                              cPartIndex
-                            ]?.toExponential(3)}
-                          </XSeedCalculatedValue>
-                        )}
+                      {solver.outputValues && (
+                        <XSeedCalculatedValue
+                          css={css`
+                            margin-top: 3px;
+                          `}
+                        >
+                          <XSeedStartIcon />
+                          {solver.outputValues
+                            .map((output) => output[0])
+                            [cIndex][cPartIndex]?.toExponential(3)}
+                        </XSeedCalculatedValue>
+                      )}
 
-                      {calculatedXSeeds &&
-                        calculatedXSeeds[xSeedIndex] &&
-                        calculatedXSeeds[xSeedIndex]?.end && (
-                          <XSeedCalculatedValue>
-                            <XSeedEndIcon />
-                            {calculatedXSeeds?.[xSeedIndex]?.end[cIndex][
-                              cPartIndex
-                            ]?.toExponential(3)}
-                          </XSeedCalculatedValue>
-                        )}
+                      {solver.outputValues && (
+                        <XSeedCalculatedValue>
+                          <XSeedEndIcon />
+                          {solver.outputValues
+                            .map((output) => output[output.length - 1])
+                            [cIndex][cPartIndex]?.toExponential(3)}
+                        </XSeedCalculatedValue>
+                      )}
                     </XSeedComplexPart>
                   ))}
                 </XSeedComplex>

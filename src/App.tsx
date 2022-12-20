@@ -11,7 +11,7 @@ import { defaultScaleDownFactor } from './components/InteractiveCanvas/util';
 import OutputArea from './components/OutputArea';
 import { inputPaper, outputPaper } from './papers';
 import {
-  clearActiveSheetInputOuputValues,
+  clearActiveSheetInputOutputValues,
   selectActiveSheetIputValues,
   selectActiveSheetSolvers,
   selectCalcConfig,
@@ -120,7 +120,7 @@ function App() {
     if (!solvingInProgress) {
       dispatch(
         solveAllInQArray({
-          allXSeeds: activeSheetSolvers.map((solver) => solver.xSeed),
+          solvers: activeSheetSolvers,
           inputValues: activeSheetInputValues,
           config: calcConfig,
         })
@@ -135,7 +135,7 @@ function App() {
   ]);
 
   const clear = useCallback(() => {
-    dispatch(clearActiveSheetInputOuputValues());
+    dispatch(clearActiveSheetInputOutputValues());
 
     inputPaper.view.center = new Paper.Point(0, 0);
     outputPaper.view.center = new Paper.Point(0, 0);

@@ -12,28 +12,25 @@ export type XSeedValue = Complex[];
 
 export type StoredPoint = [number, number];
 
-export interface CalculatedXSeed {
-  start: XSeedValue;
-  end: XSeedValue;
-}
+export type SolverId = EntityId;
 
-export interface SolverState {
+export interface Solver {
+  id: SolverId;
   xSeed: XSeedValue;
-  calculatedXSeed?: CalculatedXSeed; // TODO could be selector
   color: string; // Paper.Color constructors do not accept components array, use .toCSS(true)
-  ouputValues?: ResultInQArray;
-  ouputValuesValid: boolean;
+  outputValues?: ResultInQArray;
+  outputValuesValid: boolean;
 }
 
-export type Solvers = SolverState[];
+export type SheetId = EntityId;
 
 export interface Sheet {
-  id: EntityId;
+  id: SheetId;
   inputDrawingPoints: StoredPoint[];
   inputValues: Complex[];
   inputSimplifyTolerance: number;
   inputSimplifyEnabled: boolean;
-  solvers: Solvers;
+  solvers: SolverId[];
 }
 
 export interface AppState {
@@ -43,6 +40,7 @@ export interface AppState {
   outputProjectionVariant: OutputProjectionVariant;
   badPoints: Complex[];
   calcConfig: CalcConfig;
+  activeSheetId: SheetId;
   sheets: EntityState<Sheet>;
-  activeSheetId: EntityId;
+  solvers: EntityState<Solver>;
 }

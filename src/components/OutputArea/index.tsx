@@ -112,7 +112,7 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
   // convert ouput Complex array to Path points
   useEffect(() => {
     const outputsPaths = solvers.map((solver) => ({
-      paths: (solver?.ouputValues ?? []).map((path) =>
+      paths: (solver?.outputValues ?? []).map((path) =>
         path.map((value, valueIndex) =>
           valueToPoint(
             valueToProjectedValue(
@@ -124,7 +124,7 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
         )
       ),
       color: new Paper.Color(solver.color),
-      dashed: !solver.ouputValuesValid,
+      dashed: !solver.outputValuesValid,
     }));
     if (
       outputsPaths.some((outputPaths) =>
