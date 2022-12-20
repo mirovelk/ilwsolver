@@ -10,12 +10,14 @@ import { useCallback } from 'react';
 import {
   selectCalcConfig,
   selectN,
-  setCalcConfigAxArrayCPart,
+  setCalcConfigAxArrayC,
   setCalcConfigAxN,
-  setCalcConfigExCPart,
+  setCalcConfigExC,
 } from '../../redux/features/app/appSlice';
 import { Ax, Ex } from '../../support/calc/calc';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
+import ComplexEditor from '../ComplexEditor';
+import { Complex } from '../../util/complex';
 
 const Wrapper = styled(MaterialPaper)`
   display: inline-flex;
@@ -55,17 +57,8 @@ const AxEditor = styled.div`
   display: flex;
 `;
 
-const ComplexEditor = styled(MaterialPaper)`
+const ComplexEditorWrapper = styled(MaterialPaper)`
   display: flex;
-
-  &:not(:last-child) {
-    margin-right: 5px;
-  }
-`;
-
-const ComplexPartEditor = styled.div`
-  padding: 5px;
-  width: 100px;
 
   &:not(:last-child) {
     margin-right: 5px;
@@ -88,15 +81,9 @@ function CalcConfigEditor() {
   const calcConfig = useAppSelector(selectCalcConfig);
   const N = useAppSelector(selectN);
 
-  const onExInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Number(e.currentTarget.value);
-      const ExValue = e.currentTarget.dataset.ex as keyof Ex;
-      const cPartIndex = Number(e.currentTarget.dataset.cPartIndex);
-
-      dispatch(
-        setCalcConfigExCPart({ cPartValue: value, cPartIndex, Ex: ExValue })
-      );
+  const onExEditFinished = useCallback(
+    (exKey: keyof Ex, value: Complex) => {
+      dispatch(setCalcConfigExC({ cValue: value, Ex: exKey }));
     },
     [dispatch]
   );
@@ -109,21 +96,9 @@ function CalcConfigEditor() {
     [dispatch]
   );
 
-  const onAxInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Number(e.currentTarget.value);
-      const AxValue = e.currentTarget.dataset.ax as keyof Ax;
-      const axCIndex = Number(e.currentTarget.dataset.axCIndex);
-      const cPartIndex = Number(e.currentTarget.dataset.cPartIndex);
-
-      dispatch(
-        setCalcConfigAxArrayCPart({
-          cPartValue: value,
-          cPartIndex,
-          Ax: AxValue,
-          axCIndex: axCIndex,
-        })
-      );
+  const onAxEditFinished = useCallback(
+    (axKey: keyof Ax, axCIndex: number, value: Complex) => {
+      dispatch(setCalcConfigAxArrayC({ cValue: value, axCIndex, Ax: axKey }));
     },
     [dispatch]
   );
@@ -151,23 +126,14 @@ function CalcConfigEditor() {
             >
               {ExKey} =
             </Typography>
-            <ComplexEditor elevation={0}>
-              {calcConfig.Ex[ExKey].map((cPart, cPartIndex) => (
-                <ComplexPartEditor key={cPartIndex}>
-                  <TextField
-                    value={cPart}
-                    variant="standard"
-                    type="number"
-                    inputProps={{
-                      step: 0.1,
-                      'data-ex': ExKey,
-                      'data-c-part-index': cPartIndex,
-                    }}
-                    onChange={onExInputChange}
-                  />
-                </ComplexPartEditor>
-              ))}
-            </ComplexEditor>
+            <ComplexEditorWrapper elevation={0}>
+              <ComplexEditor
+                value={calcConfig.Ex[ExKey]}
+                onEditFinished={(value) => {
+                  onExEditFinished(ExKey, value);
+                }}
+              />
+            </ComplexEditorWrapper>
           </Row>
         ))}
       </ExEditors>
@@ -196,24 +162,15 @@ function CalcConfigEditor() {
               </Typography>
               <AxEditor>
                 {calcConfig.Ax[AxKey].map((axC, axCIndex) => (
-                  <ComplexEditor elevation={0} key={axCIndex}>
-                    {axC.map((cPart, cPartIndex) => (
-                      <ComplexPartEditor key={cPartIndex}>
-                        <TextField
-                          value={cPart}
-                          variant="standard"
-                          type="number"
-                          inputProps={{
-                            step: 0.1,
-                            'data-ax': AxKey,
-                            'data-ax-c-index': axCIndex,
-                            'data-c-part-index': cPartIndex,
-                          }}
-                          onChange={onAxInputChange}
-                        />
-                      </ComplexPartEditor>
-                    ))}
-                  </ComplexEditor>
+                  <ComplexEditorWrapper elevation={0} key={axCIndex}>
+                    <ComplexEditor
+                      key={axCIndex}
+                      value={axC}
+                      onEditFinished={(value) => {
+                        onAxEditFinished(AxKey, axCIndex, value);
+                      }}
+                    />
+                  </ComplexEditorWrapper>
                 ))}
               </AxEditor>
             </Row>

@@ -73,6 +73,12 @@ export function stringifyComplex(complex: Complex, precision = 3): string {
 
 export function parseComplex(str: string): Complex {
   const c = [0, 0] as Complex;
+  if (
+    (str.slice(1).includes('+') || str.slice(1).includes('-')) &&
+    !str.includes('i') // check for missing "i"
+  ) {
+    throw new Error(`Invalid complex number: ${str}`);
+  }
   const parsed = mathComplex(str.replaceAll('*^', 'e'));
   c[0] = parsed.re;
   c[1] = parsed.im;

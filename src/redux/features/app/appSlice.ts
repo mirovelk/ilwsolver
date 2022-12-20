@@ -520,16 +520,15 @@ export const appSlice = createSlice({
       state.outputProjectionVariant = action.payload;
     },
 
-    setCalcConfigExCPart(
+    setCalcConfigExC(
       state,
       action: PayloadAction<{
-        cPartValue: number;
-        cPartIndex: number;
+        cValue: Complex;
         Ex: keyof Ex;
       }>
     ) {
-      const { cPartValue, cPartIndex, Ex } = action.payload;
-      state.calcConfig.Ex[Ex][cPartIndex] = cPartValue;
+      const { cValue, Ex } = action.payload;
+      state.calcConfig.Ex[Ex] = [...cValue];
       const updates = state.solvers.ids.map((solverId) => ({
         id: solverId,
         changes: {
@@ -552,17 +551,16 @@ export const appSlice = createSlice({
       }
     },
 
-    setCalcConfigAxArrayCPart(
+    setCalcConfigAxArrayC(
       state,
       action: PayloadAction<{
-        cPartValue: number;
-        cPartIndex: number;
+        cValue: Complex;
         axCIndex: number;
         Ax: keyof Ax;
       }>
     ) {
-      const { cPartValue, cPartIndex, axCIndex: AxCIndex, Ax } = action.payload;
-      state.calcConfig.Ax[Ax][AxCIndex][cPartIndex] = cPartValue;
+      const { cValue, axCIndex, Ax } = action.payload;
+      state.calcConfig.Ax[Ax][axCIndex] = [...cValue];
       const updates = state.solvers.ids.map((solverId) => ({
         id: solverId,
         changes: {
@@ -714,9 +712,9 @@ export const {
   setXSeedNumber,
   setXSeedsM,
   setXSeedsValues,
-  setCalcConfigExCPart,
+  setCalcConfigExC,
   setCalcConfigAxN,
-  setCalcConfigAxArrayCPart,
+  setCalcConfigAxArrayC,
   activeSheetXSeedHasError,
 } = actions;
 

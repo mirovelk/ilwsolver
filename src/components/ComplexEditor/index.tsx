@@ -19,8 +19,8 @@ function ComplexEditor({
 }: {
   value: Complex;
   onEditFinished: (value: Complex) => void;
-  showError: () => void;
-  hideError: () => void;
+  showError?: () => void;
+  hideError?: () => void;
 }) {
   const [inputValue, setInputValue] = useState(stringifyComplex(value));
   const [inputValueValid, setInputValueValid] = useState(true);
@@ -30,12 +30,12 @@ function ComplexEditor({
     try {
       const parsedValue = parseComplex(inputValue);
       setInputValueValid(true);
-      hideError();
+      hideError && hideError();
       if (parsedValue[0] !== value[0] || parsedValue[1] !== value[1])
         onEditFinished(parsedValue);
     } catch {
       setInputValueValid(false);
-      showError();
+      showError && showError();
     }
   }, [hideError, inputValue, onEditFinished, showError, value]);
 
