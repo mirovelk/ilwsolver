@@ -93,6 +93,15 @@ function valueToPoint(x: Complex): paper.Point {
   return new Paper.Point(x[0], -x[1]);
 }
 
+function getAllSelectedPaths(points: OutputsPaths) {
+  return points.flatMap((outputPathsPoints, index0) =>
+    outputPathsPoints.paths.map((_outputPathPoints, index1) => ({
+      outputPathsPointsIndex: index0,
+      outputPathPointsIndex: index1,
+    }))
+  );
+}
+
 function OutputArea({ paper }: { paper: paper.PaperScope }) {
   const dispatch = useAppDispatch();
 
@@ -139,33 +148,72 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
     setPoints(outputsPaths);
   }, [paper, solvers, setZoom, inputValues, outputProjectionVariant]);
 
-  const [selectedPath, setSelectedPath] = useState<{
-    outputPathsPointsIndex: number;
-    outputPathPointsIndex: number;
-  } | null>(null);
+  const [selectedPaths, setSelectedPaths] = useState<
+    Array<{
+      outputPathsPointsIndex: number;
+      outputPathPointsIndex: number;
+    }>
+  >(() => getAllSelectedPaths(points));
 
   useEffect(() => {
-    setSelectedPath(null);
-  }, [solvers]);
+    setSelectedPaths(getAllSelectedPaths(points));
+  }, [points]);
 
   const onOutputPathClick = useCallback(
-    (outputPathsPointsIndex: number, outputPathPointsIndex: number) => {
-      setSelectedPath({
-        outputPathsPointsIndex,
-        outputPathPointsIndex,
+    (
+      event: paper.MouseEvent,
+      outputPathsPointsIndex: number,
+      outputPathPointsIndex: number
+    ) => {
+      setSelectedPaths((selectedPaths) => {
+        if (event.modifiers.shift) {
+          if (
+            selectedPaths.some(
+              (selectedPath) =>
+                selectedPath.outputPathsPointsIndex ===
+                  outputPathsPointsIndex &&
+                selectedPath.outputPathPointsIndex === outputPathPointsIndex
+            )
+          ) {
+            return selectedPaths.filter(
+              (selectedPath) =>
+                selectedPath.outputPathsPointsIndex !==
+                  outputPathsPointsIndex ||
+                selectedPath.outputPathPointsIndex !== outputPathPointsIndex
+            );
+          } else {
+            return [
+              ...selectedPaths,
+              {
+                outputPathsPointsIndex,
+                outputPathPointsIndex,
+              },
+            ];
+          }
+        } else {
+          return [
+            {
+              outputPathsPointsIndex,
+              outputPathPointsIndex,
+            },
+          ];
+        }
       });
     },
     []
   );
 
-  const onCanvasClick = useCallback((event: paper.MouseEvent) => {
-    // dirty check if the click was on the canvas and not on a path
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (typeof event.target.viewSize !== 'undefined') {
-      setSelectedPath(null);
-    }
-  }, []);
+  const onCanvasClick = useCallback(
+    (event: paper.MouseEvent) => {
+      // dirty check if the click was on the canvas and not on a path
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (typeof event.target.viewSize !== 'undefined') {
+        setSelectedPaths(getAllSelectedPaths(points));
+      }
+    },
+    [points]
+  );
 
   return (
     <>
@@ -234,17 +282,19 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
       {points.map((outputPathsPoints, outputPathsPointsIndex) =>
         outputPathsPoints.paths.map(
           (outputPathPoints, outputPathPointsIndex) => {
-            const anySelected = selectedPath !== null;
-            const thisSelected =
-              selectedPath?.outputPathPointsIndex === outputPathPointsIndex &&
-              selectedPath?.outputPathsPointsIndex === outputPathsPointsIndex;
+            const thisSelected = selectedPaths.some(
+              (selectedPath) =>
+                selectedPath.outputPathsPointsIndex ===
+                  outputPathsPointsIndex &&
+                selectedPath.outputPathPointsIndex === outputPathPointsIndex
+            );
 
-            const shoudSuppress = anySelected && !thisSelected;
+            const shoudSuppress = !thisSelected;
 
             const color = new paper.Color(outputPathsPoints.color);
             if (shoudSuppress) {
               color.saturation -= 0.7;
-              color.brightness -= 0.2;
+              color.brightness -= 0.3;
             }
 
             return (
@@ -261,11 +311,13 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
                 }
                 fullySelected={false}
                 dashArray={outputPathsPoints.dashed ? [10, 8] : []}
-                onClick={onOutputPathClick.bind(
-                  null,
-                  outputPathsPointsIndex,
-                  outputPathPointsIndex
-                )}
+                onClick={(e) =>
+                  onOutputPathClick(
+                    e,
+                    outputPathsPointsIndex,
+                    outputPathPointsIndex
+                  )
+                }
               />
             );
           }
