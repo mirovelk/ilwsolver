@@ -3,11 +3,12 @@ import styled from '@emotion/styled';
 import { ContentCopy } from '@mui/icons-material';
 import { IconButton, Paper as MaterialPaper, Typography } from '@mui/material';
 import clipboard from 'clipboardy';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { selectActiveSheetIputValues } from '../../redux/features/app/appSlice';
 import { useAppSelector } from '../../redux/store';
-import { stringifyForMathematica } from '../../util/mathematica';
+import { stringifyComplex } from '../../util/complex';
+import { stringifyComplexArrayForMathematica } from '../../util/mathematica';
 
 const Panel = styled(MaterialPaper)`
   display: inline-flex;
@@ -40,25 +41,37 @@ function QPanel() {
 
   const copyInput = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
-      clipboard.write(stringifyForMathematica(inputValues));
+      clipboard.write(stringifyComplexArrayForMathematica(inputValues));
     },
     [inputValues]
   );
 
+  const q0 = useMemo(() => {
+    if (inputValues.length > 0) {
+      return stringifyComplex(inputValues[0], true);
+    }
+    return 'undefined';
+  }, [inputValues]);
+
+  const qN = useMemo(() => {
+    if (inputValues.length > 0) {
+      return stringifyComplex(inputValues[inputValues.length - 1], true);
+    }
+    return 'undefined';
+  }, [inputValues]);
+
   const copyQ0 = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
-      clipboard.write(stringifyForMathematica(inputValues[0]));
+      clipboard.write(q0);
     },
-    [inputValues]
+    [q0]
   );
 
   const copyQN = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
-      clipboard.write(
-        stringifyForMathematica(inputValues[inputValues.length - 1])
-      );
+      clipboard.write(qN);
     },
-    [inputValues]
+    [qN]
   );
 
   return (
@@ -92,15 +105,7 @@ function QPanel() {
           <Typography variant="subtitle1" color="text.secondary">
             q<sub>0</sub>
             {' = '}
-            {inputValues.length > 0 ? (
-              <>
-                {' { '}
-                {inputValues[0][0]}, {inputValues[0][1]}
-                {' } '}
-              </>
-            ) : (
-              'undefined'
-            )}
+            {inputValues.length > 0 ? q0 : 'undefined'}
           </Typography>
         </Row>
         <Row>
@@ -116,16 +121,7 @@ function QPanel() {
           <Typography variant="subtitle1" color="text.secondary">
             q<sub>n</sub>
             {' = '}
-            {inputValues.length > 0 ? (
-              <>
-                {' { '}
-                {inputValues[inputValues.length - 1][0]},{' '}
-                {inputValues[inputValues.length - 1][1]}
-                {' } '}
-              </>
-            ) : (
-              'undefined'
-            )}
+            {inputValues.length > 0 ? qN : 'undefined'}
           </Typography>
         </Row>
       </Content>

@@ -53,11 +53,8 @@ export function getRandomComplexNumber(min: number, max: number): Complex {
 }
 
 function stringifyNumber(number: number, full: boolean): string {
-  if (number > -99999 && number < 99999) {
-    return number.toString();
-  }
   return number
-    .toExponential(!full ? 3 : undefined)
+    .toExponential(full ? undefined : 3)
     .replaceAll('.000', '') // unnecessary
     .replaceAll('e+0', '') // unnecessary
     .replaceAll('e', '*^'); // used by mathematica

@@ -26,7 +26,7 @@ import {
 import { SolverId, XSeedValue } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
-import { stringifyForMathematica } from '../../util/mathematica';
+import { stringifyArrayOfComplexArraysForMathematica } from '../../util/mathematica';
 import ComplexEditor from '../ComplexEditor';
 
 const Panel = styled(MaterialPaper)`
@@ -335,7 +335,7 @@ function XSeedsEditor() {
           if (!ouputValues) throw new Error('ouputValues not found');
           return ouputValues.map((output) => output[0]);
         });
-        clipboard.write(stringifyForMathematica(starts));
+        clipboard.write(stringifyArrayOfComplexArraysForMathematica(starts));
       }
     },
     [allXSeedsCalculated, solvers]
@@ -349,7 +349,7 @@ function XSeedsEditor() {
           if (!ouputValues) throw new Error('ouputValues not found');
           return ouputValues.map((output) => output[output.length - 1]);
         });
-        clipboard.write(stringifyForMathematica(ends));
+        clipboard.write(stringifyArrayOfComplexArraysForMathematica(ends));
       }
     },
     [allXSeedsCalculated, solvers]
