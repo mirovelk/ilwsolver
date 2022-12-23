@@ -53,6 +53,9 @@ export function getRandomComplexNumber(min: number, max: number): Complex {
 }
 
 function stringifyNumber(number: number, full: boolean): string {
+  if (number > -99999 && number < 99999) {
+    return number.toString();
+  }
   return number
     .toExponential(!full ? 3 : undefined)
     .replaceAll('.000', '') // unnecessary

@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { Paper as MaterialPaper, TextField } from '@mui/material';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 
@@ -24,6 +24,17 @@ function ComplexEditor({
 }) {
   const [inputValue, setInputValue] = useState(stringifyComplex(value));
   const [inputValueValid, setInputValueValid] = useState(true);
+
+  // update from props if there's a change
+  useEffect(() => {
+    try {
+      const parsedValue = parseComplex(inputValue);
+      if (parsedValue[0] !== value[0] || parsedValue[1] !== value[1])
+        setInputValue(stringifyComplex(value));
+    } catch {
+      // do nothing
+    }
+  }, [inputValue, value]);
 
   const inputOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

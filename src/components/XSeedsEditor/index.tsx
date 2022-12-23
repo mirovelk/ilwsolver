@@ -25,7 +25,7 @@ import {
 } from '../../redux/features/app/appSlice';
 import { SolverId, XSeedValue } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { Complex, stringifyComplex } from '../../util/complex';
+import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 import { stringifyForMathematica } from '../../util/mathematica';
 import ComplexEditor from '../ComplexEditor';
 
@@ -154,27 +154,58 @@ const XSeedCalculatedValue = styled.div`
   align-items: center;
 `;
 
+// parse {{2-3i,3-2i},{2+3i,2+4i}} into [['2-3i', '3-2i'], ['2+3i', '2+4i']]
 function parseXSeeds(input: string): XSeedValue[] {
-  return JSON.parse(input.replaceAll('{', '[').replaceAll('}', ']'));
+  const noWhitespaceInput = input.replace(/\s/g, '');
+  let bracketCount = 0;
+  let rowBuffer = '';
+  const rows: string[] = [];
+
+  noWhitespaceInput.split('').forEach((char) => {
+    if (char === '{') {
+      bracketCount++;
+      if (bracketCount > 2) throw new Error('Invalid input');
+    } else if (char === '}') {
+      bracketCount--;
+      if (bracketCount < 0) throw new Error('Invalid input');
+      if (bracketCount === 0) {
+        rows.push(rowBuffer);
+        rowBuffer = '';
+      }
+    } else if (char === ',') {
+      if (bracketCount === 1) {
+        rows.push(rowBuffer);
+        rowBuffer = '';
+      } else if (bracketCount > 1) {
+        rowBuffer += char;
+      }
+    } else {
+      rowBuffer += char;
+    }
+  });
+
+  if (bracketCount !== 0) throw new Error('Invalid input');
+
+  const parsedRows: XSeedValue[] = rows.map((row) =>
+    row.split(',').map(parseComplex)
+  );
+
+  return parsedRows;
 }
 
 function stringifyXSeedValues(xSeeds: XSeedValue[]) {
   let output = '';
   output += '{';
+  output += '\n';
   xSeeds.forEach((xSeed, xSeedIndex) => {
-    output += '{';
-    output += '\n';
+    output += '  { ';
     xSeed.forEach((c, cIndex) => {
-      output += '  { ';
-      output += c[0];
-      output += ', ';
-      output += c[1];
-      output += ' }';
-      if (cIndex < xSeed.length - 1) output += ',';
+      output += stringifyComplex(c, true);
+      if (cIndex < xSeed.length - 1) output += ', ';
     });
-    output += '\n';
-    output += '}';
+    output += ' }';
     if (xSeedIndex < xSeeds.length - 1) output += ',';
+    output += '\n';
   });
   output += '}';
 
