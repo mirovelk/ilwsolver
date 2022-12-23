@@ -53,11 +53,15 @@ export function getRandomComplexNumber(min: number, max: number): Complex {
 }
 
 function stringifyNumber(number: number, full: boolean): string {
-  return number
-    .toExponential(full ? undefined : 3)
-    .replaceAll('.000', '') // unnecessary
-    .replaceAll('e+0', '') // unnecessary
-    .replaceAll('e', '*^'); // used by mathematica
+  if (full) {
+    return number.toExponential().replaceAll('e', '*^');
+  } else {
+    return number
+      .toExponential(3)
+      .replaceAll('.000', '') // unnecessary
+      .replaceAll('e+0', '') // unnecessary
+      .replaceAll('e', '*^'); // used by mathematica
+  }
 }
 
 export function stringifyComplex(complex: Complex, full = false): string {
