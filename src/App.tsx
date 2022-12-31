@@ -1,5 +1,3 @@
-import { hot } from 'react-hot-loader/root';
-
 import styled from '@emotion/styled';
 import { Delete, Functions } from '@mui/icons-material';
 import { CircularProgress, IconButton } from '@mui/material';
@@ -197,4 +195,4 @@ function App() {
   );
 }
 
-export default hot(App);
+export default App;
