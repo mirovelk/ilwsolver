@@ -96,6 +96,7 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
       new ESLintPlugin({
         extensions: ['js', 'jsx', 'ts', 'tsx'],
         exclude: 'node_modules',
+        failOnError: isProduction,
       }),
       new StylelintPlugin({
         extensions: ['js', 'jsx', 'ts', 'tsx'],
