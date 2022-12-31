@@ -11,6 +11,7 @@ import {
   selectSheetIds,
   setActiveSheetId,
 } from '../../redux/features/app/appSlice';
+import { SheetId } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 
 const StyledTabs = styled(Tabs)`
@@ -33,14 +34,14 @@ function SheetTabs() {
   }, [dispatch]);
 
   const setActiveSheetOnClick = useCallback(
-    (_e, value) => {
+    (_e: React.SyntheticEvent<Element, Event>, value: SheetId) => {
       dispatch(setActiveSheetId(value));
     },
     [dispatch]
   );
 
   const removeSheetOnClick = useCallback(
-    (e, sheetIndex) => {
+    (e: React.MouseEvent<SVGSVGElement, MouseEvent>, sheetIndex: SheetId) => {
       e.stopPropagation();
       if (window.confirm('Remove tab?')) {
         dispatch(removeSheetWithId(sheetIndex));

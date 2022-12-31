@@ -29,6 +29,7 @@ import {
   AppState,
   OutputProjectionVariant,
   Sheet,
+  SheetId,
   Solver,
   SolverId,
   StoredPoint,
@@ -462,11 +463,11 @@ export const appSlice = createSlice({
       state.activeSheetId = newSheetId;
     },
 
-    setActiveSheetId: (state, action: PayloadAction<number>) => {
+    setActiveSheetId: (state, action: PayloadAction<SheetId>) => {
       state.activeSheetId = action.payload;
     },
 
-    removeSheetWithId: (state, action: PayloadAction<number>) => {
+    removeSheetWithId: (state, action: PayloadAction<SheetId>) => {
       const removedSheetId = action.payload;
       const activeSheetIndex = state.sheets.ids.indexOf(state.activeSheetId);
 
