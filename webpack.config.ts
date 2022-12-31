@@ -2,6 +2,7 @@ import ESLintPlugin from 'eslint-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 
 import path from 'path';
 import StylelintPlugin from 'stylelint-webpack-plugin';
@@ -55,7 +56,16 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
         {
           test: /\.(js|jsx|ts|tsx)$/,
           exclude: /node_modules/,
-          loader: 'babel-loader',
+          use: [
+            {
+              loader: require.resolve('babel-loader'),
+              options: {
+                plugins: [
+                  !isProduction && require.resolve('react-refresh/babel'),
+                ].filter(Boolean),
+              },
+            },
+          ],
         },
         {
           test: /\.css$/,
@@ -82,7 +92,7 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
               filename: 'resources/css/[chunkhash].[name].css',
             }),
           ]
-        : []),
+        : [new ReactRefreshWebpackPlugin()]),
       new ESLintPlugin({
         extensions: ['js', 'jsx', 'ts', 'tsx'],
         exclude: 'node_modules',
