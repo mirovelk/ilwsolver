@@ -14,7 +14,7 @@ import {
   setCalcConfigAxN,
   setCalcConfigExC,
 } from '../../redux/features/app/appSlice';
-import { Ax, Ex } from '../../support/calc/calc';
+import { Ax, Ex } from '../../core/solve';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import ComplexEditor from '../ComplexEditor';
 import { Complex } from '../../util/complex';

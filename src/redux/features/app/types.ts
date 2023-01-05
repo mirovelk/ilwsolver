@@ -1,5 +1,5 @@
 import { EntityId, EntityState } from '@reduxjs/toolkit';
-import { CalcConfig } from '../../../support/calc/calc';
+import { CalcConfig } from '../../../core/solve';
 import { Complex } from '../../../util/complex';
 
 export enum OutputProjectionVariant {

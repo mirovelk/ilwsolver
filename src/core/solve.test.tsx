@@ -1,4 +1,4 @@
-import { complex } from '../../util/complex';
+import { complex } from '../util/complex';
 import {
   eqns,
   eqnsd,
@@ -7,7 +7,7 @@ import {
   transpose,
   vectorComplexToReal,
   vectorRealToComplex,
-} from './calc';
+} from './solve';
 
 const testCalcConfig = {
   Ex: {

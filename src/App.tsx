@@ -15,7 +15,7 @@ import {
   solveActiveSheet,
 } from './redux/features/app/appSlice';
 import { useAppDispatch, useAppSelector } from './redux/store';
-import StyleProvider from './support/style/StyleProvider';
+import StyleProvider from './components/StyleProvider';
 
 const Wrapper = styled.div`
   position: relative;

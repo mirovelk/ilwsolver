@@ -19,7 +19,7 @@ import {
   XSeedId,
 } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { ResultsInQArray } from '../../support/calc/calc';
+import { ResultsInQArray } from '../../core/solve';
 
 import InteractiveStage from '../InteractiveStage';
 import LineWithIcons from '../LineWithIcons';

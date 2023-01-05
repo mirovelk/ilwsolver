@@ -12,15 +12,11 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import simplifyPath from 'simplify-js';
 
+// TODO try to remove workerize-loader and just add entry point
 // @ts-ignore
-import calcWorker from 'workerize-loader!../../../support/calc/calc';
+import calcWorker from 'workerize-loader!../../../core/solve';
 
-import {
-  Ax,
-  Ex,
-  ResultsInQArray,
-  solveInQArray,
-} from '../../../support/calc/calc';
+import { Ax, Ex, ResultsInQArray, solveInQArray } from '../../../core/solve';
 import { getDifferentColor, getNextColorWithBuffer } from '../../../util/color';
 import {
   complex,

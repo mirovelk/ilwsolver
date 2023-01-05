@@ -9,7 +9,7 @@ import {
   minus,
   multiply,
   subtract,
-} from '../../util/complex';
+} from '../util/complex';
 
 export interface Ex {
   E1: Complex;
