@@ -21,6 +21,7 @@ function StyleProvider({ children }: Props) {
           body,
           #root {
             height: 100%;
+            min-width: 950px;
           }
         `}
       />
