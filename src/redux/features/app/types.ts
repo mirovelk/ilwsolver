@@ -1,5 +1,5 @@
 import { EntityId, EntityState } from '@reduxjs/toolkit';
-import { CalcConfig } from '../../../core/solve';
+import { SolveConfig } from '../../../core/solve';
 import { Complex } from '../../../util/complex';
 
 export enum OutputProjectionVariant {
@@ -64,7 +64,7 @@ export interface AppState {
   solvingInProgress: boolean;
   outputProjectionVariant: OutputProjectionVariant;
   badPoints: Complex[];
-  calcConfig: CalcConfig;
+  solveConfig: SolveConfig;
   activeSheetId: SheetId;
   sheets: EntityState<Sheet>;
   xSeeds: EntityState<XSeed>;

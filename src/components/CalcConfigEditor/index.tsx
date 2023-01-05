@@ -75,10 +75,10 @@ const NInput = styled(TextField)`
 const ExKeysOrdered: Array<keyof Ex> = ['E1', 'E2', 'E3'];
 const AxKeysOrdered: Array<keyof Ax> = ['AL', 'AR'];
 
-function CalcConfigEditor() {
+function SolveConfigEditor() {
   const dispatch = useAppDispatch();
 
-  const calcConfig = useAppSelector(selectCalcConfig);
+  const solveConfig = useAppSelector(selectCalcConfig);
   const N = useAppSelector(selectN);
 
   const onExEditFinished = useCallback(
@@ -128,7 +128,7 @@ function CalcConfigEditor() {
             </Typography>
             <ComplexEditorWrapper elevation={0}>
               <ComplexEditor
-                value={calcConfig.Ex[ExKey]}
+                value={solveConfig.Ex[ExKey]}
                 onEditFinished={(value) => {
                   onExEditFinished(ExKey, value);
                 }}
@@ -161,7 +161,7 @@ function CalcConfigEditor() {
                 {AxKey} =
               </Typography>
               <AxEditor>
-                {calcConfig.Ax[AxKey].map((axC, axCIndex) => (
+                {solveConfig.Ax[AxKey].map((axC, axCIndex) => (
                   <ComplexEditorWrapper elevation={0} key={axCIndex}>
                     <ComplexEditor
                       key={axCIndex}
@@ -181,4 +181,4 @@ function CalcConfigEditor() {
   );
 }
 
-export default CalcConfigEditor;
+export default SolveConfigEditor;

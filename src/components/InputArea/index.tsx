@@ -29,7 +29,7 @@ import { StageId } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { pointPositionToLayerCoordintes } from '../../util/konva';
 import BadPointEditor from '../BadPointEditor';
-import CalcConfigEditor from '../CalcConfigEditor';
+import SolveConfigEditor from '../CalcConfigEditor';
 import InteractiveStage from '../InteractiveStage';
 import LineWithIcons from '../LineWithIcons';
 import QPanel from '../QPanel';
@@ -217,7 +217,7 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
                 `}
               >
                 {activePanel === Panel.BadPoints && <BadPointEditor />}
-                {activePanel === Panel.CalcConfig && <CalcConfigEditor />}
+                {activePanel === Panel.CalcConfig && <SolveConfigEditor />}
               </div>
             </div>
           </>

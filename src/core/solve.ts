@@ -22,7 +22,7 @@ export interface Ax {
   AR: Complex[];
 }
 
-export interface CalcConfig {
+export interface SolveConfig {
   Ex: Ex;
   Ax: Ax;
 }
@@ -31,7 +31,7 @@ export interface CalcConfig {
 export function eqns(
   input: Complex[],
   q: Complex,
-  config: CalcConfig
+  config: SolveConfig
 ): Complex[] {
   const { E1, E2, E3 } = config.Ex;
   const { AL, AR } = config.Ax;
@@ -69,7 +69,7 @@ export function eqns(
 export function eqnsd(
   input: Complex[],
   q: Complex,
-  config: CalcConfig
+  config: SolveConfig
 ): Complex[][] {
   const { E1, E2, E3 } = config.Ex;
   const { AL, AR } = config.Ax;
@@ -290,7 +290,7 @@ const precision = 1e-10;
 export function solveInQ(
   xSeed: Complex[],
   q: Complex,
-  config: CalcConfig
+  config: SolveConfig
 ): ResultInQ {
   let tmp = xSeed.map((c) => copy(c));
   let tmpAbsSum = complexVectorAbsSum(tmp);
@@ -321,7 +321,7 @@ export function solveInQ(
 export function solveInQArray(
   xSeed: Complex[],
   qArray: Complex[],
-  config: CalcConfig
+  config: SolveConfig
 ): ResultsInQArray {
   const output: ResultsInQArray = [];
 

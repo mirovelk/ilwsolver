@@ -14,7 +14,7 @@ import simplifyPath from 'simplify-js';
 
 // TODO try to remove workerize-loader and just add entry point
 // @ts-ignore
-import calcWorker from 'workerize-loader!../../../core/solve';
+import solveWorker from 'workerize-loader!../../../core/solve';
 
 import { Ax, Ex, ResultsInQArray, solveInQArray } from '../../../core/solve';
 import { getDifferentColor, getNextColorWithBuffer } from '../../../util/color';
@@ -113,7 +113,7 @@ export const solveActiveSheet = createAsyncThunk<
   }
 >('app/solveActiveSheet', async (_, { getState }) => {
   const {
-    app: { xSeeds, sheets, activeSheetId, calcConfig },
+    app: { xSeeds, sheets, activeSheetId, solveConfig },
   } = getState();
   const activeSheet = sheets.entities[activeSheetId];
   if (!activeSheet) throw new Error('Sheet not found');
@@ -125,11 +125,11 @@ export const solveActiveSheet = createAsyncThunk<
   });
 
   const workers = activeSheetXSeeds.map((xSeed) => {
-    const calcWorkerInstance = calcWorker();
-    return calcWorkerInstance.solveInQArray(
+    const solveWorkerInstance = solveWorker();
+    return solveWorkerInstance.solveInQArray(
       xSeed.value,
       activeSheet.qArray,
-      calcConfig
+      solveConfig
     );
   });
   const allResults = (await Promise.all(workers)) as ResultsInQArray[];
@@ -152,7 +152,7 @@ function getQArrayFromInputDrawingPoints(
     : inputDrawingPoints;
 }
 
-function calculateSheetQArray(sheet: Sheet): Complex[] {
+function solveForSheetQArray(sheet: Sheet): Complex[] {
   return getQArrayFromInputDrawingPoints(
     sheet.inputDrawingPoints,
     sheet.inputSimplifyTolerance,
@@ -301,7 +301,7 @@ const initialState: AppState = {
   solvingInProgress: false,
   activeSheetId: 1,
   outputProjectionVariant: OutputProjectionVariant.V1,
-  calcConfig: {
+  solveConfig: {
     Ex: {
       E1: complex(2),
       E2: complex(3),
@@ -450,7 +450,7 @@ export const appSlice = createSlice({
       if (typeof panY !== 'undefined') dataLayer.y += panY;
     },
 
-    // kept prformance testing only (having issues with worker profiling)
+    // kept performance testing only (having issues with worker profiling)
     calculateAllOutputPaths: (state) => {
       const activeSheet = state.sheets.entities[state.activeSheetId];
       if (!activeSheet) throw new Error('Sheet not found');
@@ -464,7 +464,7 @@ export const appSlice = createSlice({
         const resultsInQArray = solveInQArray(
           xSeed,
           activeSheet.qArray,
-          state.calcConfig
+          state.solveConfig
         );
 
         const results: Result[] = resultsInQArray.map((values) => ({
@@ -518,7 +518,7 @@ export const appSlice = createSlice({
       const activeSheet = state.sheets.entities[state.activeSheetId];
       if (!activeSheet) throw new Error('Sheet not found');
 
-      const qArray = calculateSheetQArray(activeSheet);
+      const qArray = solveForSheetQArray(activeSheet);
 
       sheetsAdapter.updateOne(state.sheets, {
         id: state.activeSheetId,
@@ -857,7 +857,7 @@ export const appSlice = createSlice({
       }>
     ) {
       const { cValue, Ex } = action.payload;
-      state.calcConfig.Ex[Ex] = [...cValue];
+      state.solveConfig.Ex[Ex] = [...cValue];
       const updates = state.xSeeds.ids.map((xSeedId) => ({
         id: xSeedId,
         changes: {
@@ -869,14 +869,14 @@ export const appSlice = createSlice({
 
     setCalcConfigAxN(state, action: PayloadAction<{ N: number }>) {
       const { N } = action.payload;
-      const prevN = state.calcConfig.Ax.AL.length;
+      const prevN = state.solveConfig.Ax.AL.length;
 
       if (prevN < N) {
-        state.calcConfig.Ax.AL.push(complex(0));
-        state.calcConfig.Ax.AR.push(complex(0));
+        state.solveConfig.Ax.AL.push(complex(0));
+        state.solveConfig.Ax.AR.push(complex(0));
       } else if (prevN > N && N > 0) {
-        state.calcConfig.Ax.AL.pop();
-        state.calcConfig.Ax.AR.pop();
+        state.solveConfig.Ax.AL.pop();
+        state.solveConfig.Ax.AR.pop();
       }
     },
 
@@ -889,7 +889,7 @@ export const appSlice = createSlice({
       }>
     ) {
       const { cValue, axCIndex, Ax } = action.payload;
-      state.calcConfig.Ax[Ax][axCIndex] = [...cValue];
+      state.solveConfig.Ax[Ax][axCIndex] = [...cValue];
       const updates = state.xSeeds.ids.map((xSeedId) => ({
         id: xSeedId,
         changes: {
@@ -998,8 +998,8 @@ export const selectSolvingInprogress = (state: RootState) =>
 
 export const selectBadPoints = (state: RootState) => state.app.badPoints;
 
-export const selectCalcConfig = (state: RootState) => state.app.calcConfig;
-export const selectN = (state: RootState) => state.app.calcConfig.Ax.AL.length;
+export const selectCalcConfig = (state: RootState) => state.app.solveConfig;
+export const selectN = (state: RootState) => state.app.solveConfig.Ax.AL.length;
 
 export const selectM = (state: RootState) => {
   const firstXSeed = state.app.xSeeds.entities[state.app.xSeeds.ids[0]];
