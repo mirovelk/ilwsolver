@@ -367,6 +367,13 @@ function InteractiveStage({
     );
   }, [dispatch, stage.width, stage.height, stageId]);
 
+  const stageOnContextMenu = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      e.evt.preventDefault();
+    },
+    []
+  );
+
   const statusCursorXValueRef = useRef<HTMLDivElement | null>(null);
   const statusCursorYValueRef = useRef<HTMLDivElement | null>(null);
 
@@ -441,7 +448,7 @@ function InteractiveStage({
           <Stage
             width={stage.width}
             height={stage.height}
-            onContextMenu={(e) => e.evt.preventDefault()}
+            onContextMenu={stageOnContextMenu}
           >
             {/* data layer */}
             <Layer
