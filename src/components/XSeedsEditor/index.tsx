@@ -154,6 +154,7 @@ const XSeedCalculatedValue = styled.div`
 `;
 
 // parse {{2-3i,3-2i},{2+3i,2+4i}} into [['2-3i', '3-2i'], ['2+3i', '2+4i']]
+// ignores all whitespace, including spaces inside numbers
 function parseXSeeds(input: string): XSeedValue[] {
   const noWhitespaceInput = input.replace(/\s/g, '');
   let bracketCount = 0;

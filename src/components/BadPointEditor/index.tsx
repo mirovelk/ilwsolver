@@ -7,7 +7,7 @@ import {
   setBadPoints,
 } from '../../redux/features/app/appSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { Complex } from '../../util/complex';
+import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 
 const Wrapper = styled(MaterialPaper)`
   display: inline-flex;
@@ -24,8 +24,23 @@ const BadPointsInput = styled(TextField)`
   min-width: 400px;
 `;
 
+// ignores all whitespace, including spaces inside numbers
 function parseBadPoints(input: string): Complex[] {
-  return JSON.parse(input.replaceAll('{', '[').replaceAll('}', ']'));
+  const noWhitespaceInput = input.replace(/\s/g, '');
+
+  if (noWhitespaceInput.length === 0) return [];
+
+  if (
+    noWhitespaceInput[0] !== '{' ||
+    noWhitespaceInput[noWhitespaceInput.length - 1] !== '}'
+  )
+    throw new Error('Invalid input');
+
+  const inputWithoutBrackets = noWhitespaceInput.slice(1, -1);
+
+  const points = inputWithoutBrackets.split(',').map(parseComplex);
+
+  return points;
 }
 
 function stringifyBadPoints(points: Complex[]) {
@@ -33,12 +48,8 @@ function stringifyBadPoints(points: Complex[]) {
   output += '{';
   output += '\n';
   points.forEach((point, pointIndex) => {
-    output += '    { ';
-    output += point[0];
-    output += ', ';
-    output += point[1];
-    output += ' }';
-    if (pointIndex < points.length - 1) output += ', ';
+    output += `  ${stringifyComplex(point, true)}`;
+    if (pointIndex < points.length - 1) output += ',';
     output += '\n';
   });
   output += '}';
@@ -78,7 +89,7 @@ function BadPointEditor() {
         } else {
           throw new Error('invalid input');
         }
-      } catch {
+      } catch (e) {
         setBadPointsInputError(true);
       }
     },
