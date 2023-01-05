@@ -14,6 +14,7 @@ const container = document.getElementById('root');
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(container!);
 
+// TODO re-enable strict mode
 root.render(
   <StoreProvider store={store}>
     <App />

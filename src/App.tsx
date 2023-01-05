@@ -1,23 +1,18 @@
 import styled from '@emotion/styled';
-import { Delete, Functions } from '@mui/icons-material';
+import { Delete, PlayArrow } from '@mui/icons-material';
 import { CircularProgress, IconButton } from '@mui/material';
-import Paper from 'paper';
 import { useCallback } from 'react';
 
 import InputArea from './components/InputArea';
-import { defaultScaleDownFactor } from './components/InteractiveCanvas/util';
 import OutputArea from './components/OutputArea';
-import { inputPaper, outputPaper } from './papers';
 import {
   clearActiveSheetInputOutputValues,
-  selectActiveSheetIputValues,
-  selectActiveSheetSolvers,
+  selectActiveSheetStageIds,
+  selectActiveSheetQArray,
+  selectActiveSheetQArrayValid,
   selectActiveSheetXSeedHasError,
-  selectCalcConfig,
   selectSolvingInprogress,
-  setInputZoom,
-  setOutputZoom,
-  solveAllInQArray,
+  solveActiveSheet,
 } from './redux/features/app/appSlice';
 import { useAppDispatch, useAppSelector } from './redux/store';
 import StyleProvider from './support/style/StyleProvider';
@@ -37,6 +32,7 @@ const AreasWrapper = styled.div`
 
 const AreaWrapper = styled.div`
   flex: 1 0 0;
+  min-width: 0;
 
   &:not(:last-child) {
     margin-right: 20px;
@@ -63,7 +59,7 @@ const ClearButtonWrapper = styled.div`
   margin-top: 5px;
 `;
 
-const StyledFunctions = styled(Functions)`
+const StyledPlayArrow = styled(PlayArrow)`
   color: rgb(18 18 18);
   font-size: 1.3em;
 `;
@@ -106,53 +102,24 @@ const StyledDelete = styled(Delete)`
   color: white;
 `;
 
-const INPUT_STEPS = 1000;
-
 function App() {
   const dispatch = useAppDispatch();
   const solvingInProgress = useAppSelector(selectSolvingInprogress);
-  const activeSheetInputValues = useAppSelector(selectActiveSheetIputValues);
-  const activeSheetSolvers = useAppSelector(selectActiveSheetSolvers);
+  const activeSheetQArray = useAppSelector(selectActiveSheetQArray);
+  const activeSheetQArrayValid = useAppSelector(selectActiveSheetQArrayValid);
   const activeSheetXSeedHasError = useAppSelector(
     selectActiveSheetXSeedHasError
   );
-  const calcConfig = useAppSelector(selectCalcConfig);
+  const activeSheetStageIds = useAppSelector(selectActiveSheetStageIds);
 
   const process = useCallback(() => {
     if (!solvingInProgress) {
-      dispatch(
-        solveAllInQArray({
-          solvers: activeSheetSolvers,
-          inputValues: activeSheetInputValues,
-          config: calcConfig,
-        })
-      );
+      dispatch(solveActiveSheet());
     }
-  }, [
-    activeSheetInputValues,
-    activeSheetSolvers,
-    calcConfig,
-    dispatch,
-    solvingInProgress,
-  ]);
+  }, [dispatch, solvingInProgress]);
 
   const clear = useCallback(() => {
     dispatch(clearActiveSheetInputOutputValues());
-
-    inputPaper.view.center = new Paper.Point(0, 0);
-    outputPaper.view.center = new Paper.Point(0, 0);
-
-    inputPaper.view.scale(
-      defaultScaleDownFactor *
-        Math.min(inputPaper.view.bounds.right, inputPaper.view.bounds.bottom)
-    );
-    dispatch(setInputZoom(inputPaper.view.zoom));
-
-    outputPaper.view.scale(
-      defaultScaleDownFactor *
-        Math.min(outputPaper.view.bounds.right, outputPaper.view.bounds.bottom)
-    );
-    dispatch(setOutputZoom(outputPaper.view.zoom));
   }, [dispatch]);
 
   return (
@@ -166,13 +133,14 @@ function App() {
               onClick={process}
               disabled={
                 activeSheetXSeedHasError ||
-                activeSheetInputValues.length === 0 ||
+                activeSheetQArray.length === 0 ||
+                !activeSheetQArrayValid ||
                 solvingInProgress
               }
             >
               <RunButtonGlyphWrapper>
                 {solvingInProgress && <CircularProgress size={35} />}
-                {!solvingInProgress && <StyledFunctions fontSize="inherit" />}
+                {!solvingInProgress && <StyledPlayArrow fontSize="inherit" />}
               </RunButtonGlyphWrapper>
             </RunButton>
           </RunButtonWrapper>
@@ -184,10 +152,10 @@ function App() {
         </CenterControlsWrapper>
         <AreasWrapper>
           <AreaWrapper>
-            <InputArea paper={inputPaper} inputSteps={INPUT_STEPS} />
+            <InputArea inputStageId={activeSheetStageIds.inputStageId} />
           </AreaWrapper>
           <AreaWrapper>
-            <OutputArea paper={outputPaper} />
+            <OutputArea outputStageId={activeSheetStageIds.outputStageId} />
           </AreaWrapper>
         </AreasWrapper>
       </Wrapper>

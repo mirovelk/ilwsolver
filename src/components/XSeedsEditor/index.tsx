@@ -8,22 +8,21 @@ import {
   Typography,
 } from '@mui/material';
 import clipboard from 'clipboardy';
-import Paper from 'paper';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ChromePicker } from 'react-color';
 
 import {
   activeSheetXSeedHasError,
-  addSolverToActiveSheet,
-  removeSolverFromActiveSheet,
-  selectActiveSheetSolvers,
+  addXSeedToActiveSheet,
+  removeXSeedFromActiveSheet,
   selectM,
-  setSolverColor,
+  selectXSeedEditorData,
+  setXSeedColor,
   setXSeedNumber,
   setXSeedsM,
   setXSeedsValues,
 } from '../../redux/features/app/appSlice';
-import { SolverId, XSeedValue } from '../../redux/features/app/types';
+import { XSeedId, XSeedValue } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 import { stringifyArrayOfComplexArraysForMathematica } from '../../util/mathematica';
@@ -112,12 +111,12 @@ const XSeedColorWrapper = styled.div`
   align-items: center;
 `;
 
-const XSeedColor = styled.div<{ seedColor: paper.Color }>`
+const XSeedColor = styled.div<{ seedColor: string }>`
   display: inline-block;
   height: 30px;
   width: 30px;
   border-radius: 4px;
-  background: ${({ seedColor }) => seedColor.toCSS(true)};
+  background: ${({ seedColor }) => seedColor};
   cursor: pointer;
 `;
 
@@ -219,32 +218,30 @@ function stringifyXSeeds(xSeeds: XSeedValue[]) {
 // TODO refactor into smaller components
 function XSeedsEditor() {
   const dispatch = useAppDispatch();
-  const solvers = useAppSelector(selectActiveSheetSolvers);
+  const {
+    allXSeedsCalculated,
+    xSeedsRemovalDisabled,
+    allXSeedResultsStarts,
+    allXSeedResultsEnds,
+    xSeeds,
+  } = useAppSelector(selectXSeedEditorData);
   const M = useAppSelector(selectM);
 
-  const xSeeds = useMemo(
-    () => solvers.map((solver) => solver.xSeed),
-    [solvers]
-  );
-
-  const allXSeedsCalculated = useMemo(
-    () => !solvers.some((solver) => typeof solver.outputValues === 'undefined'),
-    [solvers]
-  );
-
   const [xSeedsTextareaValue, setXSeedsTextareaValue] = useState(
-    stringifyXSeeds(xSeeds)
+    stringifyXSeeds(xSeeds.map((xSeed) => xSeed.value))
   );
   const [xSeedsTextareaEditing, setXSeedsTextareaEditing] = useState(false);
   const [xSeedsTextareaError, setXSeedsTextareaError] = useState(false);
 
-  const [visibleColorPickerSolverId, setVisibleColorPickerSolverId] =
-    useState<SolverId | null>(null);
+  const [visibleColorPickerXSeedId, setVisibleColorPickerXSeedId] =
+    useState<XSeedId | null>(null);
 
   // reflect xSeeds changes back into textarea area when not editing
   useEffect(() => {
     if (!xSeedsTextareaEditing) {
-      setXSeedsTextareaValue(stringifyXSeeds(xSeeds));
+      setXSeedsTextareaValue(
+        stringifyXSeeds(xSeeds.map((xSeed) => xSeed.value))
+      );
       setXSeedsTextareaError(false);
     }
   }, [xSeeds, xSeedsTextareaEditing]);
@@ -304,21 +301,21 @@ function XSeedsEditor() {
   );
 
   const addXSeedOnClick = useCallback(() => {
-    dispatch(addSolverToActiveSheet());
+    dispatch(addXSeedToActiveSheet());
   }, [dispatch]);
 
   const removeXSeed = useCallback(
-    (solverId: SolverId) => {
-      dispatch(removeSolverFromActiveSheet(solverId));
+    (xSeedId: XSeedId) => {
+      dispatch(removeXSeedFromActiveSheet(xSeedId));
     },
     [dispatch]
   );
 
   const xSeedComplexOnEditFinished = useCallback(
-    (solverId: SolverId, xSeedCIndex: number, xSeedCValue: Complex) => {
+    (xSeedId: XSeedId, xSeedCIndex: number, xSeedCValue: Complex) => {
       dispatch(
         setXSeedNumber({
-          solverId,
+          xSeedId,
           xSeedNumberIndex: xSeedCIndex,
           value: xSeedCValue,
         })
@@ -330,29 +327,23 @@ function XSeedsEditor() {
   const copyResultsStart = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
       if (allXSeedsCalculated) {
-        const starts = solvers.map((solver) => {
-          const ouputValues = solver.outputValues;
-          if (!ouputValues) throw new Error('ouputValues not found');
-          return ouputValues.map((output) => output[0]);
-        });
-        clipboard.write(stringifyArrayOfComplexArraysForMathematica(starts));
+        clipboard.write(
+          stringifyArrayOfComplexArraysForMathematica(allXSeedResultsStarts)
+        );
       }
     },
-    [allXSeedsCalculated, solvers]
+    [allXSeedsCalculated, allXSeedResultsStarts]
   );
 
   const copyResultsEnd = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
       if (allXSeedsCalculated) {
-        const ends = solvers.map((solver) => {
-          const ouputValues = solver.outputValues;
-          if (!ouputValues) throw new Error('ouputValues not found');
-          return ouputValues.map((output) => output[output.length - 1]);
-        });
-        clipboard.write(stringifyArrayOfComplexArraysForMathematica(ends));
+        clipboard.write(
+          stringifyArrayOfComplexArraysForMathematica(allXSeedResultsEnds)
+        );
       }
     },
-    [allXSeedsCalculated, solvers]
+    [allXSeedsCalculated, allXSeedResultsEnds]
   );
 
   return (
@@ -437,33 +428,33 @@ function XSeedsEditor() {
       </XSeedsHeader>
 
       <XSeedsWrapper>
-        {solvers.map((solver) => (
-          <XSeedWrapper key={solver.id}>
+        {xSeeds.map((xSeed) => (
+          <XSeedWrapper key={xSeed.id}>
             <XSeedRemoveWrapper>
               <IconButton
                 size="small"
-                disabled={xSeeds.length < 2}
-                onClick={() => removeXSeed(solver.id)}
+                disabled={xSeedsRemovalDisabled}
+                onClick={() => removeXSeed(xSeed.id)}
               >
                 <Remove fontSize="inherit" />
               </IconButton>
             </XSeedRemoveWrapper>
             <XSeedColorWrapper>
               <XSeedColor
-                seedColor={new Paper.Color(solver.color)}
+                seedColor={xSeed.color}
                 onClick={() =>
-                  setVisibleColorPickerSolverId(
-                    (previousVisibleColorPickerSolverId) =>
-                      previousVisibleColorPickerSolverId !== solver.id
-                        ? solver.id
+                  setVisibleColorPickerXSeedId(
+                    (previousVisibleColorPickerXSeedId) =>
+                      previousVisibleColorPickerXSeedId !== xSeed.id
+                        ? xSeed.id
                         : null
                   )
                 }
               />
               <XSeedColorPickerWrapper>
-                {visibleColorPickerSolverId === solver.id && (
+                {visibleColorPickerXSeedId === xSeed.id && (
                   <ChromePicker
-                    color={new Paper.Color(solver.color).toCSS(true)}
+                    color={xSeed.color}
                     disableAlpha
                     styles={{
                       default: {
@@ -474,9 +465,9 @@ function XSeedsEditor() {
                     }}
                     onChange={(color) => {
                       dispatch(
-                        setSolverColor({
-                          solverId: solver.id,
-                          color: new Paper.Color(color.hex).toCSS(true),
+                        setXSeedColor({
+                          xSeedId: xSeed.id,
+                          color: color.hex,
                         })
                       );
                     }}
@@ -485,12 +476,12 @@ function XSeedsEditor() {
               </XSeedColorPickerWrapper>
             </XSeedColorWrapper>
             <XSeedInputs>
-              {solver.xSeed.map((c, cIndex) => (
+              {xSeed.value.map((c, cIndex) => (
                 <XSeedComplexWrapper key={cIndex}>
                   <ComplexEditor
                     value={c}
                     onEditFinished={(value) => {
-                      xSeedComplexOnEditFinished(solver.id, cIndex, value);
+                      xSeedComplexOnEditFinished(xSeed.id, cIndex, value);
                     }}
                     showError={() => {
                       dispatch(activeSheetXSeedHasError(true));
@@ -500,7 +491,7 @@ function XSeedsEditor() {
                     }}
                   />
 
-                  {solver.outputValues && (
+                  {xSeed.resultsValid && (
                     <>
                       <XSeedCalculatedValue
                         css={css`
@@ -508,17 +499,11 @@ function XSeedsEditor() {
                         `}
                       >
                         <XSeedStartIcon />
-                        {stringifyComplex(
-                          solver.outputValues.map((output) => output[0])[cIndex]
-                        )}
+                        {stringifyComplex(xSeed.resultsStarts[cIndex])}
                       </XSeedCalculatedValue>
                       <XSeedCalculatedValue>
                         <XSeedEndIcon />
-                        {stringifyComplex(
-                          solver.outputValues.map(
-                            (output) => output[output.length - 1]
-                          )[cIndex]
-                        )}
+                        {stringifyComplex(xSeed.resultsEnds[cIndex])}
                       </XSeedCalculatedValue>
                     </>
                   )}

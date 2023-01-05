@@ -1,5 +1,5 @@
 import { EntityId, EntityState } from '@reduxjs/toolkit';
-import { CalcConfig, ResultInQArray } from '../../../support/calc/calc';
+import { CalcConfig } from '../../../support/calc/calc';
 import { Complex } from '../../../util/complex';
 
 export enum OutputProjectionVariant {
@@ -10,38 +10,63 @@ export enum OutputProjectionVariant {
 
 export type XSeedValue = Complex[];
 
-export type StoredPoint = [number, number];
+export type DrawingPoint = [number, number];
 
-export type SolverId = EntityId;
+export interface StageLayer {
+  intialized: boolean;
+  scale: number;
+  x: number;
+  y: number;
+}
 
-export interface Solver {
-  id: SolverId;
-  xSeed: XSeedValue;
-  color: string; // Paper.Color constructors do not accept components array, use .toCSS(true)
-  outputValues?: ResultInQArray;
-  outputValuesValid: boolean;
+export type StageId = EntityId;
+
+export interface Stage {
+  id: StageId;
+  width: number;
+  height: number;
+  dataLayer: StageLayer;
+}
+
+export interface Result {
+  values: Complex[];
+  selected: boolean;
+  // TODO copy q used for calculation to prevent crashes when q path changes
+}
+
+export type XSeedId = EntityId;
+
+export interface XSeed {
+  id: XSeedId;
+  value: XSeedValue;
+  color: string;
+  results: Result[]; // TODO move to separate entity adapter?
+  resultsValid: boolean;
 }
 
 export type SheetId = EntityId;
 
 export interface Sheet {
   id: SheetId;
-  inputDrawingPoints: StoredPoint[];
-  inputValues: Complex[];
+  inputDrawingPoints: DrawingPoint[]; // TODO move input fileds separate inputs entity adapter?
   inputSimplifyTolerance: number;
   inputSimplifyEnabled: boolean;
-  solvers: SolverId[];
+  inputStageId: StageId;
+  outputStageId: StageId;
+  qArray: Complex[]; // derived from inputDrawingPoints afer simplify, kept for performance
+  qArrayValid: boolean; // qArray can be invalid if inputDrawingPoints changed and needs to be recalculated
+  xSeedIds: XSeedId[];
   xSeedHasError: boolean;
 }
 
+// TODO split into multiple slices somehow
 export interface AppState {
   solvingInProgress: boolean;
-  inputZoom: number;
-  outputZoom: number;
   outputProjectionVariant: OutputProjectionVariant;
   badPoints: Complex[];
   calcConfig: CalcConfig;
   activeSheetId: SheetId;
   sheets: EntityState<Sheet>;
-  solvers: EntityState<Solver>;
+  xSeeds: EntityState<XSeed>;
+  stages: EntityState<Stage>;
 }

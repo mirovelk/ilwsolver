@@ -273,13 +273,12 @@ export function subtractComplexVectors(a: Complex[], b: Complex[]): Complex[] {
   return a.map((ai, i) => subtract(ai, b[i]));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function transpose(matrix: any[][]) {
+export function transpose<T>(matrix: T[][]) {
   return matrix[0].map((_col, i) => matrix.map((row) => row[i]));
 }
 
 export type ResultInQ = Complex[]; // length = M
-export type ResultInQArray = ResultInQ[];
+export type ResultsInQArray = Complex[][];
 
 function complexVectorAbsSum(vector: Complex[]): number {
   return vector.reduce((acc, c) => acc + abs(c), 0);
@@ -323,8 +322,8 @@ export function solveInQArray(
   xSeed: Complex[],
   qArray: Complex[],
   config: CalcConfig
-): ResultInQArray {
-  const output: Complex[][] = [];
+): ResultsInQArray {
+  const output: ResultsInQArray = [];
 
   output.push(xSeed); // initial value = xSeed
 

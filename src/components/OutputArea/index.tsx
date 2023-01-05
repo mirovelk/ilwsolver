@@ -1,228 +1,101 @@
 import { css } from '@emotion/react';
 import { Button, ButtonGroup } from '@mui/material';
-import Paper from 'paper';
-import React, { useCallback, useEffect, useState } from 'react';
+import chroma from 'chroma-js';
+import Konva from 'konva';
+import { useCallback } from 'react';
+import { ouputStrokeWidth } from '../../const';
 
 import {
-  selectActiveSheetIputValues,
-  selectActiveSheetSolvers,
-  selectOutputProjectionVariant,
-  selectOutputZoom,
+  selectOutputAreaData,
+  selectAllXSeedResults,
+  selectSingleXSeedResult,
   setOutputProjectionVariant,
-  setOutputZoom,
+  toggleXSeedResultSelected,
+  selectOutputProjectionVariant,
 } from '../../redux/features/app/appSlice';
-import { OutputProjectionVariant } from '../../redux/features/app/types';
-import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { ResultInQArray } from '../../support/calc/calc';
 import {
-  add,
-  Complex,
-  complex,
-  divide,
-  multiply,
-  subtract,
-} from '../../util/complex';
-import InteractiveCanvas from '../InteractiveCanvas';
-import PathWithEnds from '../PathWithEnds';
+  StageId,
+  OutputProjectionVariant,
+  XSeedId,
+} from '../../redux/features/app/types';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { ResultsInQArray } from '../../support/calc/calc';
 
-const OUTPUT_PATH_UNSELECTED_WIDTH = 2;
-const OUTPUT_PATH_WIDTH = 3;
+import InteractiveStage from '../InteractiveStage';
+import LineWithIcons from '../LineWithIcons';
 
-function viewFitBounds(
-  paper: paper.PaperScope,
-  path: paper.Path,
-  setZoom: (zoom: number) => void
-) {
-  const viewBounds = paper.view.bounds;
-  const scaleRatio = Math.min(
-    viewBounds.width / path.bounds.width,
-    viewBounds.height / path.bounds.height
-  );
-  paper.view.translate(
-    new Paper.Point(
-      viewBounds.center.x - path.bounds.center.x,
-      viewBounds.center.y - path.bounds.center.y
-    )
-  );
-  paper.view.scale(scaleRatio * 0.8);
-  setZoom(paper.view.zoom);
-}
+const dashLength = 10;
 
 export interface Output {
-  result: ResultInQArray;
+  result: ResultsInQArray;
   valid: boolean;
 }
 
-interface OutputPaths {
-  paths: Array<paper.Point[]>;
-  color: paper.Color;
-  dashed: boolean;
-}
-
-type OutputsPaths = OutputPaths[];
-
-const complexOne = complex(1);
-const complexSix = complex(6);
-
-function projectV2(x: Complex, q: Complex): Complex {
-  return add(x, divide(complexSix, subtract(complexOne, q)));
-}
-
-function projectV3(x: Complex, q: Complex): Complex {
-  return multiply(subtract(complexOne, q), x);
-}
-
-function valueToProjectedValue(
-  x: Complex,
-  q: Complex,
-  projectionVariant: OutputProjectionVariant
-): Complex {
-  switch (projectionVariant) {
-    case OutputProjectionVariant.V1:
-      return x;
-    case OutputProjectionVariant.V2:
-      return projectV2(x, q);
-    case OutputProjectionVariant.V3:
-      return projectV3(x, q);
-    default:
-      return x;
-  }
-}
-
-function valueToPoint(x: Complex): paper.Point {
-  return new Paper.Point(x[0], -x[1]);
-}
-
-function getAllSelectedPaths(points: OutputsPaths) {
-  return points.flatMap((outputPathsPoints, index0) =>
-    outputPathsPoints.paths.map((_outputPathPoints, index1) => ({
-      outputPathsPointsIndex: index0,
-      outputPathPointsIndex: index1,
-    }))
-  );
-}
-
-function OutputArea({ paper }: { paper: paper.PaperScope }) {
+function OutputArea({ outputStageId }: { outputStageId: StageId }) {
   const dispatch = useAppDispatch();
 
-  const solvers = useAppSelector(selectActiveSheetSolvers);
-  const inputValues = useAppSelector(selectActiveSheetIputValues);
+  const { xSeeds: outputAreaXSeeds } = useAppSelector(selectOutputAreaData);
   const outputProjectionVariant = useAppSelector(selectOutputProjectionVariant);
-  const outputZoom = useAppSelector(selectOutputZoom);
 
-  const setZoom = useCallback(
-    (zoom: number) => {
-      dispatch(setOutputZoom(zoom));
+  const resultLineOnClick = useCallback(
+    (
+      e: Konva.KonvaEventObject<MouseEvent>,
+      xSeedId: XSeedId,
+      resultIndex: number
+    ): void => {
+      if (e.evt.button === 0) {
+        e.cancelBubble = true;
+        if (e.evt.shiftKey) {
+          dispatch(toggleXSeedResultSelected({ xSeedId, resultIndex }));
+        } else {
+          e.currentTarget.moveToTop();
+          dispatch(selectSingleXSeedResult({ xSeedId, resultIndex }));
+        }
+      }
     },
     [dispatch]
   );
-  const [points, setPoints] = useState<OutputsPaths>([]);
 
-  // convert ouput Complex array to Path points
-  useEffect(() => {
-    const outputsPaths = solvers.map((solver) => ({
-      paths: (solver?.outputValues ?? []).map((path) =>
-        path.map((value, valueIndex) =>
-          valueToPoint(
-            valueToProjectedValue(
-              value,
-              inputValues[valueIndex],
-              outputProjectionVariant
-            )
-          )
-        )
-      ),
-      color: new Paper.Color(solver.color),
-      dashed: !solver.outputValuesValid,
-    }));
-    if (
-      outputsPaths.some((outputPaths) =>
-        outputPaths.paths.some((path) => path.length > 0)
-      )
-    ) {
-      const allPaths = outputsPaths.flatMap((outputPaths) =>
-        outputPaths.paths.flatMap((points) => points)
-      );
-      viewFitBounds(paper, new Paper.Path(allPaths), setZoom);
-    }
-    setPoints(outputsPaths);
-  }, [paper, solvers, setZoom, inputValues, outputProjectionVariant]);
-
-  const [selectedPaths, setSelectedPaths] = useState<
-    Array<{
-      outputPathsPointsIndex: number;
-      outputPathPointsIndex: number;
-    }>
-  >(() => getAllSelectedPaths(points));
-
-  useEffect(() => {
-    setSelectedPaths(getAllSelectedPaths(points));
-  }, [points]);
-
-  const onOutputPathClick = useCallback(
-    (
-      event: paper.MouseEvent,
-      outputPathsPointsIndex: number,
-      outputPathPointsIndex: number
-    ) => {
-      setSelectedPaths((selectedPaths) => {
-        if (event.modifiers.shift) {
-          if (
-            selectedPaths.some(
-              (selectedPath) =>
-                selectedPath.outputPathsPointsIndex ===
-                  outputPathsPointsIndex &&
-                selectedPath.outputPathPointsIndex === outputPathPointsIndex
-            )
-          ) {
-            return selectedPaths.filter(
-              (selectedPath) =>
-                selectedPath.outputPathsPointsIndex !==
-                  outputPathsPointsIndex ||
-                selectedPath.outputPathPointsIndex !== outputPathPointsIndex
-            );
-          } else {
-            return [
-              ...selectedPaths,
-              {
-                outputPathsPointsIndex,
-                outputPathPointsIndex,
-              },
-            ];
-          }
-        } else {
-          return [
-            {
-              outputPathsPointsIndex,
-              outputPathPointsIndex,
-            },
-          ];
+  const dataLayerOnClick = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>): void => {
+      if (e.evt.button === 0) {
+        if (!e.evt.shiftKey) {
+          dispatch(
+            selectAllXSeedResults({
+              xSeedIds: outputAreaXSeeds.map((xSeed) => xSeed.id),
+            })
+          );
         }
-      });
+      }
+    },
+    [dispatch, outputAreaXSeeds]
+  );
+
+  const resultLineOnMouseEnter = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>): void => {
+      const stage = e.target.getStage();
+      if (stage) {
+        stage.container().style.cursor = 'pointer';
+      }
     },
     []
   );
 
-  const onCanvasClick = useCallback(
-    (event: paper.MouseEvent) => {
-      // dirty check if the click was on the canvas and not on a path
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (typeof event.target.viewSize !== 'undefined') {
-        setSelectedPaths(getAllSelectedPaths(points));
+  const resultLineOnMouseLeave = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>): void => {
+      const stage = e.target.getStage();
+      if (stage) {
+        stage.container().style.cursor = 'inherit';
       }
     },
-    [points]
+    []
   );
 
   return (
     <>
-      <InteractiveCanvas
-        paper={paper}
-        id="output"
+      <InteractiveStage
         title="Output"
-        setZoom={setZoom}
-        onClick={onCanvasClick}
+        stageId={outputStageId}
         topControls={
           <div
             css={css`
@@ -278,53 +151,42 @@ function OutputArea({ paper }: { paper: paper.PaperScope }) {
           </div>
         }
         bottomControls={<></>}
-      />
-      {points.map((outputPathsPoints, outputPathsPointsIndex) =>
-        outputPathsPoints.paths.map(
-          (outputPathPoints, outputPathPointsIndex) => {
-            const thisSelected = selectedPaths.some(
-              (selectedPath) =>
-                selectedPath.outputPathsPointsIndex ===
-                  outputPathsPointsIndex &&
-                selectedPath.outputPathPointsIndex === outputPathPointsIndex
-            );
-
-            const shoudSuppress = !thisSelected;
-
-            const color = new paper.Color(outputPathsPoints.color);
-            if (shoudSuppress) {
-              color.saturation -= 0.7;
-              color.brightness -= 0.3;
-            }
-
-            return (
-              <PathWithEnds
-                key={`${outputPathsPointsIndex}-${outputPathPointsIndex}`}
-                paper={paper}
-                zoom={outputZoom}
-                points={outputPathPoints}
-                strokeColor={color}
-                strokeWidth={
-                  shoudSuppress
-                    ? OUTPUT_PATH_UNSELECTED_WIDTH
-                    : OUTPUT_PATH_WIDTH
-                }
-                fullySelected={false}
-                dashArray={outputPathsPoints.dashed ? [10, 8] : []}
-                onClick={(e) =>
-                  onOutputPathClick(
-                    e,
-                    outputPathsPointsIndex,
-                    outputPathPointsIndex
-                  )
-                }
-              />
-            );
-          }
-        )
-      )}
+        dataLayerOnClick={dataLayerOnClick}
+      >
+        {outputAreaXSeeds.map((xSeed, xSeedIndex) =>
+          xSeed.results.map((result, resultIndex) => (
+            <LineWithIcons
+              key={`${xSeedIndex}-${resultIndex}`}
+              points={result.projectedValues.flatMap((value) => value)}
+              stroke={
+                result.selected
+                  ? xSeed.color
+                  : chroma(xSeed.color).desaturate().darken().hex()
+              }
+              strokeWidth={
+                result.selected ? ouputStrokeWidth : ouputStrokeWidth - 1
+              }
+              lineCap="round"
+              lineJoin="round"
+              dash={
+                !xSeed.resultsValid || !result.selected
+                  ? [dashLength, dashLength]
+                  : []
+              }
+              strokeScaleEnabled={false}
+              hitStrokeWidth={ouputStrokeWidth + 10}
+              groupProps={{
+                onClick: (e: Konva.KonvaEventObject<MouseEvent>) =>
+                  resultLineOnClick(e, xSeed.id, resultIndex),
+                onMouseEnter: resultLineOnMouseEnter,
+                onMouseLeave: resultLineOnMouseLeave,
+              }}
+            />
+          ))
+        )}
+      </InteractiveStage>
     </>
   );
 }
 
-export default React.memo(OutputArea);
+export default OutputArea;

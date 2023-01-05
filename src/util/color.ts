@@ -1,23 +1,21 @@
-import { Color } from 'paper';
+import chroma from 'chroma-js';
 
-export const initialColor = new Color({
-  hue: 210,
-  saturation: 1,
-  lightness: 0.5,
-});
+export const initialColor = chroma('hsl(210, 100%, 50%)');
 
 export const colorCount = 8;
 
 export const hueShiftStep = 360 / colorCount;
 
-export function getDifferentColor(previousColors: paper.Color[]): paper.Color {
+export function getDifferentColor(previousColors: string[]): string {
   if (previousColors.length === 0) {
-    return initialColor;
+    return initialColor.hex();
   }
-  const processedPreviousColors = previousColors
+  const buffer = previousColors.map((color) => chroma(color));
+
+  const processedPreviousColors = buffer
     .map((previousColor) => ({
       original: previousColor, // save original
-      hue: previousColor.hue, // extract hue
+      hue: previousColor.get('hsl.h'), // extract hue
     }))
     .sort((a, b) => a.hue - b.hue) // sort by hue
     .map((color, colorIndex, colorArray) => ({
@@ -33,13 +31,12 @@ export function getDifferentColor(previousColors: paper.Color[]): paper.Color {
     processedPreviousColors[0].hue +
     Math.floor(processedPreviousColors[0].hueDistanceToRight / 2);
 
-  const furthestColor = new Color(initialColor);
-  furthestColor.hue = furthestHue % 360;
+  const furthestColor = chroma(initialColor).set('hsl.h', furthestHue % 360);
 
-  return furthestColor;
+  return furthestColor.hex();
 }
 
-export function getNextColorWithBuffer(buffer: paper.Color[]): paper.Color {
+export function getNextColorWithBuffer(buffer: string[]): string {
   const nextColor = getDifferentColor(buffer);
   buffer.push(nextColor);
   return nextColor;

@@ -7,8 +7,7 @@ import React, { useCallback } from 'react';
 import {
   addSheet,
   removeSheetWithId,
-  selectActiveSheetId,
-  selectSheetIds,
+  selectTabsData,
   setActiveSheetId,
 } from '../../redux/features/app/appSlice';
 import { SheetId } from '../../redux/features/app/types';
@@ -26,8 +25,7 @@ const StyledTab = styled(Tab)`
 
 function SheetTabs() {
   const dispatch = useAppDispatch();
-  const activeSheetId = useAppSelector(selectActiveSheetId);
-  const sheetIds = useAppSelector(selectSheetIds);
+  const { activeSheetId, sheetIds } = useAppSelector(selectTabsData);
 
   const addSheetOnClick = useCallback(() => {
     dispatch(addSheet());

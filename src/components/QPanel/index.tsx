@@ -5,7 +5,7 @@ import { IconButton, Paper as MaterialPaper, Typography } from '@mui/material';
 import clipboard from 'clipboardy';
 import React, { useCallback, useMemo } from 'react';
 
-import { selectActiveSheetIputValues } from '../../redux/features/app/appSlice';
+import { selectActiveSheetQArray } from '../../redux/features/app/appSlice';
 import { useAppSelector } from '../../redux/store';
 import { stringifyComplex } from '../../util/complex';
 import { stringifyComplexArrayForMathematica } from '../../util/mathematica';
@@ -37,28 +37,28 @@ const Row = styled.div`
 const iconSpacing = '10px';
 
 function QPanel() {
-  const inputValues = useAppSelector(selectActiveSheetIputValues);
+  const qArray = useAppSelector(selectActiveSheetQArray);
 
   const copyInput = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
-      clipboard.write(stringifyComplexArrayForMathematica(inputValues));
+      clipboard.write(stringifyComplexArrayForMathematica(qArray));
     },
-    [inputValues]
+    [qArray]
   );
 
   const q0 = useMemo(() => {
-    if (inputValues.length > 0) {
-      return stringifyComplex(inputValues[0], true);
+    if (qArray.length > 0) {
+      return stringifyComplex(qArray[0], true);
     }
     return 'undefined';
-  }, [inputValues]);
+  }, [qArray]);
 
   const qN = useMemo(() => {
-    if (inputValues.length > 0) {
-      return stringifyComplex(inputValues[inputValues.length - 1], true);
+    if (qArray.length > 0) {
+      return stringifyComplex(qArray[qArray.length - 1], true);
     }
     return 'undefined';
-  }, [inputValues]);
+  }, [qArray]);
 
   const copyQ0 = useCallback(
     (_e: React.MouseEvent<HTMLButtonElement>) => {
@@ -82,12 +82,12 @@ function QPanel() {
           css={css`
             margin-right: ${iconSpacing};
           `}
-          disabled={!(inputValues.length > 0)}
+          disabled={!(qArray.length > 0)}
         >
           <ContentCopy />
         </IconButton>
         <Typography variant="h6" color="text.secondary">
-          q
+          q<sub>[0,n]</sub>
         </Typography>
       </Header>
 
@@ -98,14 +98,14 @@ function QPanel() {
             css={css`
               margin-right: ${iconSpacing};
             `}
-            disabled={!(inputValues.length > 0)}
+            disabled={!(qArray.length > 0)}
           >
             <ContentCopy />
           </IconButton>
           <Typography variant="subtitle1" color="text.secondary">
             q<sub>0</sub>
             {' = '}
-            {inputValues.length > 0 ? q0 : 'undefined'}
+            {qArray.length > 0 ? q0 : 'undefined'}
           </Typography>
         </Row>
         <Row>
@@ -114,14 +114,14 @@ function QPanel() {
             css={css`
               margin-right: ${iconSpacing};
             `}
-            disabled={!(inputValues.length > 0)}
+            disabled={!(qArray.length > 0)}
           >
             <ContentCopy />
           </IconButton>
           <Typography variant="subtitle1" color="text.secondary">
             q<sub>n</sub>
             {' = '}
-            {inputValues.length > 0 ? qN : 'undefined'}
+            {qArray.length > 0 ? qN : 'undefined'}
           </Typography>
         </Row>
       </Content>

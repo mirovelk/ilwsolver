@@ -1,12 +1,16 @@
+import { AppDispatch } from './../../store';
 import {
   createAsyncThunk,
   createEntityAdapter,
   createSelector,
   createSlice,
+  EntityState,
+  EntityId,
   PayloadAction,
+  Dictionary,
 } from '@reduxjs/toolkit';
-import Paper from 'paper';
 import { v4 as uuidv4 } from 'uuid';
+import simplifyPath from 'simplify-js';
 
 // @ts-ignore
 import calcWorker from 'workerize-loader!../../../support/calc/calc';
@@ -14,8 +18,7 @@ import calcWorker from 'workerize-loader!../../../support/calc/calc';
 import {
   Ax,
   Ex,
-  ResultInQArray,
-  CalcConfig,
+  ResultsInQArray,
   solveInQArray,
 } from '../../../support/calc/calc';
 import { getDifferentColor, getNextColorWithBuffer } from '../../../util/color';
@@ -30,11 +33,18 @@ import {
   OutputProjectionVariant,
   Sheet,
   SheetId,
-  Solver,
-  SolverId,
-  StoredPoint,
+  XSeed,
+  XSeedId,
+  DrawingPoint,
   XSeedValue,
+  Result,
+  StageId,
+  Stage,
 } from './types';
+import { dataLayerDefaultScaleDownFactor } from '../../../const';
+import { valueToProjectedValue } from './resultValueProjection';
+
+const SIMPLIFY_INITIAL = -1.5;
 
 export function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
@@ -44,84 +54,256 @@ function getRandomXSeedNumber(): Complex {
   return [getRandomXSeedPartNumber(), getRandomXSeedPartNumber()];
 }
 
-const SIMPLIFY_INITIAL = -3;
+interface EntityWithId {
+  id: EntityId;
+}
 
-function buildInitialSheet(sheet?: Partial<Sheet>): Sheet {
+function entitiesToEntityState<T extends EntityWithId>(
+  entities: T[]
+): EntityState<T> {
+  return {
+    ids: entities.map((entity) => entity.id),
+    entities: entities.reduce((acc: Dictionary<T>, entity) => {
+      acc[entity.id] = entity;
+      return acc;
+    }, {}),
+  };
+}
+
+const sheetsAdapter = createEntityAdapter<Sheet>();
+const xSeedsAdapter = createEntityAdapter<XSeed>();
+const stagesAdapter = createEntityAdapter<Stage>();
+
+// TODO extract initial state data and build functions
+function buildInitialStage(id: StageId): Stage {
+  return {
+    id,
+    width: 0,
+    height: 0,
+    dataLayer: {
+      intialized: false,
+      scale: 0,
+      x: 0,
+      y: 0,
+    },
+  };
+}
+
+function buildInitialSheet(
+  sheet: Partial<Sheet> & Pick<Sheet, 'inputStageId' | 'outputStageId'>
+): Sheet {
   return {
     id: 1,
-    inputValues: [],
     inputDrawingPoints: [],
     inputSimplifyTolerance: SIMPLIFY_INITIAL,
     inputSimplifyEnabled: true,
-    solvers: [],
+    qArray: [],
+    qArrayValid: true,
+    xSeedIds: [],
     xSeedHasError: false,
     ...sheet,
   };
 }
 
-export const solveAllInQArray = createAsyncThunk(
-  'app/solveInQArray',
-  async ({
-    solvers,
-    inputValues,
-    config,
-  }: {
-    solvers: Solver[];
-    inputValues: Complex[];
-    config: CalcConfig;
-  }): Promise<
-    Array<{
-      solverId: SolverId;
-      result: ResultInQArray;
-    }>
-  > => {
-    const workers = solvers.map((solver) => {
-      const calcWorkerInstance = calcWorker();
-      return calcWorkerInstance.solveInQArray(
-        solver.xSeed,
-        inputValues,
-        config
-      );
-    });
-    const results = (await Promise.all(workers)) as ResultInQArray[];
-    return results.map((result, resultIndex) => ({
-      solverId: solvers[resultIndex].id,
-      result,
-    }));
+export const solveActiveSheet = createAsyncThunk<
+  Array<{
+    xSeedId: XSeedId;
+    resultsInQArray: ResultsInQArray;
+  }>,
+  void,
+  {
+    state: RootState;
+    dispatch: AppDispatch;
   }
-);
+>('app/solveActiveSheet', async (_, { getState }) => {
+  const {
+    app: { xSeeds, sheets, activeSheetId, calcConfig },
+  } = getState();
+  const activeSheet = sheets.entities[activeSheetId];
+  if (!activeSheet) throw new Error('Sheet not found');
 
-const sheetsAdapter = createEntityAdapter<Sheet>();
-const solversAdapter = createEntityAdapter<Solver>();
+  const activeSheetXSeeds = activeSheet.xSeedIds.map((activeSheetXSeedId) => {
+    const xSeed = xSeeds.entities[activeSheetXSeedId];
+    if (!xSeed) throw new Error('xSeed not found');
+    return xSeed;
+  });
+
+  const workers = activeSheetXSeeds.map((xSeed) => {
+    const calcWorkerInstance = calcWorker();
+    return calcWorkerInstance.solveInQArray(
+      xSeed.value,
+      activeSheet.qArray,
+      calcConfig
+    );
+  });
+  const allResults = (await Promise.all(workers)) as ResultsInQArray[];
+  return allResults.map((resultsInQArray, resultIndex) => ({
+    xSeedId: activeSheetXSeeds[resultIndex].id,
+    resultsInQArray,
+  }));
+});
+
+function getQArrayFromInputDrawingPoints(
+  inputDrawingPoints: DrawingPoint[],
+  inputSimplifyTolerance: number,
+  inputSimplifyEnabled: boolean
+): Complex[] {
+  return inputSimplifyEnabled
+    ? getSimplifiedSmoothedInputLinePoints(
+        inputDrawingPoints,
+        inputSimplifyTolerance
+      )
+    : inputDrawingPoints;
+}
+
+function calculateSheetQArray(sheet: Sheet): Complex[] {
+  return getQArrayFromInputDrawingPoints(
+    sheet.inputDrawingPoints,
+    sheet.inputSimplifyTolerance,
+    sheet.inputSimplifyEnabled
+  );
+}
+
+function getSimplifiedSmoothedInputLinePoints(
+  inputLinePoints: DrawingPoint[],
+  inputSimplifyTolerance: number
+): DrawingPoint[] {
+  // simplify
+  return simplifyPath(
+    inputLinePoints.map((point) => ({ x: point[0], y: point[1] })),
+    Math.pow(10, inputSimplifyTolerance),
+    true
+  ).map((point) => [point.x, point.y]);
+
+  // smooth
+  // TODO add smooothing/interpolation
+}
+
+function centerEmptyStageDataLayer(state: AppState, id: StageId) {
+  const stage = state.stages.entities[id];
+  if (!stage) throw new Error('Stage not found');
+
+  const stageMinSize = Math.min(stage.width, stage.height);
+  const scale = (stageMinSize / 2) * dataLayerDefaultScaleDownFactor;
+  const x = stage.width / 2;
+  const y = stage.height / 2;
+
+  stage.dataLayer.scale = scale;
+  stage.dataLayer.x = x;
+  stage.dataLayer.y = y;
+}
+
+function centerStageDataLayerOnValues(
+  state: AppState,
+  id: StageId,
+  values: Complex[]
+) {
+  const stage = state.stages.entities[id];
+  if (!stage) throw new Error('Stage not found');
+
+  const { minX, maxX, minY, maxY } = values.reduce(
+    (acc, value) => {
+      const [x, y] = value;
+      return {
+        minX: Math.min(acc.minX, x),
+        maxX: Math.max(acc.maxX, x),
+        minY: Math.min(acc.minY, y),
+        maxY: Math.max(acc.maxY, y),
+      };
+    },
+    { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
+  );
+
+  const valuesWidth = maxX - minX;
+  const valuesHeight = maxY - minY;
+
+  const zoomFactor =
+    Math.min(stage.height / valuesHeight, stage.width / valuesWidth) *
+    dataLayerDefaultScaleDownFactor;
+
+  const stageCenterX = stage.width / 2;
+  const stageCenterY = stage.height / 2;
+
+  const valuesCenterX = (minX + valuesWidth / 2) * zoomFactor;
+  const valuesCenterY = -(minY + valuesHeight / 2) * zoomFactor; // flip y axis
+
+  stage.dataLayer.scale = zoomFactor;
+  stage.dataLayer.x = stageCenterX - valuesCenterX;
+  stage.dataLayer.y = stageCenterY - valuesCenterY;
+}
+
+function centerSheetOutputStageResults(state: AppState, id: SheetId) {
+  const sheet = state.sheets.entities[id];
+  // TODO add utility
+  if (!sheet) throw new Error('Sheet not found');
+
+  const { xSeedIds, outputStageId, qArray } = sheet;
+
+  const xSeeds = xSeedIds.map((xSeedId) => {
+    const xSeed = state.xSeeds.entities[xSeedId];
+    // TODO add utility
+    if (!xSeed) throw new Error('xSeed not found');
+    return xSeed;
+  });
+
+  const projectedValues = xSeeds.flatMap((xSeed) =>
+    xSeed.results.flatMap((result) =>
+      result.values.map((value, valueIndex) =>
+        valueToProjectedValue(
+          value,
+          qArray[valueIndex],
+          state.outputProjectionVariant
+        )
+      )
+    )
+  );
+
+  if (projectedValues.length > 0) {
+    centerStageDataLayerOnValues(state, outputStageId, projectedValues);
+  } else {
+    centerEmptyStageDataLayer(state, outputStageId);
+  }
+}
+
+const initialXSeeds: XSeed[] = [
+  {
+    id: uuidv4(),
+    value: [complex(2, -3), complex(3, -2)],
+    color: 'rgb(0, 127, 255)',
+    results: [],
+    resultsValid: false,
+  },
+  {
+    id: uuidv4(),
+    value: [complex(2, 3), complex(2, 4)],
+    color: 'rgb(255, 127, 0)',
+    results: [],
+    resultsValid: false,
+  },
+];
+
+const initialSheetInputStage = buildInitialStage(uuidv4());
+
+const initialSheetOutputStage = buildInitialStage(uuidv4());
+
+const initialSheets = [
+  buildInitialSheet({
+    id: 1,
+    xSeedIds: [initialXSeeds[0].id, initialXSeeds[1].id],
+    inputStageId: initialSheetInputStage.id,
+    outputStageId: initialSheetOutputStage.id,
+  }),
+];
 
 const initialState: AppState = {
-  sheets: sheetsAdapter.getInitialState({
-    ids: [1],
-    entities: { 1: buildInitialSheet({ id: 1, solvers: [0, 1] }) },
-  }),
-  solvers: solversAdapter.getInitialState({
-    ids: [0, 1],
-    entities: {
-      0: {
-        id: 0,
-        xSeed: [complex(2, -3), complex(3, -2)],
-        color: 'rgb(0, 127, 255)',
-        outputValues: undefined,
-        outputValuesValid: false,
-      },
-      1: {
-        id: 1,
-        xSeed: [complex(2, 3), complex(2, 4)],
-        color: 'rgb(255, 127, 0)',
-        outputValues: undefined,
-        outputValuesValid: false,
-      },
-    },
-  }),
+  sheets: entitiesToEntityState(initialSheets),
+  xSeeds: entitiesToEntityState(initialXSeeds),
+  stages: entitiesToEntityState([
+    initialSheetInputStage,
+    initialSheetOutputStage,
+  ]),
   solvingInProgress: false,
   activeSheetId: 1,
-  inputZoom: 1,
-  outputZoom: 1,
   outputProjectionVariant: OutputProjectionVariant.V1,
   calcConfig: {
     Ex: {
@@ -169,64 +351,184 @@ export const appSlice = createSlice({
   name: 'app',
   initialState,
   reducers: {
+    resizeStage: (
+      state,
+      action: PayloadAction<{
+        id: StageId;
+        stageWidth: number;
+        stageHeight: number;
+      }>
+    ) => {
+      const { id, stageWidth, stageHeight } = action.payload;
+
+      const stage = state.stages.entities[id];
+      if (!stage) throw new Error('Stage not found');
+
+      stage.width = stageWidth;
+      stage.height = stageHeight;
+
+      if (!stage.dataLayer.intialized) {
+        centerEmptyStageDataLayer(state, id);
+        stage.dataLayer.intialized = true;
+      }
+    },
+
+    updateStageDataLayerPosition: (
+      state,
+      action: PayloadAction<{
+        id: StageId;
+        x: number;
+        y: number;
+      }>
+    ) => {
+      const { id, x, y } = action.payload;
+      const stage = state.stages.entities[id];
+      if (!stage) throw new Error('Stage not found');
+
+      stage.dataLayer.x = x;
+      stage.dataLayer.y = y;
+    },
+
+    zoomStageDataLayerWithWheel: (
+      state,
+      action: PayloadAction<{
+        id: StageId;
+        wheelDeltaY: number;
+        pointerX: number;
+        pointerY: number;
+      }>
+    ) => {
+      const { id, wheelDeltaY, pointerX, pointerY } = action.payload;
+      const stage = state.stages.entities[id];
+      if (!stage) throw new Error('Stage not found');
+
+      const { dataLayer } = stage;
+
+      const scaleBy = 0.95;
+      const oldScale = dataLayer.scale;
+      const oldX = dataLayer.x;
+      const oldY = dataLayer.y;
+
+      const mousePointTo = {
+        x: pointerX / oldScale - oldX / oldScale,
+        y: pointerY / oldScale - oldY / oldScale,
+      };
+
+      const newScale =
+        wheelDeltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+
+      dataLayer.scale = newScale;
+      dataLayer.x = -(mousePointTo.x - pointerX / newScale) * newScale;
+      dataLayer.y = -(mousePointTo.y - pointerY / newScale) * newScale;
+    },
+
+    scaleStageDataLayer: (
+      state,
+      action: PayloadAction<{
+        id: StageId;
+        scaleFactor: number;
+      }>
+    ) => {
+      const { id, scaleFactor } = action.payload;
+      const stage = state.stages.entities[id];
+      if (!stage) throw new Error('Stage not found');
+
+      stage.dataLayer.scale *= scaleFactor;
+    },
+
+    panStageDataLayer: (
+      state,
+      action: PayloadAction<{
+        id: StageId;
+        panX?: number;
+        panY?: number;
+      }>
+    ) => {
+      const { id, panX, panY } = action.payload;
+      const stage = state.stages.entities[id];
+      if (!stage) throw new Error('Stage not found');
+
+      const { dataLayer } = stage;
+
+      if (typeof panX !== 'undefined') dataLayer.x += panX;
+      if (typeof panY !== 'undefined') dataLayer.y += panY;
+    },
+
+    // kept prformance testing only (having issues with worker profiling)
     calculateAllOutputPaths: (state) => {
       const activeSheet = state.sheets.entities[state.activeSheetId];
       if (!activeSheet) throw new Error('Sheet not found');
 
-      const solverIds = activeSheet.solvers;
+      const xSeedIds = activeSheet.xSeedIds;
 
-      const solverUpdates = solverIds.map((solverId) => {
-        const xSeed = state.solvers.entities[solverId]?.xSeed;
-        if (!xSeed) throw new Error('Solver not found');
+      const xSeedUpdates = xSeedIds.map((xSeedId) => {
+        const xSeed = state.xSeeds.entities[xSeedId]?.value;
+        if (!xSeed) throw new Error('xSeed not found');
 
-        const outputValues = solveInQArray(
+        const resultsInQArray = solveInQArray(
           xSeed,
-          activeSheet.inputValues,
+          activeSheet.qArray,
           state.calcConfig
         );
 
+        const results: Result[] = resultsInQArray.map((values) => ({
+          values,
+          selected: true,
+        }));
+
         return {
-          id: solverId,
+          id: xSeedId,
           changes: {
-            outputValues,
-            outputValuesValid: true,
+            results,
+            resultsValid: true,
           },
         };
       });
 
-      solversAdapter.updateMany(state.solvers, solverUpdates);
+      xSeedsAdapter.updateMany(state.xSeeds, xSeedUpdates);
     },
 
     clearActiveSheetInputOutputValues: (state) => {
       const activeSheet = state.sheets.entities[state.activeSheetId];
       if (!activeSheet) throw new Error('Sheet not found');
 
+      // TODO stop using update functions where too verbose
       sheetsAdapter.updateOne(state.sheets, {
         id: state.activeSheetId,
         changes: {
-          inputValues: [],
           inputDrawingPoints: [],
+          qArray: [],
+          qArrayValid: true,
         },
       });
 
-      const solverIds = activeSheet.solvers;
-      solversAdapter.updateMany(
-        state.solvers,
-        solverIds.map((solverId) => ({
-          id: solverId,
+      const xSeedIds = activeSheet.xSeedIds;
+      xSeedsAdapter.updateMany(
+        state.xSeeds,
+        xSeedIds.map((xSeedId) => ({
+          id: xSeedId,
           changes: {
-            outputValues: undefined,
-            outputValuesValid: false,
+            results: [],
+            resultsValid: false,
           },
         }))
       );
+
+      centerEmptyStageDataLayer(state, activeSheet.inputStageId);
+      centerEmptyStageDataLayer(state, activeSheet.outputStageId);
     },
 
-    setInputValues: (state, action: PayloadAction<Complex[]>) => {
+    updateActiveSheetQArray: (state) => {
+      const activeSheet = state.sheets.entities[state.activeSheetId];
+      if (!activeSheet) throw new Error('Sheet not found');
+
+      const qArray = calculateSheetQArray(activeSheet);
+
       sheetsAdapter.updateOne(state.sheets, {
         id: state.activeSheetId,
         changes: {
-          inputValues: action.payload,
+          qArray,
+          qArrayValid: true,
         },
       });
     },
@@ -237,225 +539,222 @@ export const appSlice = createSlice({
       if (!activeSheet) throw new Error('Sheet not found');
 
       const payloadXSeedsValues = action.payload;
-      const solverIds = activeSheet.solvers;
+      const xSeedIds = activeSheet.xSeedIds;
 
-      // update (or remove) existing solvers
-      solverIds.forEach((solverId, solverIdIndex) => {
-        if (solverIdIndex < payloadXSeedsValues.length) {
-          const solver = state.solvers.entities[solverId];
-          if (!solver) throw new Error('Solver not found');
-          const newXSeed = payloadXSeedsValues[solverIdIndex];
-          solversAdapter.updateOne(state.solvers, {
-            id: solverId,
+      // update (or remove) existing xSeeds
+      xSeedIds.forEach((xSeedId, xSeedIdIndex) => {
+        if (xSeedIdIndex < payloadXSeedsValues.length) {
+          const xSeed = state.xSeeds.entities[xSeedId];
+          if (!xSeed) throw new Error('xSeed not found');
+          const newXSeed = payloadXSeedsValues[xSeedIdIndex];
+          xSeedsAdapter.updateOne(state.xSeeds, {
+            id: xSeedId,
             changes: {
-              xSeed: newXSeed,
-              outputValuesValid: false,
+              value: newXSeed,
+              resultsValid: false,
             },
           });
         } else {
-          // if there's more solvers than xSeeds in payload, remove the extra solvers
-          solversAdapter.removeOne(state.solvers, solverId);
+          // if there's more xSeeds than xSeed values in payload, remove the extra xSeeds
+          xSeedsAdapter.removeOne(state.xSeeds, xSeedId);
           sheetsAdapter.updateOne(state.sheets, {
             id: state.activeSheetId,
             changes: {
-              solvers: activeSheet.solvers.filter((id) => id !== solverId),
+              xSeedIds: activeSheet.xSeedIds.filter((id) => id !== xSeedId),
             },
           });
         }
       });
 
-      // add new solvers if there's more xSeeds in payload than solvers
-      const newXSeeds = payloadXSeedsValues.slice(solverIds.length);
-      if (newXSeeds.length > 0) {
-        // fill the colors buffer with the colors of the existing solvers
-        const colorsBuffer = solverIds.map((solverId) => {
-          const color = state.solvers.entities[solverId]?.color;
-          if (!color) throw new Error('Solver not found');
-          return new Paper.Color(color);
+      // add new xSeeds if there's more xSeed values in payload than xSeeds
+      const newXSeedValues = payloadXSeedsValues.slice(xSeedIds.length);
+      if (newXSeedValues.length > 0) {
+        // fill the colors buffer with the colors of the existing xSeeds
+        const colorsBuffer = xSeedIds.map((xSeedId) => {
+          const color = state.xSeeds.entities[xSeedId]?.color;
+          if (!color) throw new Error('xSeed not found');
+          return color;
         });
 
-        const newSolvers = newXSeeds.map((newXSeed) => ({
+        const newXSeeds: XSeed[] = newXSeedValues.map((newXSeedValue) => ({
           id: uuidv4(),
-          xSeed: newXSeed,
-          outputValuesValid: false,
-          color: getNextColorWithBuffer(colorsBuffer).toCSS(true),
+          value: newXSeedValue,
+          results: [],
+          resultsValid: false,
+          color: getNextColorWithBuffer(colorsBuffer),
         }));
 
-        solversAdapter.addMany(state.solvers, newSolvers);
+        xSeedsAdapter.addMany(state.xSeeds, newXSeeds);
 
         sheetsAdapter.updateOne(state.sheets, {
           id: state.activeSheetId,
           changes: {
-            solvers: [...solverIds, ...newSolvers.map((solver) => solver.id)],
+            xSeedIds: [...xSeedIds, ...newXSeeds.map((xSeed) => xSeed.id)],
           },
         });
       }
     },
 
     setXSeedsM: (state, action: PayloadAction<number>) => {
-      // TODO move UI to the global settings
       const M = action.payload;
 
-      const updates = state.solvers.ids.map((solverId) => {
-        const xSeed = state.solvers.entities[solverId]?.xSeed;
-        if (!xSeed) throw new Error('Solver not found');
+      const updates = state.xSeeds.ids.map((xSeedId) => {
+        const xSeedValue = state.xSeeds.entities[xSeedId]?.value;
+        if (!xSeedValue) throw new Error('xSeed not found');
 
         return {
-          id: solverId,
+          id: xSeedId,
           changes: {
-            xSeed:
-              xSeed.length < M
+            value:
+              xSeedValue.length < M
                 ? [
-                    ...xSeed,
-                    ...new Array(M - xSeed.length)
+                    ...xSeedValue,
+                    ...new Array(M - xSeedValue.length)
                       .fill(null)
                       .map((_) => getRandomXSeedNumber()),
                   ]
-                : xSeed.slice(0, M),
-            outputValuesValid: false,
-            outputValues: undefined,
+                : xSeedValue.slice(0, M),
+            resultsValid: false,
           },
         };
       });
-      solversAdapter.updateMany(state.solvers, updates);
+      xSeedsAdapter.updateMany(state.xSeeds, updates);
     },
 
-    addSolverToActiveSheet: (state) => {
+    addXSeedToActiveSheet: (state) => {
       const activeSheet = state.sheets.entities[state.activeSheetId];
       if (!activeSheet) throw new Error('Sheet not found');
 
-      const solverIds = activeSheet.solvers;
-      const solvers = solverIds.map((solverId) => {
-        const solver = state.solvers.entities[solverId];
-        if (!solver) throw new Error('Solver not found');
-        return solver;
+      const xSeedIds = activeSheet.xSeedIds;
+      const xSeeds = xSeedIds.map((xSeedId) => {
+        const xSeed = state.xSeeds.entities[xSeedId];
+        if (!xSeed) throw new Error('xSeed not found');
+        return xSeed;
       });
 
-      const M = solvers[0].xSeed.length;
+      const M = xSeeds[0].value.length;
 
-      const previousColors = solvers.map(
-        (solvers) => new Paper.Color(solvers.color)
-      );
+      const previousColors = xSeeds.map((xSeeds) => xSeeds.color);
 
-      const newSolver = {
+      const newXSeed: XSeed = {
         id: uuidv4(),
-        xSeed: new Array(M).fill(null).map(() => getRandomXSeedNumber()),
-        color: getDifferentColor(previousColors).toCSS(true),
-        outputValues: undefined,
-        outputValuesValid: false,
+        value: new Array(M).fill(null).map(() => getRandomXSeedNumber()),
+        color: getDifferentColor(previousColors),
+        results: [],
+        resultsValid: false,
       };
 
-      solversAdapter.addOne(state.solvers, newSolver);
+      xSeedsAdapter.addOne(state.xSeeds, newXSeed);
       sheetsAdapter.updateOne(state.sheets, {
         id: state.activeSheetId,
         changes: {
-          solvers: [...solverIds, newSolver.id],
+          xSeedIds: [...xSeedIds, newXSeed.id],
         },
       });
     },
 
-    removeSolverFromActiveSheet: (state, action: PayloadAction<SolverId>) => {
+    removeXSeedFromActiveSheet: (state, action: PayloadAction<XSeedId>) => {
       const activeSheet = state.sheets.entities[state.activeSheetId];
       if (!activeSheet) throw new Error('Sheet not found');
 
-      const solverId = action.payload;
+      const xSeedId = action.payload;
 
       sheetsAdapter.updateOne(state.sheets, {
         id: state.activeSheetId,
         changes: {
-          solvers: activeSheet.solvers.filter((id) => id !== solverId),
+          xSeedIds: activeSheet.xSeedIds.filter((id) => id !== xSeedId),
         },
       });
-      solversAdapter.removeOne(state.solvers, solverId);
+      xSeedsAdapter.removeOne(state.xSeeds, xSeedId);
     },
 
     setXSeedNumber: (
       state,
       action: PayloadAction<{
-        solverId: SolverId;
+        xSeedId: XSeedId;
         xSeedNumberIndex: number;
         value: Complex;
       }>
     ) => {
-      const { solverId, xSeedNumberIndex, value } = action.payload;
+      const { xSeedId, xSeedNumberIndex, value } = action.payload;
 
-      const draftXSeed = state.solvers.entities[solverId]?.xSeed;
+      const draftXSeed = state.xSeeds.entities[xSeedId]?.value;
       if (!draftXSeed) throw new Error('xSeed not found');
 
       draftXSeed[xSeedNumberIndex] = value;
 
       const update = {
-        id: solverId,
+        id: xSeedId,
         changes: {
           xSeed: draftXSeed,
-          outputValuesValid: false,
+          resultsValid: false,
         },
       };
 
-      solversAdapter.updateOne(state.solvers, update);
+      xSeedsAdapter.updateOne(state.xSeeds, update);
     },
 
-    setSolverColor: (
+    setXSeedColor: (
       state,
       action: PayloadAction<{
-        solverId: SolverId;
+        xSeedId: XSeedId;
         color: string;
       }>
     ) => {
-      const { solverId, color } = action.payload;
+      const { xSeedId, color } = action.payload;
 
       const update = {
-        id: solverId,
+        id: xSeedId,
         changes: {
           color,
         },
       };
 
-      solversAdapter.updateOne(state.solvers, update);
+      xSeedsAdapter.updateOne(state.xSeeds, update);
     },
 
+    // TODO use new format
     setBadPoints: (state, action: PayloadAction<Complex[]>) => {
       state.badPoints = action.payload;
     },
 
-    setInputZoom: (state, action: PayloadAction<number>) => {
-      state.inputZoom = action.payload;
-    },
-
-    setOutputZoom: (state, action: PayloadAction<number>) => {
-      state.outputZoom = action.payload;
-    },
-
     addSheet: (state) => {
       const lastSheetId = Number(state.sheets.ids[state.sheets.ids.length - 1]);
-      const lastSheetSolverIds = state.sheets.entities[lastSheetId]?.solvers;
-      if (!lastSheetSolverIds) throw new Error('Sheet not found');
+      const lastSheetXSeedIds = state.sheets.entities[lastSheetId]?.xSeedIds;
+      if (!lastSheetXSeedIds) throw new Error('Sheet not found');
 
       const newSheetId = lastSheetId + 1;
 
-      const newSolvers = lastSheetSolverIds.map((lastSheetSolverId) => {
-        const lastSheetSolver = state.solvers.entities[lastSheetSolverId];
-        if (!lastSheetSolver) throw new Error('Solver not found');
+      const newXSeeds: XSeed[] = lastSheetXSeedIds.map((lastSheetXSeedId) => {
+        const lastSheetXSeed = state.xSeeds.entities[lastSheetXSeedId];
+        if (!lastSheetXSeed) throw new Error('xSeed not found');
 
         return {
           id: uuidv4(),
-          outputValues: undefined,
-          outputValuesValid: false,
-          color: lastSheetSolver.color,
-          xSeed:
-            lastSheetSolver.outputValues && lastSheetSolver.outputValuesValid
-              ? lastSheetSolver.outputValues.map(
-                  (output) => output[output.length - 1]
+          results: [],
+          resultsValid: false,
+          color: lastSheetXSeed.color,
+          value:
+            lastSheetXSeed.results.length > 0 && lastSheetXSeed.resultsValid
+              ? lastSheetXSeed.results.map(
+                  (result) => result.values[result.values.length - 1]
                 )
-              : lastSheetSolver.xSeed,
+              : lastSheetXSeed.value,
         };
       });
 
-      solversAdapter.addMany(state.solvers, newSolvers);
+      xSeedsAdapter.addMany(state.xSeeds, newXSeeds);
+
+      const newInputStage = buildInitialStage(uuidv4());
+      const newOutputStage = buildInitialStage(uuidv4());
+
+      stagesAdapter.addMany(state.stages, [newInputStage, newOutputStage]);
 
       const newSheet = buildInitialSheet({
         id: newSheetId,
-        solvers: newSolvers?.map((solver) => solver.id),
+        xSeedIds: newXSeeds?.map((xSeed) => xSeed.id),
+        inputStageId: newInputStage.id,
+        outputStageId: newOutputStage.id,
       });
 
       sheetsAdapter.addOne(state.sheets, newSheet);
@@ -469,6 +768,14 @@ export const appSlice = createSlice({
 
     removeSheetWithId: (state, action: PayloadAction<SheetId>) => {
       const removedSheetId = action.payload;
+      const removedSheet = state.sheets.entities[removedSheetId];
+      if (!removedSheet) throw new Error('Sheet not found');
+
+      stagesAdapter.removeMany(state.stages, [
+        removedSheet.inputStageId,
+        removedSheet.outputStageId,
+      ]);
+
       const activeSheetIndex = state.sheets.ids.indexOf(state.activeSheetId);
 
       if (state.activeSheetId === removedSheetId) {
@@ -480,38 +787,58 @@ export const appSlice = createSlice({
       sheetsAdapter.removeOne(state.sheets, removedSheetId);
     },
 
-    addInputDrawingPoint: (state, action: PayloadAction<StoredPoint>) => {
+    addActiveSheetInputDrawingPoint: (
+      state,
+      action: PayloadAction<DrawingPoint>
+    ) => {
       const activeSheet = state.sheets.entities[state.activeSheetId];
       if (!activeSheet) throw new Error('Sheet not found');
+
       activeSheet.inputDrawingPoints.push(action.payload);
+      activeSheet.qArrayValid = false;
+
+      // invalidate output values on subsequent drawing
+      const updates = activeSheet.xSeedIds.map((xSeedId) => ({
+        id: xSeedId,
+        changes: {
+          resultsValid: false,
+        },
+      }));
+      xSeedsAdapter.updateMany(state.xSeeds, updates);
     },
 
     setInputSimplifyTolerance: (state, action: PayloadAction<number>) => {
       sheetsAdapter.updateOne(state.sheets, {
         id: state.activeSheetId,
-        changes: { inputSimplifyTolerance: action.payload },
-      });
-      const updates = state.solvers.ids.map((solverId) => ({
-        id: solverId,
         changes: {
-          outputValuesValid: false,
+          inputSimplifyTolerance: action.payload,
+          qArrayValid: false,
+        },
+      });
+      const updates = state.xSeeds.ids.map((xSeedId) => ({
+        id: xSeedId,
+        changes: {
+          resultsValid: false,
         },
       }));
-      solversAdapter.updateMany(state.solvers, updates);
+      xSeedsAdapter.updateMany(state.xSeeds, updates);
     },
 
     setInputSimplifyEnabled: (state, action: PayloadAction<boolean>) => {
       sheetsAdapter.updateOne(state.sheets, {
         id: state.activeSheetId,
-        changes: { inputSimplifyEnabled: action.payload },
-      });
-      const updates = state.solvers.ids.map((solverId) => ({
-        id: solverId,
         changes: {
-          outputValuesValid: false,
+          inputSimplifyEnabled: action.payload,
+          qArrayValid: false,
+        },
+      });
+      const updates = state.xSeeds.ids.map((xSeedId) => ({
+        id: xSeedId,
+        changes: {
+          resultsValid: false,
         },
       }));
-      solversAdapter.updateMany(state.solvers, updates);
+      xSeedsAdapter.updateMany(state.xSeeds, updates);
     },
 
     setOutputProjectionVariant: (
@@ -519,6 +846,11 @@ export const appSlice = createSlice({
       action: PayloadAction<OutputProjectionVariant>
     ) => {
       state.outputProjectionVariant = action.payload;
+
+      const activeSheet = state.sheets.entities[state.activeSheetId];
+      if (!activeSheet) throw new Error('Sheet not found');
+
+      centerSheetOutputStageResults(state, state.activeSheetId);
     },
 
     setCalcConfigExC(
@@ -530,13 +862,13 @@ export const appSlice = createSlice({
     ) {
       const { cValue, Ex } = action.payload;
       state.calcConfig.Ex[Ex] = [...cValue];
-      const updates = state.solvers.ids.map((solverId) => ({
-        id: solverId,
+      const updates = state.xSeeds.ids.map((xSeedId) => ({
+        id: xSeedId,
         changes: {
-          outputValuesValid: false,
+          resultsValid: false,
         },
       }));
-      solversAdapter.updateMany(state.solvers, updates);
+      xSeedsAdapter.updateMany(state.xSeeds, updates);
     },
 
     setCalcConfigAxN(state, action: PayloadAction<{ N: number }>) {
@@ -562,13 +894,13 @@ export const appSlice = createSlice({
     ) {
       const { cValue, axCIndex, Ax } = action.payload;
       state.calcConfig.Ax[Ax][axCIndex] = [...cValue];
-      const updates = state.solvers.ids.map((solverId) => ({
-        id: solverId,
+      const updates = state.xSeeds.ids.map((xSeedId) => ({
+        id: xSeedId,
         changes: {
-          outputValuesValid: false,
+          resultsValid: false,
         },
       }));
-      solversAdapter.updateMany(state.solvers, updates);
+      xSeedsAdapter.updateMany(state.xSeeds, updates);
     },
 
     activeSheetXSeedHasError(state, action: PayloadAction<boolean>) {
@@ -577,38 +909,92 @@ export const appSlice = createSlice({
         changes: { xSeedHasError: action.payload },
       });
     },
+
+    selectSingleXSeedResult(
+      state,
+      action: PayloadAction<{ xSeedId: XSeedId; resultIndex: number }>
+    ) {
+      const { payload } = action;
+
+      const activeSheet = state.sheets.entities[state.activeSheetId];
+      if (!activeSheet) throw new Error('Sheet not found');
+
+      activeSheet.xSeedIds.forEach((xSeedId) => {
+        state.xSeeds.entities[xSeedId]?.results.forEach(
+          (result, resultIndex) => {
+            result.selected =
+              xSeedId === payload.xSeedId &&
+              resultIndex === payload.resultIndex;
+          }
+        );
+      });
+    },
+
+    selectAllXSeedResults(
+      state,
+      action: PayloadAction<{ xSeedIds: XSeedId[] }>
+    ) {
+      const { xSeedIds } = action.payload;
+
+      xSeedIds.forEach((xSeedId) => {
+        const xSeed = state.xSeeds.entities[xSeedId];
+        if (!xSeed) throw new Error('xSeed not found');
+
+        xSeed.results.forEach((result) => {
+          result.selected = true;
+        });
+      });
+    },
+
+    toggleXSeedResultSelected(
+      state,
+      action: PayloadAction<{ xSeedId: XSeedId; resultIndex: number }>
+    ) {
+      const { xSeedId, resultIndex } = action.payload;
+
+      const xSeed = state.xSeeds.entities[xSeedId];
+      if (!xSeed) throw new Error('xSeed not found');
+
+      xSeed.results[resultIndex].selected =
+        !xSeed.results[resultIndex].selected;
+    },
   },
 
   extraReducers: (builder) => {
-    builder.addCase(solveAllInQArray.pending, (state) => {
+    builder.addCase(solveActiveSheet.pending, (state) => {
       state.solvingInProgress = true;
     });
-    builder.addCase(solveAllInQArray.rejected, (state, action) => {
+    builder.addCase(solveActiveSheet.rejected, (state, action) => {
       state.solvingInProgress = false;
       console.log(action);
     });
-    builder.addCase(solveAllInQArray.fulfilled, (state, action) => {
+    builder.addCase(solveActiveSheet.fulfilled, (state, action) => {
       const activeSheet = state.sheets.entities[state.activeSheetId];
       if (!activeSheet) throw new Error('Sheet not found');
 
       state.solvingInProgress = false;
 
-      const allOutputValues = action.payload;
+      const allResultsInQArray = action.payload;
 
-      const updates = allOutputValues.map(({ solverId, result }) => ({
-        id: solverId,
-        changes: {
-          outputValues: result,
-          outputValuesValid: true,
-        },
-      }));
+      const updates = allResultsInQArray.map(
+        ({ xSeedId: xSeedId, resultsInQArray }) => ({
+          id: xSeedId,
+          changes: {
+            results: resultsInQArray.map((values) => ({
+              values,
+              selected: true,
+            })),
+            resultsValid: true,
+          },
+        })
+      );
 
-      solversAdapter.updateMany(state.solvers, updates);
+      xSeedsAdapter.updateMany(state.xSeeds, updates);
+
+      centerSheetOutputStageResults(state, activeSheet.id);
     });
   },
 });
-
-const solversSelectors = solversAdapter.getSelectors();
 
 // Selectors
 export const selectSolvingInprogress = (state: RootState) =>
@@ -620,40 +1006,37 @@ export const selectCalcConfig = (state: RootState) => state.app.calcConfig;
 export const selectN = (state: RootState) => state.app.calcConfig.Ax.AL.length;
 
 export const selectM = (state: RootState) => {
-  const firstSolver = state.app.solvers.entities[state.app.solvers.ids[0]];
-  if (!firstSolver) throw new Error('No solvers found');
-  return firstSolver.xSeed.length;
+  const firstXSeed = state.app.xSeeds.entities[state.app.xSeeds.ids[0]];
+  if (!firstXSeed) throw new Error('No xSeeds found');
+  return firstXSeed.value.length;
 };
 
-export const selectInputZoom = (state: RootState) => state.app.inputZoom;
-export const selectOutputZoom = (state: RootState) => state.app.outputZoom;
 export const selectOutputProjectionVariant = (state: RootState) =>
   state.app.outputProjectionVariant;
-export const selectActiveSheetId = (state: RootState) =>
-  state.app.activeSheetId;
-export const selectSheetIds = (state: RootState) => state.app.sheets.ids;
 
-export const selectActiveSheet = (state: RootState) => {
+export const selectTabsData = (state: RootState) => ({
+  activeSheetId: state.app.activeSheetId,
+  sheetIds: state.app.sheets.ids,
+});
+
+export const selectStageById = (state: RootState, id: StageId) => {
+  const stage = state.app.stages.entities[id];
+  if (!stage) throw new Error('Stage not found');
+  return stage;
+};
+
+const selectActiveSheet = (state: RootState) => {
   const activeSheet = state.app.sheets.entities[state.app.activeSheetId];
   if (!activeSheet) throw new Error('Sheet not found');
   return activeSheet;
 };
-export const selectActiveSheetSolverIds = createSelector(
-  [selectActiveSheet],
-  (activeSheet) => activeSheet.solvers
-);
 
-export const selectPreviousSheet = (state: RootState) => {
+const selectPreviousSheet = (state: RootState) => {
   const activeSheetId = state.app.activeSheetId;
   const activeSheetIndex = state.app.sheets.ids.indexOf(activeSheetId);
   const previousSheetId = state.app.sheets.ids[activeSheetIndex - 1];
   return state.app.sheets.entities[previousSheetId];
 };
-
-export const selectActiveSheetIputValues = createSelector(
-  [selectActiveSheet],
-  (activeSheet) => activeSheet.inputValues
-);
 
 export const selectActiveSheetXSeedHasError = createSelector(
   [selectActiveSheet],
@@ -665,14 +1048,111 @@ export const selectActiveSheetIputDrawingPoints = createSelector(
   (activeSheet) => activeSheet.inputDrawingPoints
 );
 
-export const selectActiveSheetSolvers = createSelector(
-  [selectActiveSheetSolverIds, (state) => state.app.solvers],
-  (activeSheetSolverIds, solvers) =>
-    activeSheetSolverIds.map((solverId) => {
-      const solver = solversSelectors.selectById(solvers, solverId);
-      if (!solver) throw new Error('Solver not found');
-      return solver;
-    })
+export const selectActiveSheetQArray = createSelector(
+  [selectActiveSheet],
+  (activeSheet) => activeSheet.qArray
+);
+
+export const selectActiveSheetQArrayValid = createSelector(
+  [selectActiveSheet],
+  (activeSheet) => activeSheet.qArrayValid
+);
+
+export const selectOutputAreaData = createSelector(
+  [
+    selectActiveSheet,
+    selectActiveSheetQArray,
+    selectOutputProjectionVariant,
+    (state: RootState) => state.app.xSeeds,
+  ],
+  (
+    activeSheet,
+    qArray,
+    projectionVariant,
+    xSeeds
+  ): {
+    xSeeds: Array<
+      Pick<XSeed, 'id' | 'color' | 'resultsValid'> & {
+        results: Array<
+          Pick<Result, 'selected'> & {
+            projectedValues: Complex[];
+          }
+        >;
+      }
+    >;
+  } => {
+    const activeSheetXSeeds = activeSheet.xSeedIds.map((xSeedId) => {
+      const xSeed = xSeeds.entities[xSeedId];
+      if (!xSeed) throw new Error('xSeed not found');
+      return xSeed;
+    });
+
+    return {
+      xSeeds: activeSheetXSeeds.map((xSeed) => ({
+        id: xSeed.id,
+        color: xSeed.color,
+        resultsValid: xSeed.resultsValid,
+        results: xSeed.results.map((result) => ({
+          projectedValues: result.values.map((value, valueIndex) =>
+            valueToProjectedValue(value, qArray[valueIndex], projectionVariant)
+          ),
+          selected: result.selected,
+        })),
+      })),
+    };
+  }
+);
+
+export const selectXSeedEditorData = createSelector(
+  [selectActiveSheet, (state: RootState) => state.app.xSeeds],
+  (
+    activeSheet,
+    xSeeds
+  ): {
+    allXSeedsCalculated: boolean;
+    xSeedsRemovalDisabled: boolean;
+    xSeeds: Array<
+      Pick<XSeed, 'id' | 'color' | 'value' | 'resultsValid'> & {
+        resultsStarts: Complex[];
+        resultsEnds: Complex[];
+      }
+    >;
+    allXSeedResultsStarts: Complex[][];
+    allXSeedResultsEnds: Complex[][];
+  } => {
+    const activeSheetXSeeds: XSeed[] = activeSheet.xSeedIds.map((xSeedId) => {
+      const xSeed = xSeeds.entities[xSeedId];
+      if (!xSeed) throw new Error('xSeed not found');
+      return xSeed;
+    });
+
+    return {
+      allXSeedsCalculated: !activeSheetXSeeds.some(
+        (xSeed) => xSeed.results.length === 0
+      ),
+      xSeedsRemovalDisabled: activeSheetXSeeds.length < 2,
+      xSeeds: activeSheetXSeeds.map((xSeed) => ({
+        id: xSeed.id,
+        color: xSeed.color,
+        value: xSeed.value,
+        resultsValid: xSeed.resultsValid,
+        resultsStarts: xSeed.results.map((result) => result.values[0]),
+        resultsEnds: xSeed.results.map(
+          (result) => result.values[result.values.length - 1]
+        ),
+      })),
+      allXSeedResultsStarts: activeSheetXSeeds.map((xSeed) => {
+        const results = xSeed.results;
+        if (!results) throw new Error('Results not found');
+        return results.map((result) => result.values[0]);
+      }),
+      allXSeedResultsEnds: activeSheetXSeeds.map((xSeed) => {
+        const results = xSeed.results;
+        if (!results) throw new Error('results not found');
+        return results.map((result) => result.values[result.values.length - 1]);
+      }),
+    };
+  }
 );
 
 export const selectActiveSheetInputSimplifyConfig = createSelector(
@@ -683,39 +1163,52 @@ export const selectActiveSheetInputSimplifyConfig = createSelector(
   })
 );
 
-export const selectPreviousSheetEndInputValue = createSelector(
+export const selectPreviousSheetQn = createSelector(
   [selectPreviousSheet],
-  (previousSheet) =>
-    (previousSheet &&
-      previousSheet.inputValues &&
-      previousSheet.inputValues[previousSheet.inputValues.length - 1]) ||
-    undefined
+  (previousSheet) => {
+    if (!previousSheet) return undefined;
+    return previousSheet.qArray[previousSheet.qArray.length - 1];
+  }
+);
+
+export const selectActiveSheetStageIds = createSelector(
+  [selectActiveSheet],
+  (activeSheet) => ({
+    inputStageId: activeSheet.inputStageId,
+    outputStageId: activeSheet.outputStageId,
+  })
 );
 
 const { actions, reducer } = appSlice;
 
 export const {
-  addInputDrawingPoint,
+  addActiveSheetInputDrawingPoint,
+  resizeStage,
+  updateStageDataLayerPosition,
+  zoomStageDataLayerWithWheel,
+  scaleStageDataLayer,
+  panStageDataLayer,
+  updateActiveSheetQArray,
   addSheet,
-  addSolverToActiveSheet,
+  addXSeedToActiveSheet,
   clearActiveSheetInputOutputValues,
   removeSheetWithId,
-  removeSolverFromActiveSheet,
+  removeXSeedFromActiveSheet,
   setActiveSheetId,
   setBadPoints,
   setInputSimplifyEnabled,
   setInputSimplifyTolerance,
-  setInputValues,
-  setInputZoom,
   setOutputProjectionVariant,
-  setOutputZoom,
-  setSolverColor,
+  setXSeedColor,
   setXSeedNumber,
   setXSeedsM,
   setXSeedsValues,
   setCalcConfigExC,
   setCalcConfigAxN,
   setCalcConfigAxArrayC,
+  selectSingleXSeedResult,
+  selectAllXSeedResults,
+  toggleXSeedResultSelected,
   activeSheetXSeedHasError,
 } = actions;
 

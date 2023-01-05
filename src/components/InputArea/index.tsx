@@ -9,48 +9,38 @@ import {
   Input,
   Slider,
 } from '@mui/material';
-import Paper, { Color } from 'paper';
+import Konva from 'konva';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Line } from 'react-konva';
 
-import { inputStrokeWidth } from '../../papers';
+import { inputStrokeWidth } from '../../const';
 import {
-  addInputDrawingPoint,
+  addActiveSheetInputDrawingPoint,
   selectActiveSheetInputSimplifyConfig,
   selectActiveSheetIputDrawingPoints,
+  selectActiveSheetQArray,
   selectBadPoints,
-  selectInputZoom,
-  selectPreviousSheetEndInputValue,
+  selectPreviousSheetQn,
   setInputSimplifyEnabled,
   setInputSimplifyTolerance,
-  setInputValues,
-  setInputZoom,
+  updateActiveSheetQArray,
 } from '../../redux/features/app/appSlice';
+import { StageId } from '../../redux/features/app/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { Complex, complex } from '../../util/complex';
+import { pointPositionToLayerCoordintes } from '../../util/konva';
 import BadPointEditor from '../BadPointEditor';
 import CalcConfigEditor from '../CalcConfigEditor';
-import InteractiveCanvas from '../InteractiveCanvas';
-import Circle from '../paper/Circle';
-import Path from '../paper/Path';
-import Rectangle from '../paper/Rectangle';
-import PathWithEnds from '../PathWithEnds';
+import InteractiveStage from '../InteractiveStage';
+import LineWithIcons from '../LineWithIcons';
 import QPanel from '../QPanel';
 import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
-
-const DrawingPath = styled(Path)``;
 
 const ControlsWrapper = styled(Grid)`
   height: 30px;
 `;
 
-const drawingPathIsDrawingColor = new Color(1, 0, 0);
-const drawingPathIsNotDrawingColor = new Color(0.3, 0.3, 0.3);
-const drawingPathIsNotDrawingWidth = 1;
-
-const previousSheetEndPointRectangleColor = new Color(0, 1, 1);
-
-const inputPathColor = new Color(1, 0, 0);
+const inputLineColor = '#ff0000';
 
 enum Panel {
   XSeedEditor = 'XSeedEditorPanel',
@@ -59,106 +49,53 @@ enum Panel {
   CalcConfig = 'CalcConfigEditor',
 }
 
-function getInputValuesFromPath(
-  inputPath: paper.Path,
-  inputSteps: number
-): Complex[] {
-  const inputPoints: paper.Point[] = [];
-  const step = inputPath.length / inputSteps;
-  for (let i = 0; i < inputPath.length; i += step) {
-    // can cause +-1 points due to float addition
-    inputPoints.push(inputPath.getPointAt(i));
-  }
-  return inputPoints.map((point) => complex(point.x, -point.y)); // flip y
-}
-
 function getPanelToggleColor(panel: Panel, activePanel: Panel | undefined) {
   return panel === activePanel ? 'primary' : 'default';
 }
 
-const SIMPLIFY_MIN = -10;
-const SIMPLIFY_MAX = 10;
-const SIMPLIFY_STEP = 0.0001;
+const SIMPLIFY_MIN = -5;
+const SIMPLIFY_MAX = 5;
+const SIMPLIFY_STEP = 0.01;
 
-function InputArea({
-  paper,
-  inputSteps,
-}: {
-  paper: paper.PaperScope;
-  inputSteps: number;
-}) {
+function InputArea({ inputStageId }: { inputStageId: StageId }) {
   const dispatch = useAppDispatch();
 
   const badPoints = useAppSelector(selectBadPoints);
-  const inputZoom = useAppSelector(selectInputZoom);
   const inputDrawingPoints = useAppSelector(selectActiveSheetIputDrawingPoints);
+  const qArray = useAppSelector(selectActiveSheetQArray);
+
   const { enabled: inputSimplifyEnabled, tolerance: inputSimplifyTolerance } =
     useAppSelector(selectActiveSheetInputSimplifyConfig);
-  const previousSheetEndInputValue = useAppSelector(
-    selectPreviousSheetEndInputValue
+  const previousSheetQn = useAppSelector(selectPreviousSheetQn);
+
+  const qArrayLinePoints = useMemo(
+    () => qArray.flatMap((point) => point),
+    [qArray]
   );
 
-  const [inputSegments, setInputSegments] = useState<paper.Segment[]>([]);
-
-  const previousSheetEndPoint = useMemo(
-    () =>
-      previousSheetEndInputValue
-        ? new Paper.Point([
-            previousSheetEndInputValue[0],
-            -previousSheetEndInputValue[1],
-          ])
-        : undefined,
-    [previousSheetEndInputValue]
+  const inputDrawingPointsLinePoints = useMemo(
+    () => inputDrawingPoints.flatMap((point) => point),
+    [inputDrawingPoints]
   );
-
-  const previousSheetEndPointSize = useMemo(
-    () => (1 / inputZoom) * 5,
-    [inputZoom]
-  );
-  const previousSheetEndPointRectangle = useMemo(
-    () =>
-      previousSheetEndPoint
-        ? new paper.Rectangle({
-            point: previousSheetEndPoint.subtract(
-              previousSheetEndPointSize / 2
-            ),
-            size: [previousSheetEndPointSize, previousSheetEndPointSize],
-          })
-        : undefined,
-    [paper.Rectangle, previousSheetEndPoint, previousSheetEndPointSize]
-  );
-
-  const badPaperPoints = useMemo(
-    () => badPoints.map((point) => new Paper.Point(point[0], -point[1])),
-    [badPoints]
-  );
-
-  const setZoom = useCallback(
-    (zoom: number) => {
-      dispatch(setInputZoom(zoom));
-    },
-    [dispatch]
-  );
-
-  const badPointRadius = useMemo(() => (1 / inputZoom) * 2, [inputZoom]);
 
   const [activePanel, setActivePanel] = useState<Panel | undefined>();
 
   const [isDrawing, setIsDrawing] = useState(false);
 
   const handleSimplifySliderChange = useCallback(
-    (_event: Event, newValue: number | number[]) => {
-      if (typeof newValue === 'number')
+    (_e: Event, newValue: number | number[]) => {
+      if (typeof newValue === 'number') {
         dispatch(setInputSimplifyTolerance(newValue));
+      }
     },
     [dispatch]
   );
 
   const handleSimplifyInputChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       dispatch(
         setInputSimplifyTolerance(
-          event.target.value === '' ? SIMPLIFY_MIN : Number(event.target.value)
+          e.target.value === '' ? SIMPLIFY_MIN : Number(e.target.value)
         )
       );
     },
@@ -173,55 +110,55 @@ function InputArea({
     }
   }, [dispatch, inputSimplifyTolerance]);
 
-  // init paper events
+  // update qArray on siplify config change
   useEffect(() => {
-    const oldOnMouseDown = paper.view.onMouseDown;
-    paper.view.onMouseDown = (e: paper.MouseEvent) => {
-      if (oldOnMouseDown) oldOnMouseDown(e);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (e.event.buttons === 1) {
+    dispatch(updateActiveSheetQArray());
+  }, [dispatch, inputSimplifyEnabled, inputSimplifyTolerance]);
+
+  const dispatchInputDrawingPointFromMouseEvent = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>): void => {
+      const pointerPosition = e.currentTarget?.getStage()?.getPointerPosition();
+
+      if (pointerPosition && e.currentTarget) {
+        const point = pointPositionToLayerCoordintes(
+          pointerPosition,
+          e.currentTarget
+        );
+        dispatch(addActiveSheetInputDrawingPoint([point.x, point.y]));
+      }
+    },
+    [dispatch]
+  );
+
+  // start drawing input path on mouse down
+  const dataLayerOnMouseDown = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>): void => {
+      if (e.evt.buttons === 1) {
         setIsDrawing(true);
-        dispatch(addInputDrawingPoint([e.point.x, e.point.y]));
+        dispatchInputDrawingPointFromMouseEvent(e);
       }
-    };
+    },
+    [dispatchInputDrawingPointFromMouseEvent]
+  );
 
-    const oldOnMouseDrag = paper.view.onMouseDrag;
-    paper.view.onMouseDrag = (e: paper.MouseEvent) => {
-      if (oldOnMouseDrag) oldOnMouseDrag(e);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (e.event.buttons === 1) {
-        dispatch(addInputDrawingPoint([e.point.x, e.point.y]));
+  // draw input path while moving mouse
+  const dataLayerOnMouseMove = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>): void => {
+      if (e.evt.buttons === 1) {
+        dispatchInputDrawingPointFromMouseEvent(e);
       }
-    };
+    },
+    [dispatchInputDrawingPointFromMouseEvent]
+  );
 
-    const oldOnMouseUp = paper.view.onMouseUp;
-    paper.view.onMouseUp = (e: paper.MouseEvent) => {
-      if (oldOnMouseUp) oldOnMouseUp(e);
+  // stop drawing input path on mouse up and update qArray
+  const dataLayerOnMouseUp = useCallback(
+    (_e: Konva.KonvaEventObject<MouseEvent>): void => {
       setIsDrawing(false);
-    };
-  }, [paper, dispatch]);
-
-  // calculate input path on drawing path or other parameter change (after finishing drawing)
-  useEffect(() => {
-    if (!isDrawing) {
-      const path = new Paper.Path(inputDrawingPoints);
-      if (inputSimplifyEnabled) {
-        const paperTolerance = Math.pow(10, inputSimplifyTolerance);
-        path.simplify(paperTolerance);
-      }
-      setInputSegments(path.segments);
-      dispatch(setInputValues(getInputValuesFromPath(path, inputSteps)));
-    }
-  }, [
-    inputDrawingPoints,
-    isDrawing,
-    inputSimplifyEnabled,
-    inputSimplifyTolerance,
-    inputSteps,
-    dispatch,
-  ]);
+      dispatch(updateActiveSheetQArray()); // make sure to trigger recalculation of qArray
+    },
+    [dispatch]
+  );
 
   const togglePanel = useCallback((e: React.MouseEvent<HTMLElement>) => {
     if ('panel' in e.currentTarget.dataset) {
@@ -238,11 +175,12 @@ function InputArea({
     <>
       {activePanel === Panel.XSeedEditor && <XSeedsEditor />}
       {activePanel === Panel.Q && <QPanel />}
-      <InteractiveCanvas
-        paper={paper}
-        id="input"
+      <InteractiveStage
         title="Input"
-        setZoom={setZoom}
+        stageId={inputStageId}
+        dataLayerOnMouseMove={dataLayerOnMouseMove}
+        dataLayerOnMouseDown={dataLayerOnMouseDown}
+        dataLayerOnMouseUp={dataLayerOnMouseUp}
         topControls={
           <>
             <div
@@ -275,7 +213,7 @@ function InputArea({
                   position: absolute;
                   z-index: 2000;
                   top: 45px;
-                  left: 0;
+                  right: 0;
                 `}
               >
                 {activePanel === Panel.BadPoints && <BadPointEditor />}
@@ -350,46 +288,53 @@ function InputArea({
             </Grid>
           </ControlsWrapper>
         }
-      />
-
-      {previousSheetEndPointRectangle && (
-        <Rectangle
-          paper={paper}
-          rectangle={previousSheetEndPointRectangle}
-          fillColor={previousSheetEndPointRectangleColor}
-        />
-      )}
-
-      <DrawingPath
-        paper={paper}
-        points={inputDrawingPoints.map(
-          (storedPoint) => new Paper.Point(storedPoint)
-        )}
-        strokeColor={
-          isDrawing ? drawingPathIsDrawingColor : drawingPathIsNotDrawingColor
-        }
-        strokeWidth={
-          isDrawing ? inputStrokeWidth : drawingPathIsNotDrawingWidth
-        }
-      />
-      <PathWithEnds
-        paper={paper}
-        zoom={inputZoom}
-        segments={inputSegments}
-        strokeColor={inputPathColor}
-        strokeWidth={inputStrokeWidth}
-        visible={!isDrawing}
-        fullySelected={!isDrawing}
-      />
-      {/* keep bad points on top */}
-      {badPaperPoints.map((point) => (
-        <Circle
-          paper={paper}
-          center={point}
-          radius={badPointRadius}
-          key={`${point.x},${point.y}`}
-        />
-      ))}
+      >
+        <>
+          {/* render input drawing points */}
+          <Line
+            points={inputDrawingPointsLinePoints}
+            stroke={isDrawing ? inputLineColor : '#777777'}
+            strokeWidth={isDrawing ? inputStrokeWidth : 1}
+            strokeScaleEnabled={false}
+            lineCap="round"
+            lineJoin="round"
+          />
+          {/* render line used to generate values */}
+          {!isDrawing && (
+            <LineWithIcons
+              points={qArrayLinePoints}
+              stroke={inputLineColor}
+              strokeWidth={inputStrokeWidth}
+              strokeScaleEnabled={false}
+              lineCap="round"
+              lineJoin="round"
+            />
+          )}
+          {/* render last sheet end point if available */}
+          {previousSheetQn && (
+            <Line
+              points={previousSheetQn}
+              stroke="#00ffff"
+              strokeWidth={5}
+              strokeScaleEnabled={false}
+              lineCap="square"
+              closed
+            />
+          )}
+          {/* keep bad points on top */}
+          {badPoints.map((point, pointIndex) => (
+            <Line
+              key={pointIndex}
+              points={point}
+              stroke="#ffff00"
+              strokeWidth={4}
+              strokeScaleEnabled={false}
+              lineCap="round"
+              closed
+            />
+          ))}
+        </>
+      </InteractiveStage>
     </>
   );
 }
