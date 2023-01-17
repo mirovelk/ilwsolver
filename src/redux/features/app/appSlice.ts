@@ -312,35 +312,6 @@ const initialState: AppState = {
       AR: [complex(3), complex(2)],
     },
   },
-  badPoints: [
-    [-58.0141, 0],
-    [-55.6141, 0],
-    [-2.87771, 0],
-    [-1.13319, 0],
-    [-1, 0],
-    [-0.882464, 0],
-    [-0.347498, 0],
-    [-0.21514, -9.43404],
-    [-0.21514, 9.43404],
-    [-0.139849, -0.990173],
-    [-0.139849, 0.990173],
-    [-0.017981, 0],
-    [-0.0172372, 0],
-    [-0.00241602, -0.105944],
-    [-0.00241602, 0.105944],
-    [0, 0],
-    [0.021071, 0],
-    [0.168469, -0.432772],
-    [0.168469, 0.432772],
-    [0.306398, -0.528142],
-    [0.306398, 0.528142],
-    [0.781129, -2.00661],
-    [0.781129, 2.00661],
-    [0.821853, -1.41664],
-    [0.821853, 1.41664],
-    [1, 0],
-    [47.4586, 0],
-  ],
 };
 
 export const appSlice = createSlice({
@@ -709,11 +680,6 @@ export const appSlice = createSlice({
       xSeedsAdapter.updateOne(state.xSeeds, update);
     },
 
-    // TODO use new format
-    setBadPoints: (state, action: PayloadAction<Complex[]>) => {
-      state.badPoints = action.payload;
-    },
-
     addSheet: (state) => {
       const lastSheetId = Number(state.sheets.ids[state.sheets.ids.length - 1]);
       const lastSheetXSeedIds = state.sheets.entities[lastSheetId]?.xSeedIds;
@@ -996,8 +962,6 @@ export const appSlice = createSlice({
 export const selectSolvingInprogress = (state: RootState) =>
   state.app.solvingInProgress;
 
-export const selectBadPoints = (state: RootState) => state.app.badPoints;
-
 export const selectCalcConfig = (state: RootState) => state.app.solveConfig;
 export const selectN = (state: RootState) => state.app.solveConfig.Ax.AL.length;
 
@@ -1191,7 +1155,6 @@ export const {
   removeSheetWithId,
   removeXSeedFromActiveSheet,
   setActiveSheetId,
-  setBadPoints,
   setInputSimplifyEnabled,
   setInputSimplifyTolerance,
   setOutputProjectionVariant,

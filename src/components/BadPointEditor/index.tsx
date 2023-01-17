@@ -1,11 +1,11 @@
 import styled from '@emotion/styled';
 import { Paper as MaterialPaper, TextField, Typography } from '@mui/material';
 import React, { useCallback, useState } from 'react';
-
 import {
   selectBadPoints,
   setBadPoints,
-} from '../../redux/features/app/appSlice';
+} from '../../redux/features/badPoints/badPointsSlice';
+
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 

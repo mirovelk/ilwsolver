@@ -2,10 +2,12 @@ import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import appSliceReducer from './features/app/appSlice';
+import badPointsSliceReducer from './features/badPoints/badPointsSlice';
 
 const store = configureStore({
   reducer: {
     app: appSliceReducer,
+    badPoints: badPointsSliceReducer,
   },
 });
 

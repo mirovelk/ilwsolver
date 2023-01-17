@@ -61,12 +61,11 @@ export interface Sheet {
 
 // TODO split into multiple slices somehow
 export interface AppState {
-  solvingInProgress: boolean;
-  outputProjectionVariant: OutputProjectionVariant;
-  badPoints: Complex[];
-  solveConfig: SolveConfig;
+  solvingInProgress: boolean; // TODO feature solve
+  outputProjectionVariant: OutputProjectionVariant; // TODO feature interactiveStages?
+  solveConfig: SolveConfig; // TODO feature solveConfig
   activeSheetId: SheetId;
-  sheets: EntityState<Sheet>;
+  sheets: EntityState<Sheet>; // TODO extract as feature sheets? or input/output + sheets?
   xSeeds: EntityState<XSeed>;
-  stages: EntityState<Stage>;
+  stages: EntityState<Stage>; // TODO extract as feature interactiveStages
 }
