@@ -158,6 +158,9 @@ function InteractiveStage({
   dataLayerOnMouseUp?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
 }) {
   const stageWrapperRef = useRef<HTMLDivElement | null>(null);
+  const stageRef = useRef<Konva.Stage | null>(null);
+
+  const hoverTargetRef = useRef<EventTarget | null>(null);
 
   const dispatch = useAppDispatch();
 
@@ -367,6 +370,54 @@ function InteractiveStage({
     );
   }, [dispatch, stage.width, stage.height, stageId]);
 
+  // pan layer with arrow keys and zoom with + and - keys when mouse is over canvas
+  useEffect(() => {
+    function handlemouseOver(e: MouseEvent) {
+      hoverTargetRef.current = e.target;
+    }
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (hoverTargetRef.current === stageRef.current?.content.firstChild) {
+        e.preventDefault();
+
+        if (e.key === 'ArrowUp') {
+          dataLayerScrollUp();
+        }
+        if (e.key === 'ArrowDown') {
+          dataLayerScrollDown();
+        }
+        if (e.key === 'ArrowLeft') {
+          dataLayerScrollLeft();
+        }
+        if (e.key === 'ArrowRight') {
+          dataLayerScrollRight();
+        }
+        if (e.key === '+') {
+          dataLayerZoomIn();
+        }
+        if (e.key === '-') {
+          dataLayerZoomOut();
+        }
+      }
+    }
+
+    document.addEventListener('mouseover', handlemouseOver);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('mouseover', handlemouseOver);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [
+    dataLayerScrollDown,
+    dataLayerScrollLeft,
+    dataLayerScrollRight,
+    dataLayerScrollUp,
+    dataLayerZoomIn,
+    dataLayerZoomOut,
+    dispatch,
+    stageId,
+  ]);
+
   const stageOnContextMenu = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       e.evt.preventDefault();
@@ -449,6 +500,7 @@ function InteractiveStage({
             width={stage.width}
             height={stage.height}
             onContextMenu={stageOnContextMenu}
+            ref={stageRef}
           >
             {/* data layer */}
             <Layer
