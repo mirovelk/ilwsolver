@@ -2,7 +2,10 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { Complex } from '../../../util/complex';
 import { RootState } from '../../store';
-import { BadPointsState } from './types';
+
+interface BadPointsState {
+  points: Complex[];
+}
 
 const initialState: BadPointsState = {
   points: [
