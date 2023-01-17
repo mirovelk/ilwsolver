@@ -40,7 +40,7 @@ export interface XSeed {
   id: XSeedId;
   value: XSeedValue;
   color: string;
-  results: Result[]; // TODO move to separate entity adapter?
+  results: Result[]; // TODO move to separate entity adapter? to ouputs feature?
   resultsValid: boolean;
 }
 
@@ -48,7 +48,7 @@ export type SheetId = EntityId;
 
 export interface Sheet {
   id: SheetId;
-  inputDrawingPoints: DrawingPoint[]; // TODO move input fileds separate inputs entity adapter?
+  inputDrawingPoints: DrawingPoint[]; // TODO move input fileds separate inputs entity adapter/inputAreas feature?
   inputSimplifyTolerance: number;
   inputSimplifyEnabled: boolean;
   inputStageId: StageId;
@@ -56,16 +56,16 @@ export interface Sheet {
   qArray: Complex[]; // derived from inputDrawingPoints afer simplify, kept for performance
   qArrayValid: boolean; // qArray can be invalid if inputDrawingPoints changed and needs to be recalculated
   xSeedIds: XSeedId[];
-  xSeedHasError: boolean;
+  xSeedHasError: boolean; // TODO make part of xSeed and add selector
 }
 
 // TODO split into multiple slices somehow
 export interface AppState {
   solvingInProgress: boolean; // TODO feature solve
-  outputProjectionVariant: OutputProjectionVariant; // TODO feature interactiveStages?
+  outputProjectionVariant: OutputProjectionVariant; // TODO feature outputAreas?
   solveConfig: SolveConfig; // TODO feature solveConfig
   activeSheetId: SheetId;
-  sheets: EntityState<Sheet>; // TODO extract as feature sheets? or input/output + sheets?
+  sheets: EntityState<Sheet>; // TODO extract as feature sheets? or inputAreas/outputAreas + sheets (tabs)?
   xSeeds: EntityState<XSeed>;
   stages: EntityState<Stage>; // TODO extract as feature interactiveStages
 }
