@@ -6,7 +6,6 @@ import React from 'react';
 
 import { createRoot } from 'react-dom/client';
 import { Provider as StoreProvider } from 'react-redux';
-import { RecoilRoot } from 'recoil';
 
 import App from './App';
 import store from './redux/store';
@@ -19,9 +18,7 @@ const root = createRoot(container!);
 root.render(
   <React.StrictMode>
     <StoreProvider store={store}>
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>
+      <App />
     </StoreProvider>
   </React.StrictMode>
 );
