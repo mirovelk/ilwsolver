@@ -88,3 +88,7 @@ export function parseComplex(str: string): Complex {
   c[1] = parsed.im;
   return c;
 }
+
+export function areComplexEqual(a: Complex, b: Complex): boolean {
+  return a[0] === b[0] && a[1] === b[1];
+}

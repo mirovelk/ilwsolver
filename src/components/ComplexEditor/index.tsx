@@ -2,7 +2,12 @@ import styled from '@emotion/styled';
 import { Paper as MaterialPaper, TextField } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
+import {
+  Complex,
+  areComplexEqual,
+  parseComplex,
+  stringifyComplex,
+} from '../../util/complex';
 
 const ComplexWrapper = styled(MaterialPaper)`
   display: flex;
@@ -13,29 +18,29 @@ const ComplexInput = styled(TextField)``;
 
 function ComplexEditor({
   value,
-  onEditFinished,
-  showError,
-  hideError,
+  onValidChange: onValidChange,
+  onError: onError,
 }: {
   value: Complex;
-  onEditFinished: (value: Complex) => void;
-  showError?: () => void;
-  hideError?: () => void;
+  onValidChange: (value: Complex) => void;
+  onError?: () => void;
 }) {
   const [inputValue, setInputValue] = useState(stringifyComplex(value));
   const [inputValueValid, setInputValueValid] = useState(true);
 
-  // update from props if there's a change
+  // update value from props
   useEffect(() => {
     try {
       const parsedValue = parseComplex(inputValue);
-      if (parsedValue[0] !== value[0] || parsedValue[1] !== value[1])
+      // but only if not equal to current input value to avoid cursor jumping
+      if (!areComplexEqual(parsedValue, value))
         setInputValue(stringifyComplex(value));
     } catch {
       // do nothing
     }
   }, [inputValue, value]);
 
+  // handle input change
   const inputOnChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.currentTarget.value;
@@ -43,18 +48,16 @@ function ComplexEditor({
       try {
         const parsedValue = parseComplex(inputValue);
         setInputValueValid(true);
-        hideError && hideError();
-        if (parsedValue[0] !== value[0] || parsedValue[1] !== value[1])
-          onEditFinished(parsedValue);
+        onValidChange(parsedValue);
       } catch {
         setInputValueValid(false);
-        showError && showError();
+        onError && onError();
       }
     },
-    [hideError, onEditFinished, showError, value]
+    [onValidChange, onError]
   );
 
-  // for formatting after edit
+  // format after edit
   const inputOnBlur = useCallback(
     (_e: React.FocusEvent<HTMLInputElement>) => {
       try {
@@ -79,4 +82,4 @@ function ComplexEditor({
   );
 }
 
-export default React.memo(ComplexEditor);
+export default ComplexEditor;
