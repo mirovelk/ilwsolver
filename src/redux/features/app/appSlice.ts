@@ -42,7 +42,7 @@ import { valueToProjectedValue } from './resultValueProjection';
 
 const SIMPLIFY_INITIAL = -1.5;
 
-export function getRandomXSeedPartNumber(): number {
+function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
 }
 

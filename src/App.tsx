@@ -6,6 +6,7 @@ import { selectActiveSheetStageIds } from './redux/features/app/appSlice';
 import { useAppSelector } from './redux/store';
 import StyleProvider from './components/StyleProvider';
 import CenterControls from './components/CenterControls';
+import Refactor from './components/Refactor';
 
 const Wrapper = styled.div`
   position: relative;
@@ -34,6 +35,8 @@ function App() {
 
   return (
     <StyleProvider>
+      <Refactor />
+
       <Wrapper>
         <CenterControls />
         <AreasWrapper>

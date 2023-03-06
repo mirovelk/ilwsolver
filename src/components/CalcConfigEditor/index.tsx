@@ -129,7 +129,7 @@ function SolveConfigEditor() {
             <ComplexEditorWrapper elevation={0}>
               <ComplexEditor
                 value={solveConfig.Ex[ExKey]}
-                onEditFinished={(value) => {
+                onValidChange={(value) => {
                   onExEditFinished(ExKey, value);
                 }}
               />
@@ -166,7 +166,7 @@ function SolveConfigEditor() {
                     <ComplexEditor
                       key={axCIndex}
                       value={axC}
-                      onEditFinished={(value) => {
+                      onValidChange={(value) => {
                         onAxEditFinished(AxKey, axCIndex, value);
                       }}
                     />
