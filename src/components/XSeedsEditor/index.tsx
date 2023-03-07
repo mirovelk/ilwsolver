@@ -481,14 +481,12 @@ function XSeedsEditor() {
                 <XSeedComplexWrapper key={cIndex}>
                   <ComplexEditor
                     value={c}
-                    onEditFinished={(value) => {
+                    onValidChange={(value) => {
                       xSeedComplexOnEditFinished(xSeed.id, cIndex, value);
-                    }}
-                    showError={() => {
-                      dispatch(activeSheetXSeedHasError(true));
-                    }}
-                    hideError={() => {
                       dispatch(activeSheetXSeedHasError(false));
+                    }}
+                    onError={() => {
+                      dispatch(activeSheetXSeedHasError(true));
                     }}
                   />
 
