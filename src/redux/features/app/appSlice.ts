@@ -37,10 +37,10 @@ import {
   StageId,
   Stage,
 } from './types';
-import { dataLayerDefaultScaleDownFactor } from '../../../const';
 import { valueToProjectedValue } from './resultValueProjection';
 
 const SIMPLIFY_INITIAL = -1.5;
+const dataLayerDefaultScaleDownFactor = 0.8;
 
 function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
