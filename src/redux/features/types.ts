@@ -1,6 +1,6 @@
 import { EntityId, EntityState } from '@reduxjs/toolkit';
-import { SolveConfig } from '../../../core/solve';
-import { Complex } from '../../../util/complex';
+import { SolveConfig } from '../../core/solve';
+import { Complex } from '../../util/complex';
 
 export enum OutputProjectionVariant {
   V1,

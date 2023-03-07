@@ -10,7 +10,7 @@ import {
   selectTabsData,
   setActiveSheetId,
 } from '../../redux/features/app/appSlice';
-import { SheetId } from '../../redux/features/app/types';
+import { SheetId } from '../../redux/features/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 
 const StyledTabs = styled(Tabs)`

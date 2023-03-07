@@ -6,7 +6,7 @@ import {
   multiply,
   subtract,
 } from '../../../util/complex';
-import { OutputProjectionVariant } from './types';
+import { OutputProjectionVariant } from '../types';
 
 function projectValueV2(x: Complex, q: Complex): Complex {
   return add(x, divide(complex(6), subtract(complex(1), q)));

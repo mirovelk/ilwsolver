@@ -17,7 +17,7 @@ import {
   StageId,
   OutputProjectionVariant,
   XSeedId,
-} from '../../redux/features/app/types';
+} from '../../redux/features/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { ResultsInQArray } from '../../core/solve';
 

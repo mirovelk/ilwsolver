@@ -36,7 +36,7 @@ import {
   Result,
   StageId,
   Stage,
-} from './types';
+} from '../types';
 import { valueToProjectedValue } from './resultValueProjection';
 
 const SIMPLIFY_INITIAL = -1.5;

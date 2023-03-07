@@ -22,7 +22,7 @@ import {
   setXSeedsM,
   setXSeedsValues,
 } from '../../redux/features/app/appSlice';
-import { XSeedId, XSeedValue } from '../../redux/features/app/types';
+import { XSeedId, XSeedValue } from '../../redux/features/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 import { stringifyArrayOfComplexArraysForMathematica } from '../../util/mathematica';

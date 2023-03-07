@@ -24,7 +24,7 @@ import {
   setInputSimplifyTolerance,
   updateActiveSheetQArray,
 } from '../../redux/features/app/appSlice';
-import { StageId } from '../../redux/features/app/types';
+import { StageId } from '../../redux/features/types';
 import { selectBadPoints } from '../../redux/features/badPoints/badPointsSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { pointPositionToLayerCoordintes } from '../../util/konva';
