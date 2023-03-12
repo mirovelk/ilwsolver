@@ -10,10 +10,8 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { ChromePicker } from 'react-color';
 import {
-  selectM,
   setXSeedColor,
   setXSeedNumber,
-  setXSeedsM,
   xSeedHasError,
   XSeedId,
   XSeedValue,
@@ -25,6 +23,7 @@ import { removeXSeedFromActiveSheet } from '../../redux/thunks/removeXSeedFromAc
 import { setXSeedsValues } from '../../redux/thunks/setXSeedsValues';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 import ComplexEditor from '../ComplexEditor';
+import MInput from './MInput';
 import ResultsStartEndCopyButtons from './ResultsStartEndCopyButtons';
 
 const Panel = styled(MaterialPaper)`
@@ -63,11 +62,6 @@ const XSeedsMWrapper = styled.div`
   display: flex;
   margin-right: 15px;
   align-items: baseline;
-`;
-
-const XSeedsMInput = styled(TextField)`
-  width: 40px;
-  margin-left: 5px;
 `;
 
 const XSeedTextarea = styled(TextField)``;
@@ -221,7 +215,6 @@ function XSeedsEditor() {
   const { xSeedsRemovalDisabled, xSeeds } = useAppSelector(
     selectXSeedEditorData
   );
-  const M = useAppSelector(selectM);
 
   const [xSeedsTextareaValue, setXSeedsTextareaValue] = useState(
     stringifyXSeeds(xSeeds.map((xSeed) => xSeed.value))
@@ -286,16 +279,6 @@ function XSeedsEditor() {
     [setXSeedsTextareaEditing]
   );
 
-  const xSeedsMInputOnChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newM = parseInt(e.currentTarget.value);
-      if (typeof newM === 'number' && !isNaN(newM) && newM > 0) {
-        dispatch(setXSeedsM(newM));
-      }
-    },
-    [dispatch]
-  );
-
   const addXSeedOnClick = useCallback(() => {
     dispatch(addXSeedToActiveSheet());
   }, [dispatch]);
@@ -340,19 +323,7 @@ function XSeedsEditor() {
           </HeaderLeft>
           <HeaderRight>
             <XSeedsMWrapper>
-              <Typography
-                variant="subtitle1"
-                color="text.secondary"
-                gutterBottom
-              >
-                M=
-              </Typography>
-              <XSeedsMInput
-                value={M}
-                variant="standard"
-                type="number"
-                onChange={xSeedsMInputOnChange}
-              />
+              <MInput />
             </XSeedsMWrapper>
 
             <AddXSeedButtonWrapper>

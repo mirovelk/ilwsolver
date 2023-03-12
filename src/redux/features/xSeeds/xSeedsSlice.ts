@@ -11,6 +11,7 @@ import {
   Complex,
   getRandomNumberBetween,
 } from '../../../util/complex';
+import { required } from '../../../util/required';
 import { clearInputOutputValues } from '../../actions';
 import { RootState } from '../../store';
 import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
@@ -208,8 +209,7 @@ export const {
 } = xSeedsAdapter.getSelectors((state: RootState) => state.xSeeds);
 
 export const selectM = (state: RootState) => {
-  const firstXSeed = state.xSeeds.entities[state.xSeeds.ids[0]];
-  if (!firstXSeed) throw new Error('No xSeeds found');
+  const firstXSeed = required(state.xSeeds.entities[state.xSeeds.ids[0]]);
   return firstXSeed.value.length;
 };
 
