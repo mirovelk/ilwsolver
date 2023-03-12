@@ -5,24 +5,22 @@ import Konva from 'konva';
 import { useCallback } from 'react';
 import { ouputStrokeWidth } from '../../const';
 
-import {
-  selectOutputAreaData,
-  selectAllXSeedResults,
-  selectSingleXSeedResult,
-  setOutputProjectionVariant,
-  toggleXSeedResultSelected,
-  selectOutputProjectionVariant,
-} from '../../redux/features/app/appSlice';
-import {
-  StageId,
-  OutputProjectionVariant,
-  XSeedId,
-} from '../../redux/features/types';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { ResultsInQArray } from '../../core/solve';
 
 import InteractiveStage from '../InteractiveStage';
 import LineWithIcons from '../LineWithIcons';
+import { StageId } from '../../redux/features/stages/stagesSlice';
+import {
+  OutputProjectionVariant,
+  ResultId,
+  selectOutputProjectionVariant,
+  toggleResultSelected,
+} from '../../redux/features/results/resultsSlice';
+import { selectActiveSheetOutputAreaData } from '../../redux/selectors/selectOutputAreaData';
+import { activeSheetSelectAllResults } from '../../redux/thunks/activeSheetSelectAllResults';
+import { activeSheetSelectSingleResult } from '../../redux/thunks/activeSheetSelectSingleResult copy';
+import { setProjectionVariantAndCenterActiveSheetResults } from '../../redux/thunks/setProjectionVariantAndCenterActiveSheetResults';
 
 const dashLength = 10;
 
@@ -34,22 +32,20 @@ export interface Output {
 function OutputArea({ outputStageId }: { outputStageId: StageId }) {
   const dispatch = useAppDispatch();
 
-  const { xSeeds: outputAreaXSeeds } = useAppSelector(selectOutputAreaData);
+  const { xSeeds: outputAreaXSeeds } = useAppSelector(
+    selectActiveSheetOutputAreaData
+  );
   const outputProjectionVariant = useAppSelector(selectOutputProjectionVariant);
 
   const resultLineOnClick = useCallback(
-    (
-      e: Konva.KonvaEventObject<MouseEvent>,
-      xSeedId: XSeedId,
-      resultIndex: number
-    ): void => {
+    (e: Konva.KonvaEventObject<MouseEvent>, resultId: ResultId): void => {
       if (e.evt.button === 0) {
         e.cancelBubble = true;
         if (e.evt.shiftKey) {
-          dispatch(toggleXSeedResultSelected({ xSeedId, resultIndex }));
+          dispatch(toggleResultSelected({ resultId }));
         } else {
           e.currentTarget.moveToTop();
-          dispatch(selectSingleXSeedResult({ xSeedId, resultIndex }));
+          dispatch(activeSheetSelectSingleResult(resultId));
         }
       }
     },
@@ -60,15 +56,11 @@ function OutputArea({ outputStageId }: { outputStageId: StageId }) {
     (e: Konva.KonvaEventObject<MouseEvent>): void => {
       if (e.evt.button === 0) {
         if (!e.evt.shiftKey) {
-          dispatch(
-            selectAllXSeedResults({
-              xSeedIds: outputAreaXSeeds.map((xSeed) => xSeed.id),
-            })
-          );
+          dispatch(activeSheetSelectAllResults());
         }
       }
     },
-    [dispatch, outputAreaXSeeds]
+    [dispatch]
   );
 
   const resultLineOnMouseEnter = useCallback(
@@ -113,7 +105,9 @@ function OutputArea({ outputStageId }: { outputStageId: StageId }) {
                 }
                 onClick={() =>
                   dispatch(
-                    setOutputProjectionVariant(OutputProjectionVariant.V1)
+                    setProjectionVariantAndCenterActiveSheetResults(
+                      OutputProjectionVariant.V1
+                    )
                   )
                 }
               >
@@ -127,7 +121,9 @@ function OutputArea({ outputStageId }: { outputStageId: StageId }) {
                 }
                 onClick={() =>
                   dispatch(
-                    setOutputProjectionVariant(OutputProjectionVariant.V2)
+                    setProjectionVariantAndCenterActiveSheetResults(
+                      OutputProjectionVariant.V2
+                    )
                   )
                 }
               >
@@ -141,7 +137,9 @@ function OutputArea({ outputStageId }: { outputStageId: StageId }) {
                 }
                 onClick={() =>
                   dispatch(
-                    setOutputProjectionVariant(OutputProjectionVariant.V3)
+                    setProjectionVariantAndCenterActiveSheetResults(
+                      OutputProjectionVariant.V3
+                    )
                   )
                 }
               >
@@ -177,7 +175,7 @@ function OutputArea({ outputStageId }: { outputStageId: StageId }) {
               hitStrokeWidth={ouputStrokeWidth + 10}
               groupProps={{
                 onClick: (e: Konva.KonvaEventObject<MouseEvent>) =>
-                  resultLineOnClick(e, xSeed.id, resultIndex),
+                  resultLineOnClick(e, result.id),
                 onMouseEnter: resultLineOnMouseEnter,
                 onMouseLeave: resultLineOnMouseLeave,
               }}

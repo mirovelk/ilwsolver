@@ -2,10 +2,10 @@ import styled from '@emotion/styled';
 
 import InputArea from './components/InputArea';
 import OutputArea from './components/OutputArea';
-import { selectActiveSheetStageIds } from './redux/features/app/appSlice';
-import { useAppSelector } from './redux/store';
 import StyleProvider from './components/StyleProvider';
 import CenterControls from './components/CenterControls';
+import { useAppSelector } from './redux/store';
+import { selectActiveSheetStageIds } from './redux/features/sheets/sheetsSlice';
 
 const Wrapper = styled.div`
   position: relative;

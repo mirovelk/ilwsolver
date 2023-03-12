@@ -14,19 +14,20 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Line } from 'react-konva';
 
 import { inputStrokeWidth } from '../../const';
+
+import { selectBadPoints } from '../../redux/features/badPoints/badPointsSlice';
 import {
-  addActiveSheetInputDrawingPoint,
   selectActiveSheetInputSimplifyConfig,
   selectActiveSheetIputDrawingPoints,
   selectActiveSheetQArray,
   selectPreviousSheetQn,
-  setInputSimplifyEnabled,
-  setInputSimplifyTolerance,
-  updateActiveSheetQArray,
-} from '../../redux/features/app/appSlice';
-import { StageId } from '../../redux/features/types';
-import { selectBadPoints } from '../../redux/features/badPoints/badPointsSlice';
+} from '../../redux/features/sheets/sheetsSlice';
+import { StageId } from '../../redux/features/stages/stagesSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { addActiveSheetInputDrawingPoint } from '../../redux/thunks/activeSheet/addActiveSheetInputDrawingPoint';
+import { updateActiveSheetQArray } from '../../redux/thunks/activeSheet/updateActiveSheetQArray';
+import { setActiveSheetInputSimplifyEnabled } from '../../redux/thunks/setActiveSheetInputSimplifyEnabled';
+import { setActiveSheetInputSimplifyTolerance } from '../../redux/thunks/setActiveSheetInputSimplifyTolerance';
 import { pointPositionToLayerCoordintes } from '../../util/konva';
 import BadPointEditor from '../BadPointEditor';
 import SolveConfigEditor from '../CalcConfigEditor';
@@ -85,7 +86,7 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
   const handleSimplifySliderChange = useCallback(
     (_e: Event, newValue: number | number[]) => {
       if (typeof newValue === 'number') {
-        dispatch(setInputSimplifyTolerance(newValue));
+        dispatch(setActiveSheetInputSimplifyTolerance(newValue));
       }
     },
     [dispatch]
@@ -94,7 +95,7 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
   const handleSimplifyInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       dispatch(
-        setInputSimplifyTolerance(
+        setActiveSheetInputSimplifyTolerance(
           e.target.value === '' ? SIMPLIFY_MIN : Number(e.target.value)
         )
       );
@@ -104,9 +105,9 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
 
   const handleSimplifyInputBlur = useCallback(() => {
     if (inputSimplifyTolerance < SIMPLIFY_MIN) {
-      dispatch(setInputSimplifyTolerance(SIMPLIFY_MIN));
+      dispatch(setActiveSheetInputSimplifyTolerance(SIMPLIFY_MIN));
     } else if (inputSimplifyTolerance > SIMPLIFY_MAX) {
-      dispatch(setInputSimplifyTolerance(SIMPLIFY_MAX));
+      dispatch(setActiveSheetInputSimplifyTolerance(SIMPLIFY_MAX));
     }
   }, [dispatch, inputSimplifyTolerance]);
 
@@ -252,7 +253,11 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
                   <Checkbox
                     checked={inputSimplifyEnabled}
                     onChange={() =>
-                      dispatch(setInputSimplifyEnabled(!inputSimplifyEnabled))
+                      dispatch(
+                        setActiveSheetInputSimplifyEnabled(
+                          !inputSimplifyEnabled
+                        )
+                      )
                     }
                   />
                 }

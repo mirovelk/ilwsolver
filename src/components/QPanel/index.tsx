@@ -4,8 +4,8 @@ import { ContentCopy } from '@mui/icons-material';
 import { IconButton, Paper as MaterialPaper, Typography } from '@mui/material';
 import clipboard from 'clipboardy';
 import React, { useCallback, useMemo } from 'react';
+import { selectActiveSheetQArray } from '../../redux/features/sheets/sheetsSlice';
 
-import { selectActiveSheetQArray } from '../../redux/features/app/appSlice';
 import { useAppSelector } from '../../redux/store';
 import { stringifyComplex } from '../../util/complex';
 import { stringifyComplexArrayForMathematica } from '../../util/mathematica';

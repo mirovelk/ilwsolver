@@ -17,10 +17,11 @@ import {
   resizeStage,
   scaleStageDataLayer,
   selectStageById,
+  StageId,
   updateStageDataLayerPosition,
   zoomStageDataLayerWithWheel,
-} from '../../redux/features/app/appSlice';
-import { StageId } from '../../redux/features/types';
+} from '../../redux/features/stages/stagesSlice';
+
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { pointPositionToLayerCoordintes } from '../../util/konva';
 

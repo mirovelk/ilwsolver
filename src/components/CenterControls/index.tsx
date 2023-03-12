@@ -2,16 +2,16 @@ import styled from '@emotion/styled';
 import { Delete, PlayArrow } from '@mui/icons-material';
 import { CircularProgress, IconButton } from '@mui/material';
 import { useCallback } from 'react';
-
+import { selectSolvingInprogress } from '../../redux/features/ilwSolver/ilwSolverSlice';
+import { solveActiveSheet } from '../../redux/features/ilwSolver/solveActiveSheet';
 import {
-  clearActiveSheetInputOutputValues,
   selectActiveSheetQArray,
   selectActiveSheetQArrayValid,
-  selectActiveSheetXSeedHasError,
-  selectSolvingInprogress,
-  solveActiveSheet,
-} from '../../redux/features/app/appSlice';
+} from '../../redux/features/sheets/sheetsSlice';
+import { selectActiveSheetXSeedHasError } from '../../redux/selectors/selectActiveSheetXSeedHasError';
+
 import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { clearActiveSheetInputOutputValues } from '../../redux/thunks/clearActiveSheetInputOutputValues';
 
 const Wrapper = styled.div`
   display: inline-flex;

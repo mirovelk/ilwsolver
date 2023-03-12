@@ -7,17 +7,17 @@ import {
 } from '@mui/material';
 import { useCallback } from 'react';
 
-import {
-  selectCalcConfig,
-  selectN,
-  setCalcConfigAxArrayC,
-  setCalcConfigAxN,
-  setCalcConfigExC,
-} from '../../redux/features/app/appSlice';
 import { Ax, Ex } from '../../core/solve';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import ComplexEditor from '../ComplexEditor';
 import { Complex } from '../../util/complex';
+import {
+  selectN,
+  selectSolverConfig,
+  setSolverConfigAxArrayC,
+  setSolverConfigAxN,
+  setSolverConfigExC,
+} from '../../redux/features/solverConfig/solverConfigSlice';
 
 const Wrapper = styled(MaterialPaper)`
   display: inline-flex;
@@ -78,12 +78,12 @@ const AxKeysOrdered: Array<keyof Ax> = ['AL', 'AR'];
 function SolveConfigEditor() {
   const dispatch = useAppDispatch();
 
-  const solveConfig = useAppSelector(selectCalcConfig);
+  const solveConfig = useAppSelector(selectSolverConfig);
   const N = useAppSelector(selectN);
 
   const onExEditFinished = useCallback(
     (exKey: keyof Ex, value: Complex) => {
-      dispatch(setCalcConfigExC({ cValue: value, Ex: exKey }));
+      dispatch(setSolverConfigExC({ cValue: value, Ex: exKey }));
     },
     [dispatch]
   );
@@ -91,14 +91,14 @@ function SolveConfigEditor() {
   const onNInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const N = Number(e.currentTarget.value);
-      dispatch(setCalcConfigAxN({ N }));
+      dispatch(setSolverConfigAxN({ N }));
     },
     [dispatch]
   );
 
   const onAxEditFinished = useCallback(
     (axKey: keyof Ax, axCIndex: number, value: Complex) => {
-      dispatch(setCalcConfigAxArrayC({ cValue: value, axCIndex, Ax: axKey }));
+      dispatch(setSolverConfigAxArrayC({ cValue: value, axCIndex, Ax: axKey }));
     },
     [dispatch]
   );

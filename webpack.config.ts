@@ -3,6 +3,7 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
+// import CircularDependencyPlugin from 'circular-dependency-plugin';
 
 import path from 'path';
 import StylelintPlugin from 'stylelint-webpack-plugin';
@@ -17,6 +18,7 @@ interface Argv {
   mode: WebpackMode;
 }
 
+// TODO vite + next.js
 export interface WebpackConfigurationGenerator {
   (env?: unknown, argv?: Argv):
     | webpack.Configuration
@@ -93,6 +95,11 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
             }),
           ]
         : [new ReactRefreshWebpackPlugin()]),
+      // new CircularDependencyPlugin({
+      //   exclude: /node_modules/,
+      //   failOnError: true,
+      //   cwd: process.cwd(),
+      // }),
       new ESLintPlugin({
         extensions: ['js', 'jsx', 'ts', 'tsx'],
         exclude: 'node_modules',

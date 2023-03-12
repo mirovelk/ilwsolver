@@ -10,20 +10,20 @@ import {
 import clipboard from 'clipboardy';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ChromePicker } from 'react-color';
-
 import {
-  activeSheetXSeedHasError,
-  addXSeedToActiveSheet,
-  removeXSeedFromActiveSheet,
   selectM,
-  selectXSeedEditorData,
   setXSeedColor,
   setXSeedNumber,
   setXSeedsM,
-  setXSeedsValues,
-} from '../../redux/features/app/appSlice';
-import { XSeedId, XSeedValue } from '../../redux/features/types';
+  xSeedHasError,
+  XSeedId,
+  XSeedValue,
+} from '../../redux/features/xSeeds/xSeedsSlice';
+import { selectXSeedEditorData } from '../../redux/selectors/selectXSeedEditorData';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { addXSeedToActiveSheet } from '../../redux/thunks/addXSeedToActiveSheet';
+import { removeXSeedFromActiveSheet } from '../../redux/thunks/removeXSeedFromActiveSheet';
+import { setXSeedsValues } from '../../redux/thunks/setXSeedsValues';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 import { stringifyArrayOfComplexArraysForMathematica } from '../../util/mathematica';
 import ComplexEditor from '../ComplexEditor';
@@ -273,7 +273,7 @@ function XSeedsEditor() {
           )
         ) {
           setXSeedsTextareaError(false);
-          dispatch(setXSeedsValues(xSeedsParsed));
+          dispatch(setXSeedsValues(xSeedsParsed)); // TODO move processing here?
         } else {
           throw new Error('invalid input');
         }
@@ -483,10 +483,14 @@ function XSeedsEditor() {
                     value={c}
                     onValidChange={(value) => {
                       xSeedComplexOnEditFinished(xSeed.id, cIndex, value);
-                      dispatch(activeSheetXSeedHasError(false));
+                      dispatch(
+                        xSeedHasError({ xSeedId: xSeed.id, hasError: false })
+                      );
                     }}
                     onError={() => {
-                      dispatch(activeSheetXSeedHasError(true));
+                      dispatch(
+                        xSeedHasError({ xSeedId: xSeed.id, hasError: true })
+                      );
                     }}
                   />
 

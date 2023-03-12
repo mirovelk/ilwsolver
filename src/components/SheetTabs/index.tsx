@@ -3,15 +3,15 @@ import styled from '@emotion/styled';
 import { Add, Close } from '@mui/icons-material';
 import { IconButton, Tab, Tabs } from '@mui/material';
 import React, { useCallback } from 'react';
-
 import {
-  addSheet,
-  removeSheetWithId,
   selectTabsData,
   setActiveSheetId,
-} from '../../redux/features/app/appSlice';
-import { SheetId } from '../../redux/features/types';
+  SheetId,
+} from '../../redux/features/sheets/sheetsSlice';
+
 import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { addNewSheet } from '../../redux/thunks/addNewSheet';
+import { removeSheetAndData } from '../../redux/thunks/removeSheetAndData';
 
 const StyledTabs = styled(Tabs)`
   min-height: 35px;
@@ -28,7 +28,7 @@ function SheetTabs() {
   const { activeSheetId, sheetIds } = useAppSelector(selectTabsData);
 
   const addSheetOnClick = useCallback(() => {
-    dispatch(addSheet());
+    dispatch(addNewSheet());
   }, [dispatch]);
 
   const setActiveSheetOnClick = useCallback(
@@ -42,7 +42,7 @@ function SheetTabs() {
     (e: React.MouseEvent<SVGSVGElement, MouseEvent>, sheetIndex: SheetId) => {
       e.stopPropagation();
       if (window.confirm('Remove tab?')) {
-        dispatch(removeSheetWithId(sheetIndex));
+        dispatch(removeSheetAndData(sheetIndex));
       } else {
         // Do nothing!
       }
