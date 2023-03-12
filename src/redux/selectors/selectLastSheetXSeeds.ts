@@ -1,13 +1,10 @@
 import { createSelector } from '@reduxjs/toolkit';
+import { required } from '../../util/required';
 import { selectLastSheet } from '../features/sheets/sheetsSlice';
-import { selectXSeedById } from '../features/xSeeds/xSeedsSlice';
+import { selectXSeedsEntities } from '../features/xSeeds/xSeedsSlice';
 
 export const selectLastSheetXSeeds = createSelector(
-  [selectLastSheet, (state) => state.xSeeds],
+  [selectLastSheet, selectXSeedsEntities],
   (lastSheet, xSeeds) =>
-    lastSheet.xSeedIds.map((xSeedId) => {
-      const xSeed = selectXSeedById(xSeeds, xSeedId);
-      if (!xSeed) throw new Error('xSeed not found');
-      return xSeed;
-    })
+    lastSheet.xSeedIds.map((xSeedId) => required(xSeeds[xSeedId]))
 );

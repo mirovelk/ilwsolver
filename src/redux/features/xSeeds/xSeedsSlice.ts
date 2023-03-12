@@ -203,9 +203,9 @@ export const xSeedsSlice = createSlice({
 // Selectors
 export const {
   selectAll: selectAllXSeeds,
-  selectEntities: selectEntitiesXSeeds,
+  selectEntities: selectXSeedsEntities,
   selectById: selectXSeedById,
-} = xSeedsAdapter.getSelectors(); // use globalized (state: RootState) => state.xSeeds and add selector creators
+} = xSeedsAdapter.getSelectors((state: RootState) => state.xSeeds);
 
 export const selectM = (state: RootState) => {
   const firstXSeed = state.xSeeds.entities[state.xSeeds.ids[0]];

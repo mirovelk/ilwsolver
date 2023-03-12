@@ -129,9 +129,10 @@ export const outputProjectionVariantSlice = createSlice({
 
 // Selectors
 
-export const { selectById: selectResultById } = resultsAdapter.getSelectors(
-  (state: RootState) => state.results
-);
+export const {
+  selectById: selectResultById,
+  selectEntities: selectResultsEntities,
+} = resultsAdapter.getSelectors((state: RootState) => state.results);
 
 export const selectOutputProjectionVariant = (state: RootState) =>
   state.results.outputProjectionVariant;

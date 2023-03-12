@@ -1,13 +1,12 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Add, Circle, ContentCopy, Remove, Square } from '@mui/icons-material';
+import { Add, Circle, Remove, Square } from '@mui/icons-material';
 import {
   IconButton,
   Paper as MaterialPaper,
   TextField,
   Typography,
 } from '@mui/material';
-import clipboard from 'clipboardy';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ChromePicker } from 'react-color';
 import {
@@ -25,8 +24,8 @@ import { addXSeedToActiveSheet } from '../../redux/thunks/addXSeedToActiveSheet'
 import { removeXSeedFromActiveSheet } from '../../redux/thunks/removeXSeedFromActiveSheet';
 import { setXSeedsValues } from '../../redux/thunks/setXSeedsValues';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
-import { stringifyArrayOfComplexArraysForMathematica } from '../../util/mathematica';
 import ComplexEditor from '../ComplexEditor';
+import ResultsStartEndCopyButtons from './ResultsStartEndCopyButtons';
 
 const Panel = styled(MaterialPaper)`
   display: inline-flex;
@@ -219,13 +218,9 @@ function stringifyXSeeds(xSeeds: XSeedValue[]) {
 // TODO refactor into smaller components
 function XSeedsEditor() {
   const dispatch = useAppDispatch();
-  const {
-    allXSeedsCalculated,
-    xSeedsRemovalDisabled,
-    allXSeedResultsStarts,
-    allXSeedResultsEnds,
-    xSeeds,
-  } = useAppSelector(selectXSeedEditorData);
+  const { xSeedsRemovalDisabled, xSeeds } = useAppSelector(
+    selectXSeedEditorData
+  );
   const M = useAppSelector(selectM);
 
   const [xSeedsTextareaValue, setXSeedsTextareaValue] = useState(
@@ -325,28 +320,6 @@ function XSeedsEditor() {
     [dispatch]
   );
 
-  const copyResultsStart = useCallback(
-    (_e: React.MouseEvent<HTMLButtonElement>) => {
-      if (allXSeedsCalculated) {
-        clipboard.write(
-          stringifyArrayOfComplexArraysForMathematica(allXSeedResultsStarts)
-        );
-      }
-    },
-    [allXSeedsCalculated, allXSeedResultsStarts]
-  );
-
-  const copyResultsEnd = useCallback(
-    (_e: React.MouseEvent<HTMLButtonElement>) => {
-      if (allXSeedsCalculated) {
-        clipboard.write(
-          stringifyArrayOfComplexArraysForMathematica(allXSeedResultsEnds)
-        );
-      }
-    },
-    [allXSeedsCalculated, allXSeedResultsEnds]
-  );
-
   return (
     <Panel elevation={3}>
       <XSeedsHeader>
@@ -362,44 +335,7 @@ function XSeedsEditor() {
         <XSeedsHeaderControlsWrapper>
           <HeaderLeft>
             <CopyButtonsWrapper>
-              <IconButton
-                onClick={copyResultsStart}
-                css={css`
-                  position: relative;
-                `}
-                disabled={!allXSeedsCalculated}
-              >
-                <ContentCopy />
-                <Square
-                  css={css`
-                    width: 13px;
-                    height: 13px;
-                    position: absolute;
-                    bottom: 5px;
-                    right: 5px;
-                    color: #999;
-                  `}
-                />
-              </IconButton>
-              <IconButton
-                onClick={copyResultsEnd}
-                css={css`
-                  position: relative;
-                `}
-                disabled={!allXSeedsCalculated}
-              >
-                <ContentCopy />
-                <Circle
-                  css={css`
-                    width: 13px;
-                    height: 13px;
-                    position: absolute;
-                    bottom: 5px;
-                    right: 5px;
-                    color: #999;
-                  `}
-                />
-              </IconButton>
+              <ResultsStartEndCopyButtons />
             </CopyButtonsWrapper>
           </HeaderLeft>
           <HeaderRight>
@@ -531,4 +467,4 @@ function XSeedsEditor() {
   );
 }
 
-export default React.memo(XSeedsEditor);
+export default XSeedsEditor;
