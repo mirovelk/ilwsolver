@@ -1,30 +1,15 @@
-import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Add, Circle, Remove, Square } from '@mui/icons-material';
-import {
-  IconButton,
-  Paper as MaterialPaper,
-  TextField,
-  Typography,
-} from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
-import { ChromePicker } from 'react-color';
-import {
-  setXSeedColor,
-  setXSeedNumber,
-  xSeedHasError,
-  XSeedId,
-  XSeedValue,
-} from '../../redux/features/xSeeds/xSeedsSlice';
-import { selectXSeedEditorData } from '../../redux/selectors/selectXSeedEditorData';
+import { Add } from '@mui/icons-material';
+import { IconButton, Paper as MaterialPaper, Typography } from '@mui/material';
+import { useCallback } from 'react';
+import { selectActiveSheetXSeedIds } from '../../redux/features/sheets/sheetsSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { addXSeedToActiveSheet } from '../../redux/thunks/addXSeedToActiveSheet';
-import { removeXSeedFromActiveSheet } from '../../redux/thunks/removeXSeedFromActiveSheet';
-import { setXSeedsValues } from '../../redux/thunks/setXSeedsValues';
-import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
-import ComplexEditor from '../ComplexEditor';
+
 import MInput from './MInput';
 import ResultsStartEndCopyButtons from './ResultsStartEndCopyButtons';
+import XSeedRow from './XSeedRow';
+import XSeedsTextarea from './XSeedsTextarea';
 
 const Panel = styled(MaterialPaper)`
   display: inline-flex;
@@ -64,21 +49,11 @@ const XSeedsMWrapper = styled.div`
   align-items: baseline;
 `;
 
-const XSeedTextarea = styled(TextField)``;
-
 const XSeedsWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
   margin-bottom: 10px;
-`;
-
-const XSeedInputs = styled.div`
-  display: flex;
-`;
-
-const XSeedComplexWrapper = styled.div`
-  margin-right: 10px;
 `;
 
 const AddXSeedButton = styled(IconButton)``;
@@ -89,219 +64,13 @@ const XSeedWrapper = styled.div`
   margin-bottom: 10px;
 `;
 
-const controlsOffset = '5px';
-
-const XSeedRemoveWrapper = styled.div`
-  margin-top: ${controlsOffset};
-  margin-right: 10px;
-`;
-
-const XSeedColorWrapper = styled.div`
-  margin-top: ${controlsOffset};
-  position: relative;
-  margin-right: 8px;
-  display: flex;
-  align-items: center;
-`;
-
-const XSeedColor = styled.div<{ seedColor: string }>`
-  display: inline-block;
-  height: 30px;
-  width: 30px;
-  border-radius: 4px;
-  background: ${({ seedColor }) => seedColor};
-  cursor: pointer;
-`;
-
-const XSeedColorPickerWrapper = styled.div`
-  position: absolute;
-  top: 0;
-  left: 40px;
-  margin-top: 15;
-  z-index: 4000;
-`;
-
-const XSeedStartIcon = styled(Square)`
-  width: 13px;
-  height: 13px;
-  position: relative;
-  margin-right: 4px;
-  top: -1px;
-`;
-
-const XSeedEndIcon = styled(Circle)`
-  width: 13px;
-  height: 13px;
-  position: relative;
-  margin-right: 4px;
-  top: -1px;
-`;
-
-const XSeedCalculatedValue = styled.div`
-  overflow: hidden;
-  color: #999;
-  font-size: 13px;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-`;
-
-// parse {{2-3i,3-2i},{2+3i,2+4i}} into [['2-3i', '3-2i'], ['2+3i', '2+4i']]
-// ignores all whitespace, including spaces inside numbers
-function parseXSeeds(input: string): XSeedValue[] {
-  const noWhitespaceInput = input.replace(/\s/g, '');
-  let bracketCount = 0;
-  let rowBuffer = '';
-  const rows: string[] = [];
-
-  noWhitespaceInput.split('').forEach((char) => {
-    if (char === '{') {
-      bracketCount++;
-      if (bracketCount > 2) throw new Error('Invalid input');
-    } else if (char === '}') {
-      bracketCount--;
-      if (bracketCount < 0) throw new Error('Invalid input');
-      if (bracketCount === 0) {
-        rows.push(rowBuffer);
-        rowBuffer = '';
-      }
-    } else if (char === ',') {
-      if (bracketCount === 1) {
-        rows.push(rowBuffer);
-        rowBuffer = '';
-      } else if (bracketCount > 1) {
-        rowBuffer += char;
-      }
-    } else {
-      rowBuffer += char;
-    }
-  });
-
-  if (bracketCount !== 0) throw new Error('Invalid input');
-
-  const parsedRows: XSeedValue[] = rows.map((row) =>
-    row.split(',').map(parseComplex)
-  );
-
-  return parsedRows;
-}
-
-function stringifyXSeedValues(xSeeds: XSeedValue[]) {
-  let output = '';
-  output += '{';
-  output += '\n';
-  xSeeds.forEach((xSeed, xSeedIndex) => {
-    output += '  { ';
-    xSeed.forEach((c, cIndex) => {
-      output += stringifyComplex(c, true);
-      if (cIndex < xSeed.length - 1) output += ', ';
-    });
-    output += ' }';
-    if (xSeedIndex < xSeeds.length - 1) output += ',';
-    output += '\n';
-  });
-  output += '}';
-
-  return output;
-}
-
-function stringifyXSeeds(xSeeds: XSeedValue[]) {
-  return stringifyXSeedValues(xSeeds);
-}
-
-// TODO refactor into smaller components
 function XSeedsEditor() {
   const dispatch = useAppDispatch();
-  const { xSeedsRemovalDisabled, xSeeds } = useAppSelector(
-    selectXSeedEditorData
-  );
-
-  const [xSeedsTextareaValue, setXSeedsTextareaValue] = useState(
-    stringifyXSeeds(xSeeds.map((xSeed) => xSeed.value))
-  );
-  const [xSeedsTextareaEditing, setXSeedsTextareaEditing] = useState(false);
-  const [xSeedsTextareaError, setXSeedsTextareaError] = useState(false);
-
-  const [visibleColorPickerXSeedId, setVisibleColorPickerXSeedId] =
-    useState<XSeedId | null>(null);
-
-  // reflect xSeeds changes back into textarea area when not editing
-  useEffect(() => {
-    if (!xSeedsTextareaEditing) {
-      setXSeedsTextareaValue(
-        stringifyXSeeds(xSeeds.map((xSeed) => xSeed.value))
-      );
-      setXSeedsTextareaError(false);
-    }
-  }, [xSeeds, xSeedsTextareaEditing]);
-
-  const xSeedTextareaOnChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setXSeedsTextareaEditing(true);
-
-      const value = e.currentTarget.value;
-      setXSeedsTextareaValue(value);
-
-      try {
-        const xSeedsParsed = parseXSeeds(value);
-        if (
-          Array.isArray(xSeedsParsed) &&
-          xSeedsParsed.length > 0 && // at least one xSeed
-          xSeedsParsed.every(
-            (xSeed) =>
-              Array.isArray(xSeed) &&
-              xSeed.length > 0 && // at least one point in xSeed
-              xSeed.length === xSeedsParsed[0].length && // all xSeeds same length
-              xSeed.every(
-                (c) =>
-                  c.length === 2 &&
-                  typeof c[0] === 'number' &&
-                  typeof c[1] === 'number'
-              )
-          )
-        ) {
-          setXSeedsTextareaError(false);
-          dispatch(setXSeedsValues(xSeedsParsed)); // TODO move processing here?
-        } else {
-          throw new Error('invalid input');
-        }
-      } catch {
-        setXSeedsTextareaError(true);
-      }
-    },
-    [dispatch]
-  );
-
-  const xSeedTextareaOnBlur = useCallback(
-    (_e: React.FocusEvent<HTMLInputElement>) => {
-      setXSeedsTextareaEditing(false);
-    },
-    [setXSeedsTextareaEditing]
-  );
+  const activeSheetXSeedIds = useAppSelector(selectActiveSheetXSeedIds);
 
   const addXSeedOnClick = useCallback(() => {
     dispatch(addXSeedToActiveSheet());
   }, [dispatch]);
-
-  const removeXSeed = useCallback(
-    (xSeedId: XSeedId) => {
-      dispatch(removeXSeedFromActiveSheet(xSeedId));
-    },
-    [dispatch]
-  );
-
-  const xSeedComplexOnEditFinished = useCallback(
-    (xSeedId: XSeedId, xSeedCIndex: number, xSeedCValue: Complex) => {
-      dispatch(
-        setXSeedNumber({
-          xSeedId,
-          xSeedNumberIndex: xSeedCIndex,
-          value: xSeedCValue,
-        })
-      );
-    },
-    [dispatch]
-  );
 
   return (
     <Panel elevation={3}>
@@ -336,104 +105,13 @@ function XSeedsEditor() {
       </XSeedsHeader>
 
       <XSeedsWrapper>
-        {xSeeds.map((xSeed) => (
-          <XSeedWrapper key={xSeed.id}>
-            <XSeedRemoveWrapper>
-              <IconButton
-                size="small"
-                disabled={xSeedsRemovalDisabled}
-                onClick={() => removeXSeed(xSeed.id)}
-              >
-                <Remove fontSize="inherit" />
-              </IconButton>
-            </XSeedRemoveWrapper>
-            <XSeedColorWrapper>
-              <XSeedColor
-                seedColor={xSeed.color}
-                onClick={() =>
-                  setVisibleColorPickerXSeedId(
-                    (previousVisibleColorPickerXSeedId) =>
-                      previousVisibleColorPickerXSeedId !== xSeed.id
-                        ? xSeed.id
-                        : null
-                  )
-                }
-              />
-              <XSeedColorPickerWrapper>
-                {visibleColorPickerXSeedId === xSeed.id && (
-                  <ChromePicker
-                    color={xSeed.color}
-                    disableAlpha
-                    styles={{
-                      default: {
-                        picker: {
-                          background: '#111111',
-                        },
-                      },
-                    }}
-                    onChange={(color) => {
-                      dispatch(
-                        setXSeedColor({
-                          xSeedId: xSeed.id,
-                          color: color.hex,
-                        })
-                      );
-                    }}
-                  />
-                )}
-              </XSeedColorPickerWrapper>
-            </XSeedColorWrapper>
-            <XSeedInputs>
-              {xSeed.value.map((c, cIndex) => (
-                <XSeedComplexWrapper key={cIndex}>
-                  <ComplexEditor
-                    value={c}
-                    onValidChange={(value) => {
-                      xSeedComplexOnEditFinished(xSeed.id, cIndex, value);
-                      dispatch(
-                        xSeedHasError({ xSeedId: xSeed.id, hasError: false })
-                      );
-                    }}
-                    onError={() => {
-                      dispatch(
-                        xSeedHasError({ xSeedId: xSeed.id, hasError: true })
-                      );
-                    }}
-                  />
-
-                  {xSeed.resultsValid && (
-                    <>
-                      <XSeedCalculatedValue
-                        css={css`
-                          margin-top: 3px;
-                        `}
-                      >
-                        <XSeedStartIcon />
-                        {stringifyComplex(xSeed.resultsStarts[cIndex])}
-                      </XSeedCalculatedValue>
-                      <XSeedCalculatedValue>
-                        <XSeedEndIcon />
-                        {stringifyComplex(xSeed.resultsEnds[cIndex])}
-                      </XSeedCalculatedValue>
-                    </>
-                  )}
-                </XSeedComplexWrapper>
-              ))}
-            </XSeedInputs>
+        {activeSheetXSeedIds.map((xSeedId) => (
+          <XSeedWrapper key={xSeedId}>
+            <XSeedRow xSeedId={xSeedId} />
           </XSeedWrapper>
         ))}
       </XSeedsWrapper>
-      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-        Edit:
-      </Typography>
-      <XSeedTextarea
-        value={xSeedsTextareaValue}
-        error={xSeedsTextareaError}
-        onChange={xSeedTextareaOnChange}
-        onBlur={xSeedTextareaOnBlur}
-        multiline
-        helperText={xSeedsTextareaError ? 'Invalid input' : ''}
-      />
+      <XSeedsTextarea />
     </Panel>
   );
 }

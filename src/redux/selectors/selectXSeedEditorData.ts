@@ -11,7 +11,6 @@ export const selectXSeedEditorData = createSelector(
     activeSheetXSeeds,
     results
   ): {
-    xSeedsRemovalDisabled: boolean;
     xSeeds: Array<
       Pick<XSeed, 'id' | 'color' | 'value' | 'resultsValid'> & {
         resultsStarts: Complex[];
@@ -20,7 +19,6 @@ export const selectXSeedEditorData = createSelector(
     >;
   } => {
     return {
-      xSeedsRemovalDisabled: activeSheetXSeeds.length < 2,
       xSeeds: activeSheetXSeeds.map((xSeed) => ({
         id: xSeed.id,
         color: xSeed.color,

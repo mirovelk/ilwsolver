@@ -5,7 +5,7 @@ import { selectResultsEntities } from '../features/results/resultsSlice';
 import { selectActiveSheetXSeeds } from './selectActiveSheetXSeeds';
 
 export const selectActiveSheetResultsStartEnd = createSelector(
-  [selectActiveSheetXSeeds, selectResultsEntities],
+  [selectActiveSheetXSeeds, selectResultsEntities], // TODO remove dependency on whole xSeeds?
   (
     activeSheetXSeeds,
     results
@@ -18,8 +18,11 @@ export const selectActiveSheetResultsStartEnd = createSelector(
       allXSeedsCalculated: activeSheetXSeeds.every(
         (xSeed) => xSeed.resultIds.length > 0
       ),
-      allXSeedResultsStarts: activeSheetXSeeds.map((xSeed) =>
-        xSeed.resultIds.map((resultId) => required(results[resultId]).values[0])
+      allXSeedResultsStarts: activeSheetXSeeds.map(
+        (xSeed) =>
+          xSeed.resultIds.map(
+            (resultId) => required(results[resultId]).values[0]
+          ) // access resultIds somehow wihtout accessing xSeeds?
       ),
       allXSeedResultsEnds: activeSheetXSeeds.map((xSeed) => {
         return xSeed.resultIds.map((resultId) => {

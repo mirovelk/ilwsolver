@@ -59,7 +59,7 @@ export const initialXSeeds: XSeed[] = [
   },
 ];
 
-const xSeedsAdapter = createEntityAdapter<XSeed>();
+const xSeedsAdapter = createEntityAdapter<XSeed>(); // TODO group by sheetId?
 
 const emptyInitialState = xSeedsAdapter.getInitialState();
 const filledInitialState = xSeedsAdapter.upsertMany(
@@ -67,6 +67,7 @@ const filledInitialState = xSeedsAdapter.upsertMany(
   initialXSeeds
 );
 
+// TODO change to xSeedValues slice
 export const xSeedsSlice = createSlice({
   name: 'xSeeds',
   initialState: filledInitialState,
@@ -212,6 +213,12 @@ export const selectM = (state: RootState) => {
   const firstXSeed = required(state.xSeeds.entities[state.xSeeds.ids[0]]);
   return firstXSeed.value.length;
 };
+
+export const xSeedValueSelector = (state: RootState, xSeedId: XSeedId) =>
+  required(selectXSeedById(state, xSeedId)).value;
+
+export const xSeedColorSelector = (state: RootState, xSeedId: XSeedId) =>
+  required(selectXSeedById(state, xSeedId)).color;
 
 const { actions, reducer } = xSeedsSlice;
 

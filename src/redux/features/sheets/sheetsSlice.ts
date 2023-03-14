@@ -8,6 +8,7 @@ import {
 import simplifyPath from 'simplify-js';
 
 import { Complex } from '../../../util/complex';
+import { required } from '../../../util/required';
 import { clearInputOutputValues } from '../../actions';
 import { selectActiveSheet } from '../../selectors/selectActiveSheet';
 
@@ -219,10 +220,18 @@ export const selectSheetById = (state: RootState, sheetId: SheetId) => {
   return sheet;
 };
 
-// TODO move active sheet selectors
+// TODO move active sheet selectors?
 export const selectActiveSheetId = (state: RootState) =>
   state.sheets.activeSheetId;
 
+export const selectActiveSheetXSeedIds = (state: RootState) => {
+  const activeSheet = required(
+    state.sheets.entities[state.sheets.activeSheetId]
+  );
+  return activeSheet.xSeedIds;
+};
+
+// TODO do not select active sheet? can change reference
 export const selectActiveSheetQArray = createSelector(
   [selectActiveSheet],
   (activeSheet) => activeSheet.qArray // TODO separate slice/check performance

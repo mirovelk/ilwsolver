@@ -8,6 +8,7 @@ import resultsSliceReducer from './features/results/resultsSlice';
 import solverConfigSliceReducer from './features/solverConfig/solverConfigSlice';
 import ilwSolverSliceReducer from './features/ilwSolver/ilwSolverSlice';
 import badPointsSliceReducer from './features/badPoints/badPointsSlice';
+import xSeedColorPickerSliceReducer from './features/xSeedColorPicker/xSeedColorPickerSlice';
 
 const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
     solverConfig: solverConfigSliceReducer,
     ilwSolver: ilwSolverSliceReducer,
     badPoints: badPointsSliceReducer,
+    xSeedColorPicker: xSeedColorPickerSliceReducer,
   },
 });
 

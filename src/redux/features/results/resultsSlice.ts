@@ -60,7 +60,7 @@ export interface Result {
   // TODO copy q used for calculation to prevent crashes when q path changes
 }
 
-const resultsAdapter = createEntityAdapter<Result>();
+const resultsAdapter = createEntityAdapter<Result>(); // TODO group by xSeedId
 
 export const outputProjectionVariantSlice = createSlice({
   name: 'outputProjectionVariant',
