@@ -62,8 +62,8 @@ export interface Result {
 
 const resultsAdapter = createEntityAdapter<Result>(); // TODO group by xSeedId
 
-export const outputProjectionVariantSlice = createSlice({
-  name: 'outputProjectionVariant',
+export const resultsSlice = createSlice({
+  name: 'results',
   initialState: resultsAdapter.getInitialState({
     outputProjectionVariant: OutputProjectionVariant.V1,
   }),
@@ -145,7 +145,7 @@ export const selectActiveSheetProjectedResult = createSelector(
   ],
 
   (result, activeSheetQArray, outputProjectionVariant) => {
-    if (!result) throw new Error(`Result not found`);
+    if (!result) throw new Error('Result not found');
     return {
       ...result,
       values: result.values.map((value, valueIndex) =>
@@ -159,7 +159,7 @@ export const selectActiveSheetProjectedResult = createSelector(
   }
 );
 
-const { actions, reducer } = outputProjectionVariantSlice;
+const { actions, reducer } = resultsSlice;
 
 export const {
   setOutputProjectionVariant,
