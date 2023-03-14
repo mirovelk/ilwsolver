@@ -31,12 +31,12 @@ export const addNewSheetAndData = (): AppThunk => (dispatch, getState) => {
   const inputStageId = uuidv4();
   const outputStageId = uuidv4();
 
-  const newSheet = {
-    id: newSheetId,
-    xSeeds: newSheetXSeeds,
-    inputStageId,
-    outputStageId,
-  };
-
-  dispatch(addSheet(newSheet));
+  dispatch(
+    addSheet({
+      id: newSheetId,
+      xSeeds: newSheetXSeeds,
+      inputStageId,
+      outputStageId,
+    })
+  );
 };
