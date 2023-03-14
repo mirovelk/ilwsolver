@@ -13,6 +13,7 @@ import { clearInputOutputValues } from '../../actions';
 import { selectActiveSheet } from '../../selectors/selectActiveSheet';
 
 import { RootState } from '../../store';
+import { ResultId } from '../results/resultsSlice';
 
 import { initialStages, StageId } from '../stages/stagesSlice';
 import {
@@ -108,19 +109,27 @@ export const sheetsSlice = createSlice({
         xSeeds: Array<AddXSeedPayload>;
       }>
     ) => {
+      const { id, inputStageId, outputStageId, xSeeds } = action.payload;
       sheetsAdapter.addOne(state, {
         ...initialSheet,
-        ...action.payload,
-        xSeedIds: action.payload.xSeeds.map((xSeed) => xSeed.xSeedId),
+        id,
+        inputStageId,
+        outputStageId,
+        xSeedIds: xSeeds.map((xSeed) => xSeed.xSeedId),
       });
       state.activeSheetId = action.payload.id;
     },
 
-    removeSheet: (state, action: PayloadAction<SheetId>) => {
-      const removedSheetId = action.payload;
-      const removedSheet = state.entities[removedSheetId];
-      if (!removedSheet) throw new Error('Sheet not found');
-
+    removeSheet: (
+      state,
+      action: PayloadAction<{
+        sheetId: SheetId;
+        xSeedIds: XSeedId[];
+        stageIds: StageId[];
+        resultIds: ResultId[];
+      }>
+    ) => {
+      const removedSheetId = action.payload.sheetId;
       const activeSheetIndex = state.ids.indexOf(state.activeSheetId);
 
       if (state.activeSheetId === removedSheetId) {

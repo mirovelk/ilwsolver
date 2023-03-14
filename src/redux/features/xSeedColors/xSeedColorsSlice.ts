@@ -6,7 +6,7 @@ import {
 import { required } from '../../../util/required';
 
 import { RootState } from '../../store';
-import { addSheet } from '../sheets/sheetsSlice';
+import { addSheet, removeSheet } from '../sheets/sheetsSlice';
 import {
   addXSeed,
   initialXSeeds,
@@ -71,6 +71,9 @@ export const xSeedColorSlice = createSlice({
         color,
       });
     },
+    removeXSeedColor: (state, action: PayloadAction<{ xSeedId: XSeedId }>) => {
+      xSeedColorsAdapter.removeOne(state, action.payload.xSeedId);
+    },
     setXSeedColor: (
       state,
       action: PayloadAction<{
@@ -94,7 +97,11 @@ export const xSeedColorSlice = createSlice({
       );
     });
     builder.addCase(removeXSeed, (state, action) => {
-      xSeedColorsAdapter.removeOne(state, action.payload.xSeedId);
+      const { xSeedId } = action.payload;
+      xSeedColorSlice.caseReducers.removeXSeedColor(
+        state,
+        xSeedColorSlice.actions.removeXSeedColor({ xSeedId })
+      );
     });
     builder.addCase(addSheet, (state, action) => {
       const { xSeeds } = action.payload;
@@ -105,6 +112,15 @@ export const xSeedColorSlice = createSlice({
             xSeedId: xSeed.xSeedId,
             color: xSeed.color,
           })
+        );
+      });
+    });
+    builder.addCase(removeSheet, (state, action) => {
+      const { xSeedIds } = action.payload;
+      xSeedIds.forEach((xSeedId) => {
+        xSeedColorSlice.caseReducers.removeXSeedColor(
+          state,
+          xSeedColorSlice.actions.removeXSeedColor({ xSeedId })
         );
       });
     });

@@ -16,7 +16,7 @@ import { clearInputOutputValues } from '../../actions';
 import { RootState } from '../../store';
 import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
 import { ResultId } from '../results/resultsSlice';
-import { addSheet, SheetId } from '../sheets/sheetsSlice';
+import { addSheet, removeSheet, SheetId } from '../sheets/sheetsSlice';
 
 function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
@@ -183,6 +183,18 @@ export const xSeedsSlice = createSlice({
         xSeedsSlice.caseReducers.addXSeed(
           state,
           xSeedsSlice.actions.addXSeed(xSeed)
+        );
+      });
+    });
+    builder.addCase(removeSheet, (state, action) => {
+      const { sheetId, xSeedIds } = action.payload;
+      xSeedIds.forEach((xSeedId) => {
+        xSeedsSlice.caseReducers.removeXSeed(
+          state,
+          xSeedsSlice.actions.removeXSeed({
+            sheetId,
+            xSeedId,
+          })
         );
       });
     });
