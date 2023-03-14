@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { TextField, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { XSeedValue } from '../../../redux/features/xSeeds/xSeedsSlice';
-import { selectXSeedEditorData } from '../../../redux/selectors/selectXSeedEditorData';
+import { selectActiveSheetXSeeds } from '../../../redux/selectors/selectActiveSheetXSeeds';
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
 import { setXSeedsValues } from '../../../redux/thunks/setXSeedsValues';
 import { parseComplex, stringifyComplex } from '../../../util/complex';
@@ -74,7 +74,7 @@ function stringifyXSeeds(xSeeds: XSeedValue[]) {
 
 function XSeedsTextarea() {
   const dispatch = useAppDispatch();
-  const { xSeeds } = useAppSelector(selectXSeedEditorData);
+  const xSeeds = useAppSelector(selectActiveSheetXSeeds);
 
   const [xSeedsTextareaValue, setXSeedsTextareaValue] = useState(
     stringifyXSeeds(xSeeds.map((xSeed) => xSeed.value))
