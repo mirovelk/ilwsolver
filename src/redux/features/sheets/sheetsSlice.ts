@@ -17,6 +17,7 @@ import { RootState } from '../../store';
 import { initialStages, StageId } from '../stages/stagesSlice';
 import {
   addXSeed,
+  AddXSeedPayload,
   initialXSeeds,
   removeXSeed,
   XSeedId,
@@ -104,12 +105,13 @@ export const sheetsSlice = createSlice({
         id: SheetId;
         inputStageId: StageId;
         outputStageId: StageId;
+        xSeeds: Array<AddXSeedPayload>;
       }>
     ) => {
       sheetsAdapter.addOne(state, {
         ...initialSheet,
         ...action.payload,
-        xSeedIds: [],
+        xSeedIds: action.payload.xSeeds.map((xSeed) => xSeed.xSeedId),
       });
       state.activeSheetId = action.payload.id;
     },

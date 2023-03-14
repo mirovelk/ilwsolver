@@ -4,7 +4,7 @@ import { RootState } from '../store';
 import { selectActiveSheetResultIds } from './selectActiveSheetReusltIds';
 
 export const selectActiveSheetProjectedResults = createSelector(
-  [selectActiveSheetResultIds, (state: RootState) => state],
+  [selectActiveSheetResultIds, (state: RootState) => state], // TODO do properly
   (activeSheetResultIds, state) =>
     activeSheetResultIds.map((resultId) => {
       return selectActiveSheetProjectedResult(state, resultId);

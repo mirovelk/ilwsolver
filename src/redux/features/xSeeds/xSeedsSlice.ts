@@ -16,7 +16,7 @@ import { clearInputOutputValues } from '../../actions';
 import { RootState } from '../../store';
 import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
 import { ResultId } from '../results/resultsSlice';
-import { SheetId } from '../sheets/sheetsSlice';
+import { addSheet, SheetId } from '../sheets/sheetsSlice';
 
 function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
@@ -30,7 +30,7 @@ export type XSeedId = EntityId;
 
 export type XSeedValue = Complex[];
 
-interface AddXSeedPayload {
+export interface AddXSeedPayload {
   sheetId: SheetId;
   xSeedId: XSeedId;
   color: string;
@@ -175,6 +175,15 @@ export const xSeedsSlice = createSlice({
         if (!xSeed) throw new Error('xSeed not found');
         xSeed.resultIds = [];
         xSeed.resultsValid = false;
+      });
+    });
+    builder.addCase(addSheet, (state, action) => {
+      const { xSeeds } = action.payload;
+      xSeeds.forEach((xSeed) => {
+        xSeedsSlice.caseReducers.addXSeed(
+          state,
+          xSeedsSlice.actions.addXSeed(xSeed)
+        );
       });
     });
   },

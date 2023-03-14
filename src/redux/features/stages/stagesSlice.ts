@@ -10,6 +10,7 @@ import { Complex } from '../../../util/complex';
 import { clearInputOutputValues } from '../../actions';
 import { RootState } from '../../store';
 import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
+import { addSheet } from '../sheets/sheetsSlice';
 
 const dataLayerDefaultScaleDownFactor = 0.8;
 
@@ -282,6 +283,21 @@ export const stagesSlice = createSlice({
           })
         );
       });
+    });
+    builder.addCase(addSheet, (state, action) => {
+      const { inputStageId, outputStageId } = action.payload;
+      stagesSlice.caseReducers.addStage(
+        state,
+        stagesSlice.actions.addStage({
+          id: inputStageId,
+        })
+      );
+      stagesSlice.caseReducers.addStage(
+        state,
+        stagesSlice.actions.addStage({
+          id: outputStageId,
+        })
+      );
     });
   },
 });

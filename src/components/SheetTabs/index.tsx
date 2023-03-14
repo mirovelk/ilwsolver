@@ -10,7 +10,7 @@ import {
 } from '../../redux/features/sheets/sheetsSlice';
 
 import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { addNewSheet } from '../../redux/thunks/addNewSheet';
+import { addNewSheetAndData } from '../../redux/thunks/addNewSheetAndData';
 import { removeSheetAndData } from '../../redux/thunks/removeSheetAndData';
 
 const StyledTabs = styled(Tabs)`
@@ -28,7 +28,7 @@ function SheetTabs() {
   const { activeSheetId, sheetIds } = useAppSelector(selectTabsData);
 
   const addSheetOnClick = useCallback(() => {
-    dispatch(addNewSheet());
+    dispatch(addNewSheetAndData());
   }, [dispatch]);
 
   const setActiveSheetOnClick = useCallback(
