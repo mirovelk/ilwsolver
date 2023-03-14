@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { required } from '../../util/required';
 import { addSheet, selectLastSheet } from '../features/sheets/sheetsSlice';
 import { selectXSeedColor } from '../features/xSeedColors/xSeedColorsSlice';
 import { selectLastSheetXSeeds } from '../selectors/selectLastSheetXSeeds';
@@ -20,8 +21,7 @@ export const addNewSheetAndData = (): AppThunk => (dispatch, getState) => {
       value:
         lastSheetXSeed.resultIds.length > 0 && lastSheetXSeed.resultsValid
           ? lastSheetXSeed.resultIds.map((resultId) => {
-              const result = state.results.entities[resultId];
-              if (!result) throw new Error('Result not found');
+              const result = required(state.results.entities[resultId]);
               return result.values[result.values.length - 1];
             })
           : lastSheetXSeed.value,
