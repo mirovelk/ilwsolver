@@ -3,13 +3,12 @@ import { useCallback } from 'react';
 import { ChromePicker } from 'react-color';
 import {
   selectVisibleColorPickerXSeedId,
-  toggleColorPickerForXSeedId,
-} from '../../../../redux/features/xSeedColorPicker/xSeedColorPickerSlice';
-import {
   setXSeedColor,
-  XSeedId,
-  xSeedColorSelector,
-} from '../../../../redux/features/xSeeds/xSeedsSlice';
+  toggleColorPickerForXSeedId,
+  selectXSeedColor,
+} from '../../../../redux/features/xSeedColors/xSeedColorsSlice';
+
+import { XSeedId } from '../../../../redux/features/xSeeds/xSeedsSlice';
 
 import { useAppDispatch, useAppSelector } from '../../../../redux/store';
 
@@ -34,7 +33,7 @@ function XSeedColor({ xSeedId }: { xSeedId: XSeedId }) {
   const dispatch = useAppDispatch();
 
   const xSeedColor = useAppSelector((state) =>
-    xSeedColorSelector(state, xSeedId)
+    selectXSeedColor(state, xSeedId)
   );
 
   const visibleColorPickerXSeedId = useAppSelector(

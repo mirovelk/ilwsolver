@@ -5,7 +5,6 @@ import { createSelector } from '@reduxjs/toolkit';
 import { useCallback } from 'react';
 import { selectActiveSheetXSeedIds } from '../../../redux/features/sheets/sheetsSlice';
 import {
-  removeXSeed,
   setXSeedNumber,
   xSeedHasError,
   XSeedId,
@@ -13,6 +12,7 @@ import {
 } from '../../../redux/features/xSeeds/xSeedsSlice';
 
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
+import { removeXSeedFromActiveSheet } from '../../../redux/thunks/removeXSeedFromActiveSheet';
 
 import { Complex } from '../../../util/complex';
 import ComplexEditor from '../../ComplexEditor';
@@ -57,6 +57,10 @@ function XSeedRow({ xSeedId }: { xSeedId: XSeedId }) {
     selectCanRemoveActiveSheetXSeed
   );
 
+  const removeXSeedOnClick = useCallback(() => {
+    dispatch(removeXSeedFromActiveSheet(xSeedId));
+  }, [dispatch, xSeedId]);
+
   const xSeedComplexOnEditFinished = useCallback(
     (xSeedId: XSeedId, xSeedCIndex: number, xSeedCValue: Complex) => {
       dispatch(
@@ -76,7 +80,7 @@ function XSeedRow({ xSeedId }: { xSeedId: XSeedId }) {
         <IconButton
           size="small"
           disabled={!canRemoveActiveSheetXSeed}
-          onClick={() => removeXSeed(xSeedId)}
+          onClick={removeXSeedOnClick}
         >
           <Remove fontSize="inherit" />
         </IconButton>

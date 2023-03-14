@@ -15,7 +15,12 @@ import { selectActiveSheet } from '../../selectors/selectActiveSheet';
 import { RootState } from '../../store';
 
 import { initialStages, StageId } from '../stages/stagesSlice';
-import { initialXSeeds, XSeedId } from '../xSeeds/xSeedsSlice';
+import {
+  addXSeed,
+  initialXSeeds,
+  removeXSeed,
+  XSeedId,
+} from '../xSeeds/xSeedsSlice';
 
 const SIMPLIFY_INITIAL = -1.5;
 
@@ -89,20 +94,6 @@ export const sheetsSlice = createSlice({
   name: 'sheets',
   initialState: filledInitialState,
   reducers: {
-    addXSeedIdToActiveSheet: (state, action: PayloadAction<XSeedId>) => {
-      const activeSheet = state.entities[state.activeSheetId];
-      if (!activeSheet) throw new Error('Sheet not found');
-      activeSheet.xSeedIds.push(action.payload);
-    },
-
-    removeXSeedIdFromActiveSheet: (state, action: PayloadAction<XSeedId>) => {
-      const activeSheet = state.entities[state.activeSheetId];
-      if (!activeSheet) throw new Error('Sheet not found');
-      activeSheet.xSeedIds = activeSheet.xSeedIds.filter(
-        (id) => id !== action.payload
-      );
-    },
-
     setActiveSheetId: (state, action: PayloadAction<SheetId>) => {
       state.activeSheetId = action.payload;
     },
@@ -111,12 +102,15 @@ export const sheetsSlice = createSlice({
       state,
       action: PayloadAction<{
         id: SheetId;
-        xSeedIds: XSeedId[];
         inputStageId: StageId;
         outputStageId: StageId;
       }>
     ) => {
-      sheetsAdapter.addOne(state, { ...initialSheet, ...action.payload });
+      sheetsAdapter.addOne(state, {
+        ...initialSheet,
+        ...action.payload,
+        xSeedIds: [],
+      });
       state.activeSheetId = action.payload.id;
     },
 
@@ -205,6 +199,16 @@ export const sheetsSlice = createSlice({
       sheet.qArray = [];
       sheet.qArrayValid = false;
     });
+    builder.addCase(addXSeed, (state, action) => {
+      const { sheetId, xSeedId } = action.payload;
+      const sheet = required(state.entities[sheetId]);
+      sheet.xSeedIds.push(xSeedId);
+    });
+    builder.addCase(removeXSeed, (state, action) => {
+      const { sheetId, xSeedId } = action.payload;
+      const sheet = required(state.entities[sheetId]);
+      sheet.xSeedIds = sheet.xSeedIds.filter((id) => id !== xSeedId);
+    });
   },
 });
 
@@ -288,8 +292,6 @@ export const selectActiveSheetQArrayValid = createSelector(
 const { actions, reducer } = sheetsSlice;
 
 export const {
-  addXSeedIdToActiveSheet,
-  removeXSeedIdFromActiveSheet,
   setActiveSheetId,
   addSheet,
   removeSheet,

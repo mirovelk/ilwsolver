@@ -4,18 +4,20 @@ import {
   Result,
   selectActiveSheetProjectedResult,
 } from '../features/results/resultsSlice';
+import { selectXSeedColor } from '../features/xSeedColors/xSeedColorsSlice';
 import { XSeed } from '../features/xSeeds/xSeedsSlice';
 import { RootState } from '../store';
 import { selectActiveSheetXSeeds } from './selectActiveSheetXSeeds';
 
 export const selectActiveSheetOutputAreaData = createSelector(
-  [selectActiveSheetXSeeds, (state: RootState) => state],
+  [selectActiveSheetXSeeds, (state: RootState) => state], // TODO do properly
   (
     activeSheetXSeeds,
     state
   ): {
     xSeeds: Array<
-      Pick<XSeed, 'id' | 'color' | 'resultsValid'> & {
+      Pick<XSeed, 'id' | 'resultsValid'> & {
+        color: string;
         results: Array<
           Pick<Result, 'selected' | 'id'> & {
             projectedValues: Complex[];
@@ -27,7 +29,7 @@ export const selectActiveSheetOutputAreaData = createSelector(
     return {
       xSeeds: activeSheetXSeeds.map((xSeed) => ({
         id: xSeed.id,
-        color: xSeed.color,
+        color: selectXSeedColor(state, xSeed.id), // TODO do properly
         resultsValid: xSeed.resultsValid,
         results: xSeed.resultIds.map((resultId) => {
           const projectedResult = selectActiveSheetProjectedResult(

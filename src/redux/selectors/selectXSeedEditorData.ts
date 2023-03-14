@@ -12,7 +12,7 @@ export const selectXSeedEditorData = createSelector(
     results
   ): {
     xSeeds: Array<
-      Pick<XSeed, 'id' | 'color' | 'value' | 'resultsValid'> & {
+      Pick<XSeed, 'id' | 'value' | 'resultsValid'> & {
         resultsStarts: Complex[];
         resultsEnds: Complex[];
       }
@@ -21,7 +21,6 @@ export const selectXSeedEditorData = createSelector(
     return {
       xSeeds: activeSheetXSeeds.map((xSeed) => ({
         id: xSeed.id,
-        color: xSeed.color,
         value: xSeed.value,
         resultsValid: xSeed.resultsValid,
         resultsStarts: xSeed.resultIds.map(

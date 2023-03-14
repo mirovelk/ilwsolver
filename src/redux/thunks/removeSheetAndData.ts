@@ -4,7 +4,7 @@ import {
   SheetId,
 } from '../features/sheets/sheetsSlice';
 import { removeStage } from '../features/stages/stagesSlice';
-import { removeXSeeds } from '../features/xSeeds/xSeedsSlice';
+import { removeXSeed } from '../features/xSeeds/xSeedsSlice';
 import { AppThunk } from '../store';
 
 export const removeSheetAndData =
@@ -18,8 +18,11 @@ export const removeSheetAndData =
     const removedOutputStageId = removedSheet.outputStageId;
     const removedXSeedIds = [...removedSheet.xSeedIds];
 
+    // TODO group into 1 removeSheet action
+    removedXSeedIds.forEach((xSeedId) => {
+      dispatch(removeXSeed({ sheetId: removedSheetId, xSeedId }));
+    });
     dispatch(removeSheet(removedSheet.id));
-    dispatch(removeXSeeds(removedXSeedIds));
     dispatch(removeStage({ id: removedInputStageId })); // TODO unify action args to objects or just ids
     dispatch(removeStage({ id: removedOutputStageId }));
   };

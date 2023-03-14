@@ -8,18 +8,18 @@ import resultsSliceReducer from './features/results/resultsSlice';
 import solverConfigSliceReducer from './features/solverConfig/solverConfigSlice';
 import ilwSolverSliceReducer from './features/ilwSolver/ilwSolverSlice';
 import badPointsSliceReducer from './features/badPoints/badPointsSlice';
-import xSeedColorPickerSliceReducer from './features/xSeedColorPicker/xSeedColorPickerSlice';
+import xSeedColorsSliceReducer from './features/xSeedColors/xSeedColorsSlice';
 
 const store = configureStore({
   reducer: {
     sheets: sheetsSliceReducer,
     xSeeds: xSeedsSliceReducer,
+    xSeedColors: xSeedColorsSliceReducer,
     stages: stagesSliceReducer,
     results: resultsSliceReducer,
     solverConfig: solverConfigSliceReducer,
     ilwSolver: ilwSolverSliceReducer,
     badPoints: badPointsSliceReducer,
-    xSeedColorPicker: xSeedColorPickerSliceReducer,
   },
 });
 

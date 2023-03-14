@@ -16,6 +16,7 @@ import { clearInputOutputValues } from '../../actions';
 import { RootState } from '../../store';
 import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
 import { ResultId } from '../results/resultsSlice';
+import { SheetId } from '../sheets/sheetsSlice';
 
 function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);
@@ -29,10 +30,16 @@ export type XSeedId = EntityId;
 
 export type XSeedValue = Complex[];
 
+interface AddXSeedPayload {
+  sheetId: SheetId;
+  xSeedId: XSeedId;
+  color: string;
+  value: XSeedValue;
+}
+
 export interface XSeed {
   id: XSeedId;
   value: XSeedValue;
-  color: string;
   hasError: boolean;
   resultIds: ResultId[];
   resultsValid: boolean;
@@ -48,13 +55,11 @@ export const initialXSeeds: XSeed[] = [
   {
     id: uuidv4(),
     value: [complex(2, -3), complex(3, -2)],
-    color: 'rgb(0, 127, 255)',
     ...defaultXSeedProperties,
   },
   {
     id: uuidv4(),
     value: [complex(2, 3), complex(2, 4)],
-    color: 'rgb(255, 127, 0)',
     ...defaultXSeedProperties,
   },
 ];
@@ -98,32 +103,20 @@ export const xSeedsSlice = createSlice({
       xSeedsAdapter.updateMany(state, updates);
     },
 
-    addXSeed: (
-      state,
-      action: PayloadAction<{ id: XSeedId; color: string; value: XSeedValue }>
-    ) => {
+    addXSeed: (state, action: PayloadAction<AddXSeedPayload>) => {
+      const { xSeedId, value } = action.payload;
       xSeedsAdapter.addOne(state, {
-        ...action.payload,
+        id: xSeedId,
+        value,
         ...defaultXSeedProperties,
       });
     },
 
-    addXSeeeds: (
+    removeXSeed: (
       state,
-      action: PayloadAction<{ id: XSeedId; color: string; value: XSeedValue }[]>
+      action: PayloadAction<{ sheetId: SheetId; xSeedId: XSeedId }>
     ) => {
-      xSeedsAdapter.addMany(
-        state,
-        action.payload.map((xSeed) => ({ ...xSeed, ...defaultXSeedProperties }))
-      );
-    },
-
-    removeXSeed: (state, action: PayloadAction<XSeedId>) => {
-      xSeedsAdapter.removeOne(state, action.payload);
-    },
-
-    removeXSeeds: (state, action: PayloadAction<XSeedId[]>) => {
-      xSeedsAdapter.removeMany(state, action.payload);
+      xSeedsAdapter.removeOne(state, action.payload.xSeedId);
     },
 
     setXSeedNumber: (
@@ -140,21 +133,6 @@ export const xSeedsSlice = createSlice({
       if (!xSeed) throw new Error('xSeed not found');
 
       xSeed.value[xSeedNumberIndex] = value;
-    },
-
-    setXSeedColor: (
-      state,
-      action: PayloadAction<{
-        xSeedId: XSeedId;
-        color: string;
-      }>
-    ) => {
-      const { xSeedId, color } = action.payload;
-
-      const xSeed = state.entities[xSeedId];
-      if (!xSeed) throw new Error('xSeed not found');
-
-      xSeed.color = color;
     },
 
     xSeedHasError(
@@ -217,18 +195,12 @@ export const selectM = (state: RootState) => {
 export const xSeedValueSelector = (state: RootState, xSeedId: XSeedId) =>
   required(selectXSeedById(state, xSeedId)).value;
 
-export const xSeedColorSelector = (state: RootState, xSeedId: XSeedId) =>
-  required(selectXSeedById(state, xSeedId)).color;
-
 const { actions, reducer } = xSeedsSlice;
 
 export const {
   setXSeedsM,
   addXSeed,
-  addXSeeeds,
   removeXSeed,
-  removeXSeeds,
-  setXSeedColor,
   setXSeedNumber,
   xSeedHasError,
   invalidateResultsForXSeeds,

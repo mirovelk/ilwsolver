@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { addSheet, selectLastSheet } from '../features/sheets/sheetsSlice';
 import { addStage } from '../features/stages/stagesSlice';
-import { addXSeeeds } from '../features/xSeeds/xSeedsSlice';
+import { selectXSeedColor } from '../features/xSeedColors/xSeedColorsSlice';
+import { addXSeed } from '../features/xSeeds/xSeedsSlice';
 import { selectLastSheetXSeeds } from '../selectors/selectLastSheetXSeeds';
 import { AppThunk } from '../store';
 
@@ -14,7 +15,7 @@ export const addNewSheet = (): AppThunk => (dispatch, getState) => {
   const newSheetXSeeds = lastSheetXSeeds.map((lastSheetXSeed) => {
     return {
       id: uuidv4(),
-      color: lastSheetXSeed.color,
+      color: selectXSeedColor(state, lastSheetXSeed.id),
       value:
         lastSheetXSeed.resultIds.length > 0 && lastSheetXSeed.resultsValid
           ? lastSheetXSeed.resultIds.map((resultId) => {
@@ -31,13 +32,22 @@ export const addNewSheet = (): AppThunk => (dispatch, getState) => {
 
   const newSheet = {
     id: Number(lastSheet.id) + 1,
-    xSeedIds: newSheetXSeeds.map((newSheetXSeed) => newSheetXSeed.id),
     inputStageId,
     outputStageId,
   };
 
-  dispatch(addXSeeeds(newSheetXSeeds));
+  // TODO group into 1 addSheet action
+  dispatch(addSheet(newSheet));
+  newSheetXSeeds.forEach((newSheetXSeed) => {
+    dispatch(
+      addXSeed({
+        sheetId: newSheet.id,
+        xSeedId: newSheetXSeed.id,
+        value: newSheetXSeed.value,
+        color: newSheetXSeed.color,
+      })
+    );
+  });
   dispatch(addStage({ id: inputStageId }));
   dispatch(addStage({ id: outputStageId }));
-  dispatch(addSheet(newSheet));
 };
