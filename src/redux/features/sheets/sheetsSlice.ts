@@ -252,7 +252,7 @@ export const selectActiveSheetQArray = createSelector(
   (activeSheet) => activeSheet.qArray // TODO separate slice/check performance
 );
 
-export const selectActiveSheetIputDrawingPoints = createSelector(
+export const selectActiveSheetInputDrawingPoints = createSelector(
   [selectActiveSheet],
   (activeSheet) => activeSheet.inputDrawingPoints
 );

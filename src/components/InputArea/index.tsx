@@ -10,16 +10,11 @@ import {
   Slider,
 } from '@mui/material';
 import Konva from 'konva';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Line } from 'react-konva';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { inputStrokeWidth } from '../../const';
 
-import {
-  selectActiveSheetInputSimplifyConfig,
-  selectActiveSheetIputDrawingPoints,
-  selectActiveSheetQArray,
-} from '../../redux/features/sheets/sheetsSlice';
+import { selectActiveSheetInputSimplifyConfig } from '../../redux/features/sheets/sheetsSlice';
 import { StageId } from '../../redux/features/stages/stagesSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { addActiveSheetInputDrawingPoint } from '../../redux/thunks/activeSheet/addActiveSheetInputDrawingPoint';
@@ -30,12 +25,13 @@ import { pointPositionToLayerCoordintes } from '../../util/konva';
 import BadPointEditor from '../BadPointEditor';
 import SolveConfigEditor from '../CalcConfigEditor';
 import InteractiveStage from '../InteractiveStage';
-import LineWithIcons from '../LineWithIcons';
 import QPanel from '../QPanel';
 import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
 import BadPoints from './BadPoints';
+import InputDrawingPointsLine from './InputDrawingPointsLine';
 import PreviousSheetQn from './PreviousSheetQn';
+import QArrayLine from './QArrayLine';
 
 const ControlsWrapper = styled(Grid)`
   height: 30px;
@@ -61,21 +57,8 @@ const SIMPLIFY_STEP = 0.01;
 function InputArea({ inputStageId }: { inputStageId: StageId }) {
   const dispatch = useAppDispatch();
 
-  const inputDrawingPoints = useAppSelector(selectActiveSheetIputDrawingPoints);
-  const qArray = useAppSelector(selectActiveSheetQArray);
-
   const { enabled: inputSimplifyEnabled, tolerance: inputSimplifyTolerance } =
     useAppSelector(selectActiveSheetInputSimplifyConfig);
-
-  const qArrayLinePoints = useMemo(
-    () => qArray.flatMap((point) => point),
-    [qArray]
-  );
-
-  const inputDrawingPointsLinePoints = useMemo(
-    () => inputDrawingPoints.flatMap((point) => point),
-    [inputDrawingPoints]
-  );
 
   const [activePanel, setActivePanel] = useState<Panel | undefined>();
 
@@ -294,23 +277,16 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
       >
         <>
           {/* render input drawing points */}
-          <Line
-            points={inputDrawingPointsLinePoints}
-            stroke={isDrawing ? inputLineColor : '#777777'}
-            strokeWidth={isDrawing ? inputStrokeWidth : 1}
-            strokeScaleEnabled={false}
-            lineCap="round"
-            lineJoin="round"
+          <InputDrawingPointsLine
+            stroke={inputLineColor}
+            strokeWidth={inputStrokeWidth}
+            isDrawing={isDrawing}
           />
           {/* render line used to generate values */}
           {!isDrawing && (
-            <LineWithIcons
-              points={qArrayLinePoints}
+            <QArrayLine
               stroke={inputLineColor}
               strokeWidth={inputStrokeWidth}
-              strokeScaleEnabled={false}
-              lineCap="round"
-              lineJoin="round"
             />
           )}
           {/* render last sheet end point if available */}
