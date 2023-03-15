@@ -15,7 +15,6 @@ import { Line } from 'react-konva';
 
 import { inputStrokeWidth } from '../../const';
 
-import { selectBadPoints } from '../../redux/features/badPoints/badPointsSlice';
 import {
   selectActiveSheetInputSimplifyConfig,
   selectActiveSheetIputDrawingPoints,
@@ -36,6 +35,7 @@ import LineWithIcons from '../LineWithIcons';
 import QPanel from '../QPanel';
 import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
+import BadPoints from './BadPoints';
 
 const ControlsWrapper = styled(Grid)`
   height: 30px;
@@ -61,7 +61,6 @@ const SIMPLIFY_STEP = 0.01;
 function InputArea({ inputStageId }: { inputStageId: StageId }) {
   const dispatch = useAppDispatch();
 
-  const badPoints = useAppSelector(selectBadPoints);
   const inputDrawingPoints = useAppSelector(selectActiveSheetIputDrawingPoints);
   const qArray = useAppSelector(selectActiveSheetQArray);
 
@@ -327,17 +326,7 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
             />
           )}
           {/* keep bad points on top */}
-          {badPoints.map((point, pointIndex) => (
-            <Line
-              key={pointIndex}
-              points={point}
-              stroke="#ffff00"
-              strokeWidth={4}
-              strokeScaleEnabled={false}
-              lineCap="round"
-              closed
-            />
-          ))}
+          <BadPoints />
         </>
       </InteractiveStage>
     </>
