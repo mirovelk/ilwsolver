@@ -18,6 +18,7 @@ import { clearInputOutputValues } from '../../actions';
 import { RootState } from '../../store';
 import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
 import { removeSheet, selectActiveSheetQArray } from '../sheets/sheetsSlice';
+import { removeXSeed } from '../xSeeds/xSeedsSlice';
 
 function projectValueV2(x: Complex, q: Complex): Complex {
   return add(x, divide(complex(6), subtract(complex(1), q)));
@@ -125,6 +126,10 @@ export const resultsSlice = createSlice({
       resultsAdapter.removeMany(state, resultIds);
     });
     builder.addCase(removeSheet, (state, action) => {
+      const { resultIds } = action.payload;
+      resultsAdapter.removeMany(state, resultIds);
+    });
+    builder.addCase(removeXSeed, (state, action) => {
       const { resultIds } = action.payload;
       resultsAdapter.removeMany(state, resultIds);
     });

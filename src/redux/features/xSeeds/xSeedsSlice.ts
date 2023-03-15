@@ -114,7 +114,11 @@ export const xSeedsSlice = createSlice({
 
     removeXSeed: (
       state,
-      action: PayloadAction<{ sheetId: SheetId; xSeedId: XSeedId }>
+      action: PayloadAction<{
+        sheetId: SheetId;
+        xSeedId: XSeedId;
+        resultIds: ResultId[];
+      }>
     ) => {
       xSeedsAdapter.removeOne(state, action.payload.xSeedId);
     },
@@ -187,13 +191,14 @@ export const xSeedsSlice = createSlice({
       });
     });
     builder.addCase(removeSheet, (state, action) => {
-      const { sheetId, xSeedIds } = action.payload;
+      const { sheetId, xSeedIds, resultIds } = action.payload;
       xSeedIds.forEach((xSeedId) => {
         xSeedsSlice.caseReducers.removeXSeed(
           state,
           xSeedsSlice.actions.removeXSeed({
             sheetId,
             xSeedId,
+            resultIds,
           })
         );
       });
