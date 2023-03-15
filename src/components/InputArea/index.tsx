@@ -19,7 +19,6 @@ import {
   selectActiveSheetInputSimplifyConfig,
   selectActiveSheetIputDrawingPoints,
   selectActiveSheetQArray,
-  selectPreviousSheetQn,
 } from '../../redux/features/sheets/sheetsSlice';
 import { StageId } from '../../redux/features/stages/stagesSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
@@ -36,6 +35,7 @@ import QPanel from '../QPanel';
 import SheetTabs from '../SheetTabs';
 import XSeedsEditor from '../XSeedsEditor';
 import BadPoints from './BadPoints';
+import PreviousSheetQn from './PreviousSheetQn';
 
 const ControlsWrapper = styled(Grid)`
   height: 30px;
@@ -66,7 +66,6 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
 
   const { enabled: inputSimplifyEnabled, tolerance: inputSimplifyTolerance } =
     useAppSelector(selectActiveSheetInputSimplifyConfig);
-  const previousSheetQn = useAppSelector(selectPreviousSheetQn);
 
   const qArrayLinePoints = useMemo(
     () => qArray.flatMap((point) => point),
@@ -315,16 +314,7 @@ function InputArea({ inputStageId }: { inputStageId: StageId }) {
             />
           )}
           {/* render last sheet end point if available */}
-          {previousSheetQn && (
-            <Line
-              points={previousSheetQn}
-              stroke="#00ffff"
-              strokeWidth={5}
-              strokeScaleEnabled={false}
-              lineCap="square"
-              closed
-            />
-          )}
+          <PreviousSheetQn />
           {/* keep bad points on top */}
           <BadPoints />
         </>
