@@ -73,44 +73,42 @@ function OutputAreaStage() {
   );
 
   return (
-    <>
-      <InteractiveStage
-        stageId={outputStageId}
-        dataLayerOnClick={dataLayerOnClick}
-      >
-        {outputAreaXSeeds.map((xSeed, xSeedIndex) =>
-          xSeed.results.map((result, resultIndex) => (
-            <LineWithIcons
-              key={`${xSeedIndex}-${resultIndex}`}
-              points={result.projectedValues.flatMap((value) => value)}
-              stroke={
-                result.selected
-                  ? xSeed.color
-                  : chroma(xSeed.color).desaturate().darken().hex()
-              }
-              strokeWidth={
-                result.selected ? ouputStrokeWidth : ouputStrokeWidth - 1
-              }
-              lineCap="round"
-              lineJoin="round"
-              dash={
-                !xSeed.resultsValid || !result.selected
-                  ? [dashLength, dashLength]
-                  : []
-              }
-              strokeScaleEnabled={false}
-              hitStrokeWidth={ouputStrokeWidth + 10}
-              groupProps={{
-                onClick: (e: Konva.KonvaEventObject<MouseEvent>) =>
-                  resultLineOnClick(e, result.id),
-                onMouseEnter: resultLineOnMouseEnter,
-                onMouseLeave: resultLineOnMouseLeave,
-              }}
-            />
-          ))
-        )}
-      </InteractiveStage>
-    </>
+    <InteractiveStage
+      stageId={outputStageId}
+      dataLayerOnClick={dataLayerOnClick}
+    >
+      {outputAreaXSeeds.map((xSeed, xSeedIndex) =>
+        xSeed.results.map((result, resultIndex) => (
+          <LineWithIcons
+            key={`${xSeedIndex}-${resultIndex}`}
+            points={result.projectedValues.flatMap((value) => value)}
+            stroke={
+              result.selected
+                ? xSeed.color
+                : chroma(xSeed.color).desaturate().darken().hex()
+            }
+            strokeWidth={
+              result.selected ? ouputStrokeWidth : ouputStrokeWidth - 1
+            }
+            lineCap="round"
+            lineJoin="round"
+            dash={
+              !xSeed.resultsValid || !result.selected
+                ? [dashLength, dashLength]
+                : []
+            }
+            strokeScaleEnabled={false}
+            hitStrokeWidth={ouputStrokeWidth + 10}
+            groupProps={{
+              onClick: (e: Konva.KonvaEventObject<MouseEvent>) =>
+                resultLineOnClick(e, result.id),
+              onMouseEnter: resultLineOnMouseEnter,
+              onMouseLeave: resultLineOnMouseLeave,
+            }}
+          />
+        ))
+      )}
+    </InteractiveStage>
   );
 }
 
