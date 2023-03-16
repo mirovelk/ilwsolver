@@ -9,7 +9,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
 
-const XSeedsHeader = styled.div`
+const Header = styled.div`
   display: flex;
   margin-bottom: 5px;
 `;
@@ -92,7 +92,7 @@ function BadPointEditor() {
 
   return (
     <>
-      <XSeedsHeader>
+      <Header>
         <Typography
           variant="h6"
           color="text.secondary"
@@ -101,7 +101,7 @@ function BadPointEditor() {
         >
           Points
         </Typography>
-      </XSeedsHeader>
+      </Header>
 
       <BadPointsInput
         value={badPointsInput}
