@@ -1,8 +1,8 @@
 import { Line } from 'react-konva';
 
-import { selectBadPoints } from '../../../redux/features/badPoints/badPointsSlice';
+import { selectBadPoints } from '../../../../redux/features/badPoints/badPointsSlice';
 
-import { useAppSelector } from '../../../redux/store';
+import { useAppSelector } from '../../../../redux/store';
 
 function BadPoints() {
   const badPoints = useAppSelector(selectBadPoints);

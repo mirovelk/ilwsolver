@@ -1,4 +1,3 @@
-import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import {
   KeyboardArrowDown,
@@ -24,10 +23,6 @@ import {
 
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { pointPositionToLayerCoordintes } from '../../util/konva';
-
-const Title = styled.h2`
-  margin: 0 20px 5px 0;
-`;
 
 const Wrapper = styled.div`
   height: 100%;
@@ -139,9 +134,6 @@ const dataLayerAxisLength = 1_000_000; // too large value causes safari issues
 
 function InteractiveStage({
   stageId,
-  title,
-  topControls,
-  bottomControls,
   children,
   dataLayerOnClick: dataLayerOnClickProp,
   dataLayerOnMouseMove: dataLayerOnMouseMoveProp,
@@ -149,9 +141,6 @@ function InteractiveStage({
   dataLayerOnMouseUp: dataLayerOnMouseUpProp,
 }: {
   stageId: StageId;
-  title: string;
-  topControls: JSX.Element;
-  bottomControls: JSX.Element;
   children?: React.ReactNode;
   dataLayerOnClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   dataLayerOnMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
@@ -431,29 +420,6 @@ function InteractiveStage({
 
   return (
     <Wrapper>
-      <div>
-        <div
-          css={css`
-            height: 40px;
-            margin-bottom: 5px;
-            display: flex;
-          `}
-        >
-          <Title>{title}</Title>
-          {topControls}
-        </div>
-        <div
-          css={css`
-            height: 35px;
-            margin-bottom: 15px;
-            margin-right: 40px;
-            display: flex;
-          `}
-        >
-          {bottomControls}
-        </div>
-      </div>
-
       <StageWrapper ref={stageWrapperRef}>
         <CursorInfo />
         <OnCanvasControlsWrapper>

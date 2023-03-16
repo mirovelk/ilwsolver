@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { Line } from 'react-konva';
 
-import { selectActiveSheetInputDrawingPoints } from '../../../redux/features/sheets/sheetsSlice';
+import { selectActiveSheetInputDrawingPoints } from '../../../../redux/features/sheets/sheetsSlice';
 
-import { useAppSelector } from '../../../redux/store';
+import { useAppSelector } from '../../../../redux/store';
 
 function InputDrawingPointsLine({
   stroke,
