@@ -5,8 +5,8 @@ import { selectActiveSheetXSeeds } from '../../selectors/selectActiveSheetXSeeds
 import { AppDispatch, RootState } from '../../store';
 import { Result, ResultId } from '../results/resultsSlice';
 import {
+  selectActiveSheetOutputStageId,
   selectActiveSheetQArray,
-  selectActiveSheetStageIds,
 } from '../sheets/sheetsSlice';
 import { selectSolverConfig } from '../solverConfig/solverConfigSlice';
 import { StageId } from '../stages/stagesSlice';
@@ -48,12 +48,12 @@ export const solveActiveSheet = createAsyncThunk<
   });
   const allResults = (await Promise.all(workers)) as ResultsInQArray[];
 
-  const activeSheetStageIds = selectActiveSheetStageIds(state);
+  const outputStageId = selectActiveSheetOutputStageId(state);
 
   // TODO does not center on projected values!
 
   return {
-    outputStageId: activeSheetStageIds.outputStageId,
+    outputStageId: outputStageId,
     oldResultIds: activeSheetXSeeds.flatMap((xSeed) => xSeed.resultIds),
     resultsByXSeed: allResults.map((resultsInQArray, resultIndex) => ({
       xSeedId: activeSheetXSeeds[resultIndex].id,

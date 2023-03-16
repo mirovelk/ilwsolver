@@ -4,8 +4,6 @@ import InputArea from './components/InputArea';
 import OutputArea from './components/OutputArea';
 import StyleProvider from './components/StyleProvider';
 import CenterControls from './components/CenterControls';
-import { useAppSelector } from './redux/store';
-import { selectActiveSheetStageIds } from './redux/features/sheets/sheetsSlice';
 
 const Wrapper = styled.div`
   position: relative;
@@ -30,18 +28,16 @@ const Area = styled.div`
 `;
 
 function App() {
-  const activeSheetStageIds = useAppSelector(selectActiveSheetStageIds);
-
   return (
     <StyleProvider>
       <Wrapper>
         <CenterControls />
         <AreasWrapper>
           <Area>
-            <InputArea inputStageId={activeSheetStageIds.inputStageId} />
+            <InputArea />
           </Area>
           <Area>
-            <OutputArea outputStageId={activeSheetStageIds.outputStageId} />
+            <OutputArea />
           </Area>
         </AreasWrapper>
       </Wrapper>

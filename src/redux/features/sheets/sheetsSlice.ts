@@ -287,12 +287,14 @@ export const selectActiveSheetInputSimplifyConfig = createSelector(
   })
 );
 
-export const selectActiveSheetStageIds = createSelector(
+export const selectActiveSheetInputStageId = createSelector(
   [selectActiveSheet],
-  (activeSheet) => ({
-    inputStageId: activeSheet.inputStageId,
-    outputStageId: activeSheet.outputStageId,
-  })
+  (activeSheet) => activeSheet.inputStageId
+);
+
+export const selectActiveSheetOutputStageId = createSelector(
+  [selectActiveSheet],
+  (activeSheet) => activeSheet.outputStageId
 );
 
 export const selectActiveSheetQArrayValid = createSelector(

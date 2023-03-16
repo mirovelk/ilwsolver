@@ -4,11 +4,9 @@ import { useCallback } from 'react';
 import { ouputStrokeWidth } from '../../../const';
 
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
-import { ResultsInQArray } from '../../../core/solve';
 
 import InteractiveStage from '../../InteractiveStage';
 import LineWithIcons from '../../LineWithIcons';
-import { StageId } from '../../../redux/features/stages/stagesSlice';
 import {
   ResultId,
   toggleResultSelected,
@@ -16,15 +14,12 @@ import {
 import { selectActiveSheetOutputAreaData } from '../../../redux/selectors/selectOutputAreaData';
 import { activeSheetSelectAllResults } from '../../../redux/thunks/activeSheetSelectAllResults';
 import { activeSheetSelectSingleResult } from '../../../redux/thunks/activeSheetSelectSingleResult copy';
+import { selectActiveSheetOutputStageId } from '../../../redux/features/sheets/sheetsSlice';
 
 const dashLength = 10;
 
-export interface Output {
-  result: ResultsInQArray;
-  valid: boolean;
-}
-
-function OutputAreaStage({ outputStageId }: { outputStageId: StageId }) {
+function OutputAreaStage() {
+  const outputStageId = useAppSelector(selectActiveSheetOutputStageId);
   const dispatch = useAppDispatch();
 
   const { xSeeds: outputAreaXSeeds } = useAppSelector(

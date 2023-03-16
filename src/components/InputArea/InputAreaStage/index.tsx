@@ -3,8 +3,10 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { inputStrokeWidth } from '../../../const';
 
-import { selectActiveSheetInputSimplifyConfig } from '../../../redux/features/sheets/sheetsSlice';
-import { StageId } from '../../../redux/features/stages/stagesSlice';
+import {
+  selectActiveSheetInputSimplifyConfig,
+  selectActiveSheetInputStageId,
+} from '../../../redux/features/sheets/sheetsSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
 import { addActiveSheetInputDrawingPoint } from '../../../redux/thunks/activeSheet/addActiveSheetInputDrawingPoint';
 import { updateActiveSheetQArray } from '../../../redux/thunks/activeSheet/updateActiveSheetQArray';
@@ -19,7 +21,9 @@ import QArrayLine from './QArrayLine';
 
 const inputLineColor = '#ff0000';
 
-function InputAreaStage({ inputStageId }: { inputStageId: StageId }) {
+function InputAreaStage() {
+  const inputStageId = useAppSelector(selectActiveSheetInputStageId);
+
   const dispatch = useAppDispatch();
 
   const { enabled: inputSimplifyEnabled, tolerance: inputSimplifyTolerance } =
