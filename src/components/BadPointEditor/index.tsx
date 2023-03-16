@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Paper as MaterialPaper, TextField, Typography } from '@mui/material';
+import { TextField, Typography } from '@mui/material';
 import React, { useCallback, useState } from 'react';
 import {
   selectBadPoints,
@@ -8,12 +8,6 @@ import {
 
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
-
-const Wrapper = styled(MaterialPaper)`
-  display: inline-flex;
-  flex-direction: column;
-  padding: 10px 20px;
-`;
 
 const XSeedsHeader = styled.div`
   display: flex;
@@ -97,7 +91,7 @@ function BadPointEditor() {
   );
 
   return (
-    <Wrapper elevation={3}>
+    <>
       <XSeedsHeader>
         <Typography
           variant="h6"
@@ -116,7 +110,7 @@ function BadPointEditor() {
         multiline
         helperText={badPointsInputError ? 'Invalid input' : ''}
       />
-    </Wrapper>
+    </>
   );
 }
 

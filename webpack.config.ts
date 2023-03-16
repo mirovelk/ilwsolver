@@ -74,6 +74,7 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
           use: [
             isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
             'css-loader',
+            'postcss-loader',
           ],
         },
         {

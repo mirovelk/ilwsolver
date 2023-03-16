@@ -1,7 +1,7 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { ContentCopy } from '@mui/icons-material';
-import { IconButton, Paper as MaterialPaper, Typography } from '@mui/material';
+import { IconButton, Typography } from '@mui/material';
 import clipboard from 'clipboardy';
 import React, { useCallback, useMemo } from 'react';
 import { selectActiveSheetQArray } from '../../redux/features/sheets/sheetsSlice';
@@ -10,15 +10,12 @@ import { useAppSelector } from '../../redux/store';
 import { stringifyComplex } from '../../util/complex';
 import { stringifyComplexArrayForMathematica } from '../../util/mathematica';
 
-const Panel = styled(MaterialPaper)`
+const Wrapper = styled.div`
   display: inline-flex;
   flex-direction: column;
-  position: absolute;
-  z-index: 2000;
-  top: 135px;
-  left: 30px;
-  padding: 10px 20px;
+  white-space: nowrap;
 `;
+
 const Header = styled.div`
   display: flex;
   align-items: center;
@@ -36,7 +33,7 @@ const Row = styled.div`
 
 const iconSpacing = '10px';
 
-function QPanel() {
+function QValues() {
   const qArray = useAppSelector(selectActiveSheetQArray);
 
   const copyInput = useCallback(
@@ -75,7 +72,7 @@ function QPanel() {
   );
 
   return (
-    <Panel elevation={3}>
+    <Wrapper>
       <Header>
         <IconButton
           onClick={copyInput}
@@ -125,8 +122,8 @@ function QPanel() {
           </Typography>
         </Row>
       </Content>
-    </Panel>
+    </Wrapper>
   );
 }
 
-export default React.memo(QPanel);
+export default QValues;

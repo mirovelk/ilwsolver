@@ -19,12 +19,6 @@ import {
   setSolverConfigExC,
 } from '../../redux/features/solverConfig/solverConfigSlice';
 
-const Wrapper = styled(MaterialPaper)`
-  display: inline-flex;
-  flex-direction: column;
-  padding: 10px 20px;
-`;
-
 const Header = styled.div`
   display: flex;
   margin-bottom: 5px;
@@ -75,7 +69,7 @@ const NInput = styled(TextField)`
 const ExKeysOrdered: Array<keyof Ex> = ['E1', 'E2', 'E3'];
 const AxKeysOrdered: Array<keyof Ax> = ['AL', 'AR'];
 
-function SolveConfigEditor() {
+function SolverConfigEditor() {
   const dispatch = useAppDispatch();
 
   const solveConfig = useAppSelector(selectSolverConfig);
@@ -104,7 +98,7 @@ function SolveConfigEditor() {
   );
 
   return (
-    <Wrapper elevation={3}>
+    <>
       <Header>
         <Typography
           variant="h6"
@@ -177,8 +171,8 @@ function SolveConfigEditor() {
           ))}
         </AxEditors>
       </AxWrapper>
-    </Wrapper>
+    </>
   );
 }
 
-export default SolveConfigEditor;
+export default SolverConfigEditor;

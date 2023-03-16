@@ -9,6 +9,19 @@ module.exports = {
   customSyntax: "postcss-scss",
   rules: {
     "selector-type-case": ["lower", { "ignoreTypes": ["/^\\$\\w+/"] }],
-    "declaration-colon-newline-after": null
+    "declaration-colon-newline-after": null,
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "extends",
+          "apply",
+          "tailwind",
+          "components",
+          "utilities",
+          "screen"
+        ]
+      }
+    ]
   }
 }

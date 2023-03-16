@@ -86,7 +86,7 @@ function OutputArea({ outputStageId }: { outputStageId: StageId }) {
   return (
     <>
       <InteractiveStage
-        title="Output"
+        title="Outputs"
         stageId={outputStageId}
         topControls={
           <div

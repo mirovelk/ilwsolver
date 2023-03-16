@@ -93,4 +93,4 @@ function SheetTabs() {
   );
 }
 
-export default React.memo(SheetTabs);
+export default SheetTabs;
