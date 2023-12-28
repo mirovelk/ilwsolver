@@ -1,19 +1,20 @@
 import { useMemo } from 'react';
 import { Line } from 'react-konva';
 
-import { selectActiveSheetInputDrawingPoints } from '../../../../redux/features/sheets/sheetsSlice';
+import { selectActiveSheetInputDrawingPoints } from '../../../../redux/selectors/selectActiveSheetInputDrawingPoints';
 
 import { useAppSelector } from '../../../../redux/store';
+import { selectIsDrawing } from '../../../../redux/features/sheetInputDrawing/sheetInputDrawingSlice';
 
 function InputDrawingPointsLine({
   stroke,
   strokeWidth,
-  isDrawing,
 }: {
   stroke: string;
   strokeWidth: number;
-  isDrawing: boolean; // TODO store state?
 }) {
+  const isDrawing = useAppSelector(selectIsDrawing);
+
   const inputDrawingPoints = useAppSelector(
     selectActiveSheetInputDrawingPoints
   );

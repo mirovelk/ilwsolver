@@ -10,6 +10,7 @@ import ilwSolverSliceReducer from './features/ilwSolver/ilwSolverSlice';
 import badPointsSliceReducer from './features/badPoints/badPointsSlice';
 import xSeedColorsSliceReducer from './features/xSeedColors/xSeedColorsSlice';
 import uiPanelsSliceReducer from './features/uiPanels/uiPanelsSlice';
+import sheetInputDrawingSliceReducer from './features/sheetInputDrawing/sheetInputDrawingSlice';
 
 const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ const store = configureStore({
     ilwSolver: ilwSolverSliceReducer,
     badPoints: badPointsSliceReducer,
     uiPanels: uiPanelsSliceReducer,
+    sheetInputDrawing: sheetInputDrawingSliceReducer,
   },
 });
 

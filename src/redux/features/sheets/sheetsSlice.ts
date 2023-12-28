@@ -34,7 +34,6 @@ export interface Sheet {
   id: SheetId;
   inputSimplifyTolerance: number;
   inputSimplifyEnabled: boolean;
-  inputDrawingPoints: DrawingPoint[]; // TODO separate slice
   qArray: Complex[]; // TODO selector? derived from inputDrawingPoints afer simplify, kept for performance
   qArrayValid: boolean; // qArray can be invalid if inputDrawingPoints changed and needs to be recalculated
   inputStageId: StageId;
@@ -46,7 +45,6 @@ export const initialSheet: Sheet = {
   id: 1, // also used as a label
   inputSimplifyTolerance: SIMPLIFY_INITIAL,
   inputSimplifyEnabled: true,
-  inputDrawingPoints: [],
   qArray: [],
   qArrayValid: false,
   inputStageId: initialStages[0].id,
@@ -169,12 +167,18 @@ export const sheetsSlice = createSlice({
       });
     },
 
-    updateSheetQArray: (state, action: PayloadAction<{ sheetId: SheetId }>) => {
+    updateSheetQArray: (
+      state,
+      action: PayloadAction<{
+        sheetId: SheetId;
+        inputDrawingPoints: DrawingPoint[];
+      }>
+    ) => {
       const sheet = state.entities[action.payload.sheetId];
       if (!sheet) throw new Error('Sheet not found');
 
       const qArray = getQArrayFromInputDrawingPoints(
-        sheet.inputDrawingPoints,
+        action.payload.inputDrawingPoints,
         sheet.inputSimplifyTolerance,
         sheet.inputSimplifyEnabled
       );
@@ -187,18 +191,6 @@ export const sheetsSlice = createSlice({
         },
       });
     },
-
-    addInputDrawingPoint(
-      state,
-      action: PayloadAction<{ sheetId: SheetId; point: [number, number] }>
-    ) {
-      const { sheetId, point } = action.payload;
-      const sheet = state.entities[sheetId];
-      if (!sheet) throw new Error('Sheet not found');
-
-      sheet.inputDrawingPoints.push(point);
-      sheet.qArrayValid = false;
-    },
   },
   extraReducers: (builder) => {
     builder.addCase(clearInputOutputValues, (state, action) => {
@@ -206,7 +198,6 @@ export const sheetsSlice = createSlice({
       const sheet = state.entities[sheetId];
       if (!sheet) throw new Error('Sheet not found');
 
-      sheet.inputDrawingPoints = [];
       sheet.qArray = [];
       sheet.qArrayValid = false;
     });
@@ -250,11 +241,6 @@ export const selectActiveSheetXSeedIds = (state: RootState) => {
 export const selectActiveSheetQArray = createSelector(
   [selectActiveSheet],
   (activeSheet) => activeSheet.qArray // TODO separate slice/check performance
-);
-
-export const selectActiveSheetInputDrawingPoints = createSelector(
-  [selectActiveSheet],
-  (activeSheet) => activeSheet.inputDrawingPoints
 );
 
 export const selectLastSheet = (state: RootState) => {
@@ -311,7 +297,6 @@ export const {
   setInputSimplifyEnabled,
   setInputSimplifyTolerance,
   updateSheetQArray,
-  addInputDrawingPoint,
 } = actions;
 
 export default reducer;

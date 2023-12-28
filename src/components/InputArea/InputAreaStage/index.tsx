@@ -1,9 +1,14 @@
 import Konva from 'konva';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { inputStrokeWidth } from '../../../const';
+import {
+  selectIsDrawing,
+  stopDrawing,
+} from '../../../redux/features/sheetInputDrawing/sheetInputDrawingSlice';
 
 import {
+  DrawingPoint,
   selectActiveSheetInputSimplifyConfig,
   selectActiveSheetInputStageId,
 } from '../../../redux/features/sheets/sheetsSlice';
@@ -18,64 +23,67 @@ import BadPoints from './BadPoints';
 import InputDrawingPointsLine from './InputDrawingPointsLine';
 import PreviousSheetQn from './PreviousSheetQn';
 import QArrayLine from './QArrayLine';
+import { invalidateActiveSheetXSeedsAndStartDrawing } from '../../../redux/features/sheetInputDrawing/thunks/activeSheetStartDrawing';
 
 const inputLineColor = '#ff0000';
 
-function InputAreaStage() {
-  const inputStageId = useAppSelector(selectActiveSheetInputStageId);
+function inputDrawingPointFromMouseEvent(
+  e: Konva.KonvaEventObject<MouseEvent>
+): DrawingPoint | undefined {
+  const pointerPosition = e.currentTarget?.getStage()?.getPointerPosition();
 
+  if (pointerPosition && e.currentTarget) {
+    const point = pointPositionToLayerCoordintes(
+      pointerPosition,
+      e.currentTarget
+    );
+    return [point.x, point.y];
+  }
+}
+
+function InputAreaStage() {
   const dispatch = useAppDispatch();
+
+  const inputStageId = useAppSelector(selectActiveSheetInputStageId);
+  const isDrawing = useAppSelector(selectIsDrawing);
 
   const { enabled: inputSimplifyEnabled, tolerance: inputSimplifyTolerance } =
     useAppSelector(selectActiveSheetInputSimplifyConfig);
-
-  const [isDrawing, setIsDrawing] = useState(false);
 
   // update qArray on siplify config change
   useEffect(() => {
     dispatch(updateActiveSheetQArray());
   }, [dispatch, inputSimplifyEnabled, inputSimplifyTolerance]);
 
-  const dispatchInputDrawingPointFromMouseEvent = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>): void => {
-      const pointerPosition = e.currentTarget?.getStage()?.getPointerPosition();
-
-      if (pointerPosition && e.currentTarget) {
-        const point = pointPositionToLayerCoordintes(
-          pointerPosition,
-          e.currentTarget
-        );
-        dispatch(addActiveSheetInputDrawingPoint([point.x, point.y]));
-      }
-    },
-    [dispatch]
-  );
-
   // start drawing input path on mouse down
   const dataLayerOnMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>): void => {
       if (e.evt.buttons === 1) {
-        setIsDrawing(true);
-        dispatchInputDrawingPointFromMouseEvent(e);
+        const inputDrawingPoint = inputDrawingPointFromMouseEvent(e);
+        if (!inputDrawingPoint) return;
+        dispatch(invalidateActiveSheetXSeedsAndStartDrawing());
+        dispatch(addActiveSheetInputDrawingPoint(inputDrawingPoint));
       }
     },
-    [dispatchInputDrawingPointFromMouseEvent]
+    [dispatch]
   );
 
   // draw input path while moving mouse
   const dataLayerOnMouseMove = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>): void => {
       if (e.evt.buttons === 1) {
-        dispatchInputDrawingPointFromMouseEvent(e);
+        const inputDrawingPoint = inputDrawingPointFromMouseEvent(e);
+        if (!inputDrawingPoint) return;
+        dispatch(addActiveSheetInputDrawingPoint(inputDrawingPoint));
       }
     },
-    [dispatchInputDrawingPointFromMouseEvent]
+    [dispatch]
   );
 
   // stop drawing input path on mouse up and update qArray
   const dataLayerOnMouseUp = useCallback(
     (_e: Konva.KonvaEventObject<MouseEvent>): void => {
-      setIsDrawing(false);
+      stopDrawing();
       dispatch(updateActiveSheetQArray()); // make sure to trigger recalculation of qArray
     },
     [dispatch]
@@ -93,7 +101,6 @@ function InputAreaStage() {
         <InputDrawingPointsLine
           stroke={inputLineColor}
           strokeWidth={inputStrokeWidth}
-          isDrawing={isDrawing}
         />
         {/* render line used to generate values */}
         {!isDrawing && (
