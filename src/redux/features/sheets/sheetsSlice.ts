@@ -75,19 +75,61 @@ function getQArrayFromInputDrawingPoints(
     : inputDrawingPoints;
 }
 
+function getSmoothedInputLinePoints(
+  inputLinePoints: DrawingPoint[],
+  minimumPoints: number
+): DrawingPoint[] {
+  if (inputLinePoints.length < 2) {
+    return inputLinePoints;
+  }
+
+  const output: DrawingPoint[] = [];
+
+  // copy firts point
+  if (inputLinePoints.length > 0) {
+    const firstPoint = inputLinePoints[0];
+    output.push([firstPoint[0], firstPoint[1]]);
+  }
+
+  // add smoothed points (Chaikins Algorithm https://www.cs.unc.edu/~dm/UNC/COMP258/LECTURES/Chaikins-Algorithm.pdf)
+  for (let i = 0; i < inputLinePoints.length - 1; i++) {
+    const p0 = inputLinePoints[i];
+    const p1 = inputLinePoints[i + 1];
+    const p0x = p0[0];
+    const p0y = p0[1];
+    const p1x = p1[0];
+    const p1y = p1[1];
+
+    const Q: DrawingPoint = [0.75 * p0x + 0.25 * p1x, 0.75 * p0y + 0.25 * p1y];
+    const R: DrawingPoint = [0.25 * p0x + 0.75 * p1x, 0.25 * p0y + 0.75 * p1y];
+    output.push(Q);
+    output.push(R);
+  }
+
+  // copy last point
+  if (inputLinePoints.length > 1) {
+    const lastPoint = inputLinePoints[inputLinePoints.length - 1];
+    output.push([lastPoint[0], lastPoint[1]]);
+  }
+
+  // repeat until minimum points reached
+  return output.length < minimumPoints
+    ? getSmoothedInputLinePoints(output, minimumPoints)
+    : output;
+}
+
 function getSimplifiedSmoothedInputLinePoints(
   inputLinePoints: DrawingPoint[],
   inputSimplifyTolerance: number
 ): DrawingPoint[] {
   // simplify
-  return simplifyPath(
+  const simplified: DrawingPoint[] = simplifyPath(
     inputLinePoints.map((point) => ({ x: point[0], y: point[1] })),
     Math.pow(10, inputSimplifyTolerance),
     true
   ).map((point) => [point.x, point.y]);
 
-  // smooth
-  // TODO add smooothing/interpolation
+  return getSmoothedInputLinePoints(simplified, 1000);
 }
 
 export const sheetsSlice = createSlice({
