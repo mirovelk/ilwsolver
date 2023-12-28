@@ -83,7 +83,7 @@ function InputAreaStage() {
   // stop drawing input path on mouse up and update qArray
   const dataLayerOnMouseUp = useCallback(
     (_e: Konva.KonvaEventObject<MouseEvent>): void => {
-      stopDrawing();
+      dispatch(stopDrawing());
       dispatch(updateActiveSheetQArray()); // make sure to trigger recalculation of qArray
     },
     [dispatch]
