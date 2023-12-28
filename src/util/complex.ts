@@ -64,12 +64,14 @@ function stringifyNumber(number: number, full: boolean): string {
   }
 }
 
+const I = 'i';
+
 export function stringifyComplex(complex: Complex, full = false): string {
   const str = stringifyNumber(complex[0], full);
   if (complex[1] < 0) {
-    return `${str}-${stringifyNumber(-complex[1], full)}I`;
+    return `${str}-${stringifyNumber(-complex[1], full)}${I}`;
   } else if (complex[1] >= 0) {
-    return `${str}+${stringifyNumber(complex[1], full)}I`;
+    return `${str}+${stringifyNumber(complex[1], full)}${I}`;
   } else {
     return str;
   }
@@ -79,7 +81,7 @@ export function parseComplex(str: string): Complex {
   const c = [0, 0] as Complex;
   if (
     (str.slice(1).includes('+') || str.slice(1).includes('-')) &&
-    !str.includes('I') // check for missing "I"
+    !str.includes(I) // check for missing "I"
   ) {
     throw new Error(`Invalid complex number: ${str}`);
   }
