@@ -1,10 +1,10 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { required } from '../../util/required';
-import { RootState } from '../store';
-import { selectActiveSheet } from '../features/sheets/sheetsSlice';
+import { selectActiveSheet } from './selectActiveSheet';
+import { selectXSeedsEntities } from '../features/xSeeds/xSeedsSlice';
 
 export const selectActiveSheetXSeeds = createSelector(
-  [selectActiveSheet, (state: RootState) => state.xSeeds],
-  (activeSheet, xSeeds) =>
-    activeSheet.xSeedIds.map((xSeedId) => required(xSeeds.entities[xSeedId]))
+  [selectActiveSheet, selectXSeedsEntities],
+  (activeSheet, xSeedsEntries) =>
+    activeSheet.xSeedIds.map((xSeedId) => required(xSeedsEntries[xSeedId]))
 );

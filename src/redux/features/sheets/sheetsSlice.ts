@@ -22,6 +22,7 @@ import {
   removeXSeed,
   XSeedId,
 } from '../xSeeds/xSeedsSlice';
+import { selectActiveSheet } from '../../selectors/selectActiveSheet';
 
 const SIMPLIFY_INITIAL = -1.5;
 
@@ -269,10 +270,6 @@ export const selectSheetById = (state: RootState, sheetId: SheetId) => {
 
 export const selectActiveSheetId = (state: RootState) =>
   state.sheets.activeSheetId;
-
-export const selectActiveSheet = (state: RootState) => {
-  return required(state.sheets.entities[state.sheets.activeSheetId]);
-};
 
 export const selectActiveSheetXSeedIds = (state: RootState) => {
   const activeSheet = required(
