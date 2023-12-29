@@ -18,7 +18,7 @@ interface Argv {
   mode: WebpackMode;
 }
 
-// TODO vite + next.js
+// TODO vite
 export interface WebpackConfigurationGenerator {
   (env?: unknown, argv?: Argv):
     | webpack.Configuration

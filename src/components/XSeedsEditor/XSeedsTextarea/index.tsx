@@ -118,7 +118,7 @@ function XSeedsTextarea() {
           )
         ) {
           setXSeedsTextareaError(false);
-          dispatch(setActiveSheetXSeedsValues(xSeedsParsed)); // TODO move processing here? FIX!
+          dispatch(setActiveSheetXSeedsValues(xSeedsParsed));
         } else {
           throw new Error('invalid input');
         }

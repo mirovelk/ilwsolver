@@ -338,6 +338,6 @@ export function solveInQArray(
     return { results: transpose(output.slice(1)) };
   } catch (error) {
     console.error(error);
-    return { results: [], error: String(error) };
+    return { results: [], error: String(error) }; // TODO render errors
   }
 }
