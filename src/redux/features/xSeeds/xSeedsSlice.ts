@@ -81,8 +81,7 @@ export const xSeedsSlice = createSlice({
       const M = action.payload;
 
       const updates = state.ids.map((xSeedId) => {
-        const xSeedValue = state.entities[xSeedId]?.value;
-        if (!xSeedValue) throw new Error('xSeed not found');
+        const xSeedValue = required(state.entities[xSeedId]?.value);
 
         return {
           id: xSeedId,
@@ -132,11 +131,21 @@ export const xSeedsSlice = createSlice({
       }>
     ) => {
       const { xSeedId, xSeedNumberIndex, value } = action.payload;
-
-      const xSeed = state.entities[xSeedId];
-      if (!xSeed) throw new Error('xSeed not found');
-
+      const xSeed = required(state.entities[xSeedId]);
       xSeed.value[xSeedNumberIndex] = value;
+    },
+
+    setXSeedValue: (
+      state,
+      action: PayloadAction<{
+        xSeedId: XSeedId;
+        value: XSeedValue;
+      }>
+    ) => {
+      const { xSeedId, value } = action.payload;
+      const xSeed = required(state.entities[xSeedId]);
+      xSeed.value = value;
+      xSeed.resultsValid = false;
     },
 
     xSeedHasError(
@@ -144,16 +153,14 @@ export const xSeedsSlice = createSlice({
       action: PayloadAction<{ xSeedId: XSeedId; hasError: boolean }>
     ) {
       const { xSeedId, hasError } = action.payload;
-      const xSeed = state.entities[xSeedId];
-      if (!xSeed) throw new Error('xSeed not found');
+      const xSeed = required(state.entities[xSeedId]);
       xSeed.hasError = hasError;
     },
 
     invalidateResultsForXSeeds(state, action: PayloadAction<Array<XSeedId>>) {
       const xSeedIds = action.payload;
       xSeedIds.forEach((xSeedId) => {
-        const xSeed = state.entities[xSeedId];
-        if (!xSeed) throw new Error('xSeed not found');
+        const xSeed = required(state.entities[xSeedId]);
         xSeed.resultsValid = false;
       });
     },
@@ -175,8 +182,7 @@ export const xSeedsSlice = createSlice({
     builder.addCase(clearInputOutputValues, (state, action) => {
       const { xSeedIds } = action.payload;
       xSeedIds.forEach((xSeedId) => {
-        const xSeed = state.entities[xSeedId];
-        if (!xSeed) throw new Error('xSeed not found');
+        const xSeed = required(state.entities[xSeedId]);
         xSeed.resultIds = [];
         xSeed.resultsValid = false;
       });
@@ -227,6 +233,7 @@ export const {
   setXSeedsM,
   addXSeed,
   removeXSeed,
+  setXSeedValue,
   setXSeedNumber,
   xSeedHasError,
   invalidateResultsForXSeeds,

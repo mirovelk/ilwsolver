@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getDifferentColor } from '../../../util/color';
 import { selectXSeedsColors } from '../../features/xSeedColors/xSeedColorsSlice';
 import {
+  XSeedValue,
   addXSeed,
   getRandomXSeedNumber,
   selectM,
@@ -9,24 +10,28 @@ import {
 import { selectActiveSheetXSeeds } from '../../selectors/selectActiveSheetXSeeds';
 import { AppThunk } from '../../store';
 
-export const addXSeedToActiveSheet = (): AppThunk => (dispatch, getState) => {
-  const state = getState();
-  const newXseedId = uuidv4();
+export const addXSeedToActiveSheet =
+  (xSeedValue?: XSeedValue): AppThunk =>
+  (dispatch, getState) => {
+    const state = getState();
+    const newXseedId = uuidv4();
 
-  const activeSheetXSeeds = selectActiveSheetXSeeds(state);
-  const M = selectM(state);
+    const activeSheetXSeeds = selectActiveSheetXSeeds(state);
+    const M = selectM(state);
 
-  const previousColors = selectXSeedsColors(
-    state,
-    activeSheetXSeeds.map((xSeed) => xSeed.id)
-  );
+    const previousColors = selectXSeedsColors(
+      state,
+      activeSheetXSeeds.map((xSeed) => xSeed.id)
+    );
 
-  dispatch(
-    addXSeed({
-      sheetId: state.sheets.activeSheetId,
-      xSeedId: newXseedId,
-      value: new Array(M).fill(null).map(() => getRandomXSeedNumber()),
-      color: getDifferentColor(previousColors),
-    })
-  );
-};
+    dispatch(
+      addXSeed({
+        sheetId: state.sheets.activeSheetId,
+        xSeedId: newXseedId,
+        value:
+          xSeedValue ??
+          new Array(M).fill(null).map(() => getRandomXSeedNumber()),
+        color: getDifferentColor(previousColors),
+      })
+    );
+  };
