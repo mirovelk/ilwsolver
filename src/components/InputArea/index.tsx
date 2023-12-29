@@ -1,6 +1,6 @@
 import InputTopControls from './InputTopControls';
 import InputBottomControls from './InputBottomControls';
-import AreaLayout from '../AreaLayout';
+import AreaLayout from 'components/AreaLayout';
 import InputAreaStage from './InputAreaStage';
 
 function InputArea() {

@@ -19,13 +19,23 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'react/no-unknown-property': ['error', { ignore: ['css'] }],
     '@typescript-eslint/ban-ts-comment': 'off',
+    'no-relative-import-paths/no-relative-import-paths': [
+      'error',
+      { allowSameFolder: true, rootDir: 'src' },
+    ],
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  plugins: ['prettier', 'react', '@emotion', '@typescript-eslint'],
+  plugins: [
+    'prettier',
+    'react',
+    '@emotion',
+    '@typescript-eslint',
+    'no-relative-import-paths',
+  ],
   settings: {
     react: {
       version: 'detect',

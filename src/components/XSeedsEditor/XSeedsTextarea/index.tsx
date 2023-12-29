@@ -1,11 +1,11 @@
 import styled from '@emotion/styled';
 import { TextField, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
-import { XSeedValue } from '../../../redux/features/xSeeds/xSeedsSlice';
-import { selectActiveSheetXSeeds } from '../../../redux/selectors/selectActiveSheetXSeeds';
-import { useAppDispatch, useAppSelector } from '../../../redux/store';
-import { setActiveSheetXSeedsValues } from '../../../redux/thunks/activeSheet/setActiveSheetXSeedsValues';
-import { parseComplex, stringifyComplex } from '../../../util/complex';
+import { XSeedValue } from 'redux/features/xSeeds/xSeedsSlice';
+import { selectActiveSheetXSeeds } from 'redux/selectors/selectActiveSheetXSeeds';
+import { useAppDispatch, useAppSelector } from 'redux/store';
+import { setActiveSheetXSeedsValues } from 'redux/thunks/activeSheet/setActiveSheetXSeedsValues';
+import { parseComplex, stringifyComplex } from 'util/complex';
 
 const Textarea = styled(TextField)``;
 

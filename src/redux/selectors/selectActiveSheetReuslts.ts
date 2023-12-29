@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { selectActiveSheetProjectedResult } from '../features/results/resultsSlice';
-import { RootState } from '../store';
+import { selectActiveSheetProjectedResult } from 'redux/features/results/resultsSlice';
+import { RootState } from 'redux/store';
 import { selectActiveSheetResultIds } from './selectActiveSheetReusltIds';
 
 export const selectActiveSheetProjectedResults = createSelector(

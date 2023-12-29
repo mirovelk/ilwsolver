@@ -40,13 +40,14 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
     devtool: 'source-map',
     output: {
       path: path.resolve(__dirname, 'build'),
-      filename: 'resources/js/[chunkhash].bundle.js',
+      filename: '[chunkhash].bundle.js',
       clean: true,
-      assetModuleFilename: 'resources/assets/[hash].[name][ext]',
-      publicPath: isProduction ? './' : '/',
+      assetModuleFilename: '[hash].[name][ext]',
+      publicPath: '', // realtive to index.html
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
+      modules: [path.resolve(__dirname, 'src'), 'node_modules'],
     },
     module: {
       rules: [
@@ -92,7 +93,7 @@ const generateConfig: WebpackConfigurationGenerator = (_env, argv) => {
       ...(isProduction
         ? [
             new MiniCssExtractPlugin({
-              filename: 'resources/css/[chunkhash].[name].css',
+              filename: '[chunkhash].[name].css',
             }),
           ]
         : [new ReactRefreshWebpackPlugin()]),

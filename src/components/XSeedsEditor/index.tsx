@@ -2,9 +2,9 @@ import styled from '@emotion/styled';
 import { Add } from '@mui/icons-material';
 import { IconButton, Typography } from '@mui/material';
 import { useCallback } from 'react';
-import { selectActiveSheetXSeedIds } from '../../redux/features/sheets/sheetsSlice';
-import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { addXSeedToActiveSheet } from '../../redux/thunks/activeSheet/addXSeedToActiveSheet';
+import { selectActiveSheetXSeedIds } from 'redux/features/sheets/sheetsSlice';
+import { useAppDispatch, useAppSelector } from 'redux/store';
+import { addXSeedToActiveSheet } from 'redux/thunks/activeSheet/addXSeedToActiveSheet';
 
 import MInput from './MInput';
 import ResultsStartEndCopyButtons from './ResultsStartEndCopyButtons';

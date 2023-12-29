@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Ax, Ex } from '../../../core/solve';
+import { Ax, Ex } from 'core/solve';
 
-import { complex, Complex } from '../../../util/complex';
-import { RootState } from '../../store';
+import { complex, Complex } from 'util/complex';
+import { RootState } from 'redux/store';
 
 const initialState = {
   Ex: {

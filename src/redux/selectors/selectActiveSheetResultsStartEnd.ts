@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { Complex } from '../../util/complex';
-import { required } from '../../util/required';
-import { selectResultsEntities } from '../features/results/resultsSlice';
+import { Complex } from 'util/complex';
+import { required } from 'util/required';
+import { selectResultsEntities } from 'redux/features/results/resultsSlice';
 import { selectActiveSheetXSeeds } from './selectActiveSheetXSeeds';
 
 export const selectActiveSheetResultsStartEnd = createSelector(

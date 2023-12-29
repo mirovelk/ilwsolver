@@ -6,8 +6,8 @@ import {
   Panel,
   selectIsActivePanel,
   toggleActivePanel,
-} from '../../redux/features/uiPanels/uiPanelsSlice';
-import { useAppDispatch, useAppSelector } from '../../redux/store';
+} from 'redux/features/uiPanels/uiPanelsSlice';
+import { useAppDispatch, useAppSelector } from 'redux/store';
 
 const PaperPanel = styled(Paper)`
   padding: 10px 20px;

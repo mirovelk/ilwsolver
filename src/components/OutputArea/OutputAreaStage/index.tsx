@@ -1,20 +1,20 @@
 import chroma from 'chroma-js';
 import Konva from 'konva';
 import { useCallback } from 'react';
-import { ouputStrokeWidth } from '../../../const';
+import { ouputStrokeWidth } from 'const';
 
-import { useAppDispatch, useAppSelector } from '../../../redux/store';
+import { useAppDispatch, useAppSelector } from 'redux/store';
 
-import InteractiveStage from '../../InteractiveStage';
-import LineWithIcons from '../../LineWithIcons';
+import InteractiveStage from 'components/InteractiveStage';
+import LineWithIcons from 'components/LineWithIcons';
 import {
   ResultId,
   toggleResultSelected,
-} from '../../../redux/features/results/resultsSlice';
-import { selectActiveSheetOutputAreaData } from '../../../redux/selectors/selectOutputAreaData';
-import { activeSheetSelectAllResults } from '../../../redux/thunks/activeSheet/activeSheetSelectAllResults';
-import { activeSheetSelectSingleResult } from '../../../redux/thunks/activeSheet/activeSheetSelectSingleResult copy';
-import { selectActiveSheetOutputStageId } from '../../../redux/features/sheets/sheetsSlice';
+} from 'redux/features/results/resultsSlice';
+import { selectActiveSheetOutputAreaData } from 'redux/selectors/selectOutputAreaData';
+import { activeSheetSelectAllResults } from 'redux/thunks/activeSheet/activeSheetSelectAllResults';
+import { activeSheetSelectSingleResult } from 'redux/thunks/activeSheet/activeSheetSelectSingleResult copy';
+import { selectActiveSheetOutputStageId } from 'redux/features/sheets/sheetsSlice';
 
 const dashLength = 10;
 

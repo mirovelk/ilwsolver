@@ -3,16 +3,16 @@ import { Ballot } from '@mui/icons-material';
 import { Checkbox, FormControlLabel, Grid, Input, Slider } from '@mui/material';
 import React, { useCallback, useEffect } from 'react';
 
-import { selectActiveSheetInputSimplifyConfig } from '../../../redux/features/sheets/sheetsSlice';
-import { useAppDispatch, useAppSelector } from '../../../redux/store';
-import { updateActiveSheetQArray } from '../../../redux/thunks/activeSheet/updateActiveSheetQArray';
-import { setActiveSheetInputSimplifyEnabled } from '../../../redux/thunks/activeSheet/setActiveSheetInputSimplifyEnabled';
-import { setActiveSheetInputSimplifyTolerance } from '../../../redux/thunks/activeSheet/setActiveSheetInputSimplifyTolerance';
+import { selectActiveSheetInputSimplifyConfig } from 'redux/features/sheets/sheetsSlice';
+import { useAppDispatch, useAppSelector } from 'redux/store';
+import { updateActiveSheetQArray } from 'redux/thunks/activeSheet/updateActiveSheetQArray';
+import { setActiveSheetInputSimplifyEnabled } from 'redux/thunks/activeSheet/setActiveSheetInputSimplifyEnabled';
+import { setActiveSheetInputSimplifyTolerance } from 'redux/thunks/activeSheet/setActiveSheetInputSimplifyTolerance';
 
-import QValues from '../../QValues';
-import XSeedsEditor from '../../XSeedsEditor';
-import PopupPanel from '../../PopupPanel';
-import { Panel } from '../../../redux/features/uiPanels/uiPanelsSlice';
+import QValues from 'components/QValues';
+import XSeedsEditor from 'components/XSeedsEditor';
+import PopupPanel from 'components/PopupPanel';
+import { Panel } from 'redux/features/uiPanels/uiPanelsSlice';
 
 const ControlsWrapper = styled(Grid)`
   height: 30px;

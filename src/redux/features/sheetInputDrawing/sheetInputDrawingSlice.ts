@@ -4,9 +4,9 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { RootState } from '../../store';
-import { removeSheet, SheetId } from '../sheets/sheetsSlice';
-import { clearInputOutputValues } from '../../actions';
+import { RootState } from 'redux/store';
+import { removeSheet, SheetId } from 'redux/features/sheets/sheetsSlice';
+import { clearInputOutputValues } from 'redux/actions';
 
 type DrawingPoint = [number, number];
 
@@ -27,7 +27,6 @@ export const sheetInputDrawingSlice = createSlice({
   }),
   reducers: {
     startDrawing: (state) => {
-      console.log('startDrawing :>> ');
       state.isDrawing = true;
     },
     stopDrawing: (state) => {

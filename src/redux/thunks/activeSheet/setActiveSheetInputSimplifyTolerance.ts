@@ -1,8 +1,8 @@
 import {
   selectActiveSheetId,
   setInputSimplifyTolerance,
-} from '../../features/sheets/sheetsSlice';
-import { AppThunk } from '../../store';
+} from 'redux/features/sheets/sheetsSlice';
+import { AppThunk } from 'redux/store';
 
 export const setActiveSheetInputSimplifyTolerance =
   (inputSimplifyTolerance: number): AppThunk =>

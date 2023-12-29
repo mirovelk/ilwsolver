@@ -1,6 +1,6 @@
-import { addInputDrawingPoint } from '../../features/sheetInputDrawing/sheetInputDrawingSlice';
-import { selectActiveSheetId } from '../../features/sheets/sheetsSlice';
-import { AppThunk } from '../../store';
+import { addInputDrawingPoint } from 'redux/features/sheetInputDrawing/sheetInputDrawingSlice';
+import { selectActiveSheetId } from 'redux/features/sheets/sheetsSlice';
+import { AppThunk } from 'redux/store';
 
 export const addActiveSheetInputDrawingPoint =
   (point: [number, number]): AppThunk =>

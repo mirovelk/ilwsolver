@@ -6,11 +6,11 @@ import {
   setXSeedColor,
   toggleColorPickerForXSeedId,
   selectXSeedColor,
-} from '../../../../redux/features/xSeedColors/xSeedColorsSlice';
+} from 'redux/features/xSeedColors/xSeedColorsSlice';
 
-import { XSeedId } from '../../../../redux/features/xSeeds/xSeedsSlice';
+import { XSeedId } from 'redux/features/xSeeds/xSeedsSlice';
 
-import { useAppDispatch, useAppSelector } from '../../../../redux/store';
+import { useAppDispatch, useAppSelector } from 'redux/store';
 
 const Color = styled.div<{ seedColor: string }>`
   display: inline-block;

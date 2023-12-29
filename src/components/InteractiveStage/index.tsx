@@ -19,10 +19,10 @@ import {
   StageId,
   updateStageDataLayerPosition,
   zoomStageDataLayerWithWheel,
-} from '../../redux/features/stages/stagesSlice';
+} from 'redux/features/stages/stagesSlice';
 
-import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { pointPositionToLayerCoordintes } from '../../util/konva';
+import { useAppDispatch, useAppSelector } from 'redux/store';
+import { pointPositionToLayerCoordintes } from 'util/konva';
 
 const Wrapper = styled.div`
   height: 100%;

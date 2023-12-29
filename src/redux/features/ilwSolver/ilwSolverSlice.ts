@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { RootState } from '../../store';
+import { RootState } from 'redux/store';
 import { solveActiveSheet } from './solveActiveSheet';
 
 const initialState = {

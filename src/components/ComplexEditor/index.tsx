@@ -7,7 +7,7 @@ import {
   areComplexEqual,
   parseComplex,
   stringifyComplex,
-} from '../../util/complex';
+} from 'util/complex';
 
 const ComplexWrapper = styled(MaterialPaper)`
   display: flex;

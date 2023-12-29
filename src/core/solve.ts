@@ -9,7 +9,7 @@ import {
   minus,
   multiply,
   subtract,
-} from '../util/complex';
+} from 'util/complex';
 
 export interface Ex {
   E1: Complex;
@@ -322,14 +322,22 @@ export function solveInQArray(
   xSeed: Complex[],
   qArray: Complex[],
   config: SolveConfig
-): ResultsInQArray {
-  const output: ResultsInQArray = [];
+): {
+  results: ResultsInQArray;
+  error?: string;
+} {
+  try {
+    const output: ResultsInQArray = [];
 
-  output.push(xSeed); // initial value = xSeed
+    output.push(xSeed); // initial value = xSeed
 
-  for (let i = 0; i < qArray.length; i++) {
-    output.push(solveInQ(output[output.length - 1], qArray[i], config));
+    for (let i = 0; i < qArray.length; i++) {
+      output.push(solveInQ(output[output.length - 1], qArray[i], config));
+    }
+
+    return { results: transpose(output.slice(1)) };
+  } catch (error) {
+    console.error(error);
+    return { results: [], error: String(error) };
   }
-
-  return transpose(output.slice(1));
 }

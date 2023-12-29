@@ -3,11 +3,11 @@ import { Circle, ContentCopy, Square } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import clipboard from 'clipboardy';
 import React, { useCallback } from 'react';
-import { selectActiveSheetResultsStartEnd } from '../../../redux/selectors/selectActiveSheetResultsStartEnd';
+import { selectActiveSheetResultsStartEnd } from 'redux/selectors/selectActiveSheetResultsStartEnd';
 
-import { useAppSelector } from '../../../redux/store';
+import { useAppSelector } from 'redux/store';
 
-import { stringifyArrayOfComplexArraysForMathematica } from '../../../util/mathematica';
+import { stringifyArrayOfComplexArraysForMathematica } from 'util/mathematica';
 
 function ResultsStartEndCopyButtons() {
   const { allXSeedsCalculated, allXSeedResultsStarts, allXSeedResultsEnds } =

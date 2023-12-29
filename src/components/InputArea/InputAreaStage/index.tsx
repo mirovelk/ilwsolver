@@ -1,29 +1,29 @@
 import Konva from 'konva';
 import { useCallback, useEffect } from 'react';
 
-import { inputStrokeWidth } from '../../../const';
+import { inputStrokeWidth } from 'const';
 import {
   selectIsDrawing,
   stopDrawing,
-} from '../../../redux/features/sheetInputDrawing/sheetInputDrawingSlice';
+} from 'redux/features/sheetInputDrawing/sheetInputDrawingSlice';
 
 import {
   DrawingPoint,
   selectActiveSheetInputSimplifyConfig,
   selectActiveSheetInputStageId,
-} from '../../../redux/features/sheets/sheetsSlice';
-import { useAppDispatch, useAppSelector } from '../../../redux/store';
-import { addActiveSheetInputDrawingPoint } from '../../../redux/thunks/activeSheet/addActiveSheetInputDrawingPoint';
-import { updateActiveSheetQArray } from '../../../redux/thunks/activeSheet/updateActiveSheetQArray';
+} from 'redux/features/sheets/sheetsSlice';
+import { useAppDispatch, useAppSelector } from 'redux/store';
+import { addActiveSheetInputDrawingPoint } from 'redux/thunks/activeSheet/addActiveSheetInputDrawingPoint';
+import { updateActiveSheetQArray } from 'redux/thunks/activeSheet/updateActiveSheetQArray';
 
-import { pointPositionToLayerCoordintes } from '../../../util/konva';
-import InteractiveStage from '../../InteractiveStage';
+import { pointPositionToLayerCoordintes } from 'util/konva';
+import InteractiveStage from 'components/InteractiveStage';
 
 import BadPoints from './BadPoints';
 import InputDrawingPointsLine from './InputDrawingPointsLine';
 import PreviousSheetQn from './PreviousSheetQn';
 import QArrayLine from './QArrayLine';
-import { invalidateActiveSheetXSeedsAndStartDrawing } from '../../../redux/thunks/activeSheet/activeSheetStartDrawing';
+import { invalidateActiveSheetXSeedsAndStartDrawing } from 'redux/thunks/activeSheet/activeSheetStartDrawing';
 
 const inputLineColor = '#ff0000';
 

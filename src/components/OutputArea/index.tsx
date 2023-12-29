@@ -1,4 +1,4 @@
-import AreaLayout from '../AreaLayout';
+import AreaLayout from 'components/AreaLayout';
 import OutputAreaStage from './OutputAreaStage';
 import OutputAreaTopControls from './OutputAreaTopControls';
 

@@ -1,11 +1,11 @@
 import {
   OutputProjectionVariant,
   setOutputProjectionVariant,
-} from '../features/results/resultsSlice';
-import { centerStageDataLayerOnValues } from '../features/stages/stagesSlice';
-import { selectActiveSheetOutputStageId } from '../features/sheets/sheetsSlice';
-import { selectActiveSheetProjectedResults } from '../selectors/selectActiveSheetReuslts';
-import { AppThunk } from '../store';
+} from 'redux/features/results/resultsSlice';
+import { centerStageDataLayerOnValues } from 'redux/features/stages/stagesSlice';
+import { selectActiveSheetOutputStageId } from 'redux/features/sheets/sheetsSlice';
+import { selectActiveSheetProjectedResults } from 'redux/selectors/selectActiveSheetReuslts';
+import { AppThunk } from 'redux/store';
 
 export const setProjectionVariantAndCenterActiveSheetResults =
   (outputProjectionVariant: OutputProjectionVariant): AppThunk =>

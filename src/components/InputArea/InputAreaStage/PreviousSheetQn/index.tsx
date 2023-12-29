@@ -1,8 +1,8 @@
 import { Line } from 'react-konva';
 
-import { selectPreviousSheetQn } from '../../../../redux/features/sheets/sheetsSlice';
+import { selectPreviousSheetQn } from 'redux/features/sheets/sheetsSlice';
 
-import { useAppSelector } from '../../../../redux/store';
+import { useAppSelector } from 'redux/store';
 
 function PreviousSheetQn() {
   const previousSheetQn = useAppSelector(selectPreviousSheetQn);

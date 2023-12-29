@@ -7,17 +7,17 @@ import {
 } from '@mui/material';
 import { useCallback } from 'react';
 
-import { Ax, Ex } from '../../core/solve';
-import { useAppDispatch, useAppSelector } from '../../redux/store';
-import ComplexEditor from '../ComplexEditor';
-import { Complex } from '../../util/complex';
+import { Ax, Ex } from 'core/solve';
+import { useAppDispatch, useAppSelector } from 'redux/store';
+import ComplexEditor from 'components/ComplexEditor';
+import { Complex } from 'util/complex';
 import {
   selectN,
   selectSolverConfig,
   setSolverConfigAxArrayC,
   setSolverConfigAxN,
   setSolverConfigExC,
-} from '../../redux/features/solverConfig/solverConfigSlice';
+} from 'redux/features/solverConfig/solverConfigSlice';
 
 const Header = styled.div`
   display: flex;

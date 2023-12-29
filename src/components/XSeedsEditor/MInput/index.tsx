@@ -1,11 +1,8 @@
 import styled from '@emotion/styled';
 import { TextField, Typography } from '@mui/material';
 import React, { useCallback } from 'react';
-import {
-  selectM,
-  setXSeedsM,
-} from '../../../redux/features/xSeeds/xSeedsSlice';
-import { useAppDispatch, useAppSelector } from '../../../redux/store';
+import { selectM, setXSeedsM } from 'redux/features/xSeeds/xSeedsSlice';
+import { useAppDispatch, useAppSelector } from 'redux/store';
 
 const XSeedsMInput = styled(TextField)`
   width: 40px;

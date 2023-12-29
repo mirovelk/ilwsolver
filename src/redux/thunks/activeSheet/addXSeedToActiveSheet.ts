@@ -1,14 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getDifferentColor } from '../../../util/color';
-import { selectXSeedsColors } from '../../features/xSeedColors/xSeedColorsSlice';
+import { getDifferentColor } from 'util/color';
+import { selectXSeedsColors } from 'redux/features/xSeedColors/xSeedColorsSlice';
 import {
   XSeedValue,
   addXSeed,
   getRandomXSeedNumber,
   selectM,
-} from '../../features/xSeeds/xSeedsSlice';
-import { selectActiveSheetXSeeds } from '../../selectors/selectActiveSheetXSeeds';
-import { AppThunk } from '../../store';
+} from 'redux/features/xSeeds/xSeedsSlice';
+import { selectActiveSheetXSeeds } from 'redux/selectors/selectActiveSheetXSeeds';
+import { AppThunk } from 'redux/store';
 
 export const addXSeedToActiveSheet =
   (xSeedValue?: XSeedValue): AppThunk =>

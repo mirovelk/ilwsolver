@@ -3,16 +3,16 @@ import {
   createSlice,
   PayloadAction,
 } from '@reduxjs/toolkit';
-import { required } from '../../../util/required';
+import { required } from 'util/required';
 
-import { RootState } from '../../store';
-import { addSheet, removeSheet } from '../sheets/sheetsSlice';
+import { RootState } from 'redux/store';
+import { addSheet, removeSheet } from 'redux/features/sheets/sheetsSlice';
 import {
   addXSeed,
   initialXSeeds,
   removeXSeed,
   XSeedId,
-} from '../xSeeds/xSeedsSlice';
+} from 'redux/features/xSeeds/xSeedsSlice';
 
 interface XSeedColor {
   xSeedId: XSeedId;

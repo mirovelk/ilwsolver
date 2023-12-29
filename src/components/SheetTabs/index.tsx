@@ -7,11 +7,11 @@ import {
   selectTabsData,
   setActiveSheetId,
   SheetId,
-} from '../../redux/features/sheets/sheetsSlice';
+} from 'redux/features/sheets/sheetsSlice';
 
-import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { addNewSheetAndData } from '../../redux/thunks/addNewSheetAndData';
-import { removeSheetAndData } from '../../redux/thunks/removeSheetAndData';
+import { useAppDispatch, useAppSelector } from 'redux/store';
+import { addNewSheetAndData } from 'redux/thunks/addNewSheetAndData';
+import { removeSheetAndData } from 'redux/thunks/removeSheetAndData';
 
 const StyledTabs = styled(Tabs)`
   min-height: 35px;

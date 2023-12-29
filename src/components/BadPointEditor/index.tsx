@@ -4,10 +4,10 @@ import React, { useCallback, useState } from 'react';
 import {
   selectBadPoints,
   setBadPoints,
-} from '../../redux/features/badPoints/badPointsSlice';
+} from 'redux/features/badPoints/badPointsSlice';
 
-import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { Complex, parseComplex, stringifyComplex } from '../../util/complex';
+import { useAppDispatch, useAppSelector } from 'redux/store';
+import { Complex, parseComplex, stringifyComplex } from 'util/complex';
 
 const Header = styled.div`
   display: flex;

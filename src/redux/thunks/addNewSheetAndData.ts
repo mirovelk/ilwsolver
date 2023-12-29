@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { required } from '../../util/required';
-import { addSheet, selectLastSheet } from '../features/sheets/sheetsSlice';
-import { selectXSeedColor } from '../features/xSeedColors/xSeedColorsSlice';
-import { selectLastSheetXSeeds } from '../selectors/selectLastSheetXSeeds';
-import { AppThunk } from '../store';
+import { required } from 'util/required';
+import { addSheet, selectLastSheet } from 'redux/features/sheets/sheetsSlice';
+import { selectXSeedColor } from 'redux/features/xSeedColors/xSeedColorsSlice';
+import { selectLastSheetXSeeds } from 'redux/selectors/selectLastSheetXSeeds';
+import { AppThunk } from 'redux/store';
 
 export const addNewSheetAndData = (): AppThunk => (dispatch, getState) => {
   const state = getState();

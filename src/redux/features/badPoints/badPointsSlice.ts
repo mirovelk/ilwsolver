@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { Complex } from '../../../util/complex';
-import { RootState } from '../../store';
+import { Complex } from 'util/complex';
+import { RootState } from 'redux/store';
 
 interface BadPointsState {
   points: Complex[];

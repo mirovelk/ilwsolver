@@ -1,8 +1,8 @@
-import { selectActiveSheetXSeeds } from '../../selectors/selectActiveSheetXSeeds';
-import { AppThunk } from '../../store';
-import { invalidateResultsForXSeeds } from '../../features/xSeeds/xSeedsSlice';
+import { selectActiveSheetXSeeds } from 'redux/selectors/selectActiveSheetXSeeds';
+import { AppThunk } from 'redux/store';
+import { invalidateResultsForXSeeds } from 'redux/features/xSeeds/xSeedsSlice';
 
-import { startDrawing } from '../../features/sheetInputDrawing/sheetInputDrawingSlice';
+import { startDrawing } from 'redux/features/sheetInputDrawing/sheetInputDrawingSlice';
 
 export const invalidateActiveSheetXSeedsAndStartDrawing =
   (): AppThunk => (dispatch, getState) => {

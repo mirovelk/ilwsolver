@@ -12,13 +12,16 @@ import {
   divide,
   multiply,
   subtract,
-} from '../../../util/complex';
-import { clearInputOutputValues } from '../../actions';
+} from 'util/complex';
+import { clearInputOutputValues } from 'redux/actions';
 
-import { RootState } from '../../store';
-import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
-import { removeSheet, selectActiveSheetQArray } from '../sheets/sheetsSlice';
-import { removeXSeed } from '../xSeeds/xSeedsSlice';
+import { RootState } from 'redux/store';
+import { solveActiveSheet } from 'redux/features/ilwSolver/solveActiveSheet';
+import {
+  removeSheet,
+  selectActiveSheetQArray,
+} from 'redux/features/sheets/sheetsSlice';
+import { removeXSeed } from 'redux/features/xSeeds/xSeedsSlice';
 
 function projectValueV2(x: Complex, q: Complex): Complex {
   return add(x, divide(complex(6), subtract(complex(1), q)));
@@ -57,6 +60,7 @@ export interface Result {
   id: ResultId;
   values: Complex[];
   selected: boolean;
+  error?: string;
   // TODO move valid flag from xSeed result?
   // TODO copy q used for calculation to prevent crashes when q path changes
 }

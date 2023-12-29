@@ -6,11 +6,11 @@ import {
 } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Complex } from '../../../util/complex';
-import { clearInputOutputValues } from '../../actions';
-import { RootState } from '../../store';
-import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
-import { addSheet, removeSheet } from '../sheets/sheetsSlice';
+import { Complex } from 'util/complex';
+import { clearInputOutputValues } from 'redux/actions';
+import { RootState } from 'redux/store';
+import { solveActiveSheet } from 'redux/features/ilwSolver/solveActiveSheet';
+import { addSheet, removeSheet } from 'redux/features/sheets/sheetsSlice';
 
 const dataLayerDefaultScaleDownFactor = 0.8;
 

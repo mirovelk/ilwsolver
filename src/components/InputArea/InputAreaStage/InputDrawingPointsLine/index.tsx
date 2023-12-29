@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { Line } from 'react-konva';
 
-import { selectActiveSheetInputDrawingPoints } from '../../../../redux/selectors/selectActiveSheetInputDrawingPoints';
+import { selectActiveSheetInputDrawingPoints } from 'redux/selectors/selectActiveSheetInputDrawingPoints';
 
-import { useAppSelector } from '../../../../redux/store';
-import { selectIsDrawing } from '../../../../redux/features/sheetInputDrawing/sheetInputDrawingSlice';
+import { useAppSelector } from 'redux/store';
+import { selectIsDrawing } from 'redux/features/sheetInputDrawing/sheetInputDrawingSlice';
 
 function InputDrawingPointsLine({
   stroke,

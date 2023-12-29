@@ -1,14 +1,14 @@
 import { css } from '@emotion/react';
 import { Button, ButtonGroup } from '@mui/material';
 
-import { useAppDispatch, useAppSelector } from '../../../redux/store';
+import { useAppDispatch, useAppSelector } from 'redux/store';
 
 import {
   OutputProjectionVariant,
   selectOutputProjectionVariant,
-} from '../../../redux/features/results/resultsSlice';
+} from 'redux/features/results/resultsSlice';
 
-import { setProjectionVariantAndCenterActiveSheetResults } from '../../../redux/thunks/setProjectionVariantAndCenterActiveSheetResults';
+import { setProjectionVariantAndCenterActiveSheetResults } from 'redux/thunks/setProjectionVariantAndCenterActiveSheetResults';
 
 function OutputAreaTopControls() {
   const dispatch = useAppDispatch();

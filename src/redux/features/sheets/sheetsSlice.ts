@@ -7,22 +7,22 @@ import {
 } from '@reduxjs/toolkit';
 import simplifyPath from 'simplify-js';
 
-import { Complex } from '../../../util/complex';
-import { required } from '../../../util/required';
-import { clearInputOutputValues } from '../../actions';
+import { Complex } from 'util/complex';
+import { required } from 'util/required';
+import { clearInputOutputValues } from 'redux/actions';
 
-import { RootState } from '../../store';
-import { ResultId } from '../results/resultsSlice';
+import { RootState } from 'redux/store';
+import { ResultId } from 'redux/features/results/resultsSlice';
 
-import { initialStages, StageId } from '../stages/stagesSlice';
+import { initialStages, StageId } from 'redux/features/stages/stagesSlice';
 import {
   addXSeed,
   AddXSeedPayload,
   initialXSeeds,
   removeXSeed,
   XSeedId,
-} from '../xSeeds/xSeedsSlice';
-import { selectActiveSheet } from '../../selectors/selectActiveSheet';
+} from 'redux/features/xSeeds/xSeedsSlice';
+import { selectActiveSheet } from 'redux/selectors/selectActiveSheet';
 
 const SIMPLIFY_INITIAL = -1.5;
 

@@ -1,12 +1,12 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { Complex } from '../../util/complex';
+import { Complex } from 'util/complex';
 import {
   Result,
   selectActiveSheetProjectedResult,
-} from '../features/results/resultsSlice';
-import { selectXSeedColor } from '../features/xSeedColors/xSeedColorsSlice';
-import { XSeed } from '../features/xSeeds/xSeedsSlice';
-import { RootState } from '../store';
+} from 'redux/features/results/resultsSlice';
+import { selectXSeedColor } from 'redux/features/xSeedColors/xSeedColorsSlice';
+import { XSeed } from 'redux/features/xSeeds/xSeedsSlice';
+import { RootState } from 'redux/store';
 import { selectActiveSheetXSeeds } from './selectActiveSheetXSeeds';
 
 export const selectActiveSheetOutputAreaData = createSelector(

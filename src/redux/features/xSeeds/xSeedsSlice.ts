@@ -6,17 +6,17 @@ import {
 } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 
+import { complex, Complex, getRandomNumberBetween } from 'util/complex';
+import { required } from 'util/required';
+import { clearInputOutputValues } from 'redux/actions';
+import { RootState } from 'redux/store';
+import { solveActiveSheet } from 'redux/features/ilwSolver/solveActiveSheet';
+import { ResultId } from 'redux/features/results/resultsSlice';
 import {
-  complex,
-  Complex,
-  getRandomNumberBetween,
-} from '../../../util/complex';
-import { required } from '../../../util/required';
-import { clearInputOutputValues } from '../../actions';
-import { RootState } from '../../store';
-import { solveActiveSheet } from '../ilwSolver/solveActiveSheet';
-import { ResultId } from '../results/resultsSlice';
-import { addSheet, removeSheet, SheetId } from '../sheets/sheetsSlice';
+  addSheet,
+  removeSheet,
+  SheetId,
+} from 'redux/features/sheets/sheetsSlice';
 
 function getRandomXSeedPartNumber(): number {
   return getRandomNumberBetween(-10, 10);

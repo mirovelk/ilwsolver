@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { required } from '../../util/required';
-import { selectLastSheet } from '../features/sheets/sheetsSlice';
-import { selectXSeedsEntities } from '../features/xSeeds/xSeedsSlice';
+import { required } from 'util/required';
+import { selectLastSheet } from 'redux/features/sheets/sheetsSlice';
+import { selectXSeedsEntities } from 'redux/features/xSeeds/xSeedsSlice';
 
 export const selectLastSheetXSeeds = createSelector(
   [selectLastSheet, selectXSeedsEntities],

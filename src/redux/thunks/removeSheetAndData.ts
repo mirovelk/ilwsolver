@@ -1,11 +1,11 @@
-import { required } from '../../util/required';
+import { required } from 'util/required';
 import {
   removeSheet,
   selectSheetById,
   SheetId,
-} from '../features/sheets/sheetsSlice';
-import { selectXSeedById } from '../features/xSeeds/xSeedsSlice';
-import { AppThunk } from '../store';
+} from 'redux/features/sheets/sheetsSlice';
+import { selectXSeedById } from 'redux/features/xSeeds/xSeedsSlice';
+import { AppThunk } from 'redux/store';
 
 export const removeSheetAndData =
   (removedSheetId: SheetId): AppThunk =>

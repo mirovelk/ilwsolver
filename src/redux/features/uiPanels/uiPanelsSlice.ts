@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { RootState } from '../../store';
+import { RootState } from 'redux/store';
 
 export function getPanelToggleColor(isActivePanel: boolean) {
   return isActivePanel ? 'primary' : 'default';

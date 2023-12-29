@@ -1,12 +1,12 @@
-import { required } from '../../../util/required';
-import { selectActiveSheetXSeedIds } from '../../features/sheets/sheetsSlice';
+import { required } from 'util/required';
+import { selectActiveSheetXSeedIds } from 'redux/features/sheets/sheetsSlice';
 import {
   XSeedValue,
   removeXSeed,
   selectXSeedById,
   setXSeedValue,
-} from '../../features/xSeeds/xSeedsSlice';
-import { AppThunk } from '../../store';
+} from 'redux/features/xSeeds/xSeedsSlice';
+import { AppThunk } from 'redux/store';
 import { addXSeedToActiveSheet } from './addXSeedToActiveSheet';
 
 export const setActiveSheetXSeedsValues =

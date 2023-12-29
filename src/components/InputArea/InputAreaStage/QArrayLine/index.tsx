@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
-import { selectActiveSheetQArray } from '../../../../redux/features/sheets/sheetsSlice';
+import { selectActiveSheetQArray } from 'redux/features/sheets/sheetsSlice';
 
-import { useAppSelector } from '../../../../redux/store';
-import LineWithIcons from '../../../LineWithIcons';
+import { useAppSelector } from 'redux/store';
+import LineWithIcons from 'components/LineWithIcons';
 
 function QArrayLine({
   stroke,
