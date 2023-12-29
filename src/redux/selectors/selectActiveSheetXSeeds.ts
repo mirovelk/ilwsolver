@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { required } from '../../util/required';
 import { RootState } from '../store';
-import { selectActiveSheet } from './selectActiveSheet';
+import { selectActiveSheet } from '../features/sheets/sheetsSlice';
 
 export const selectActiveSheetXSeeds = createSelector(
   [selectActiveSheet, (state: RootState) => state.xSeeds],

@@ -10,7 +10,6 @@ import simplifyPath from 'simplify-js';
 import { Complex } from '../../../util/complex';
 import { required } from '../../../util/required';
 import { clearInputOutputValues } from '../../actions';
-import { selectActiveSheet } from '../../selectors/selectActiveSheet';
 
 import { RootState } from '../../store';
 import { ResultId } from '../results/resultsSlice';
@@ -34,8 +33,8 @@ export interface Sheet {
   id: SheetId;
   inputSimplifyTolerance: number;
   inputSimplifyEnabled: boolean;
-  qArray: Complex[]; // TODO selector? derived from inputDrawingPoints afer simplify, kept for performance
-  qArrayValid: boolean; // qArray can be invalid if inputDrawingPoints changed and needs to be recalculated
+  qArray: Complex[]; // TODO selector? derived from inputDrawingPoints afer simplify
+  qArrayValid: boolean; // TODO selector? qArray can be invalid if inputDrawingPoints changed and needs to be recalculated
   inputStageId: StageId;
   outputStageId: StageId;
   xSeedIds: XSeedId[];
@@ -268,9 +267,12 @@ export const selectSheetById = (state: RootState, sheetId: SheetId) => {
   return sheet;
 };
 
-// TODO move active sheet selectors?
 export const selectActiveSheetId = (state: RootState) =>
   state.sheets.activeSheetId;
+
+export const selectActiveSheet = (state: RootState) => {
+  return required(state.sheets.entities[state.sheets.activeSheetId]);
+};
 
 export const selectActiveSheetXSeedIds = (state: RootState) => {
   const activeSheet = required(
