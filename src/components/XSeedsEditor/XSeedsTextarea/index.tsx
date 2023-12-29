@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { XSeedValue } from '../../../redux/features/xSeeds/xSeedsSlice';
 import { selectActiveSheetXSeeds } from '../../../redux/selectors/selectActiveSheetXSeeds';
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
-import { setXSeedsValues } from '../../../redux/thunks/setXSeedsValues';
+import { setActiveSheetXSeedsValues } from '../../../redux/thunks/activeSheet/setActiveSheetXSeedsValues';
 import { parseComplex, stringifyComplex } from '../../../util/complex';
 
 const Textarea = styled(TextField)``;
@@ -118,7 +118,7 @@ function XSeedsTextarea() {
           )
         ) {
           setXSeedsTextareaError(false);
-          dispatch(setXSeedsValues(xSeedsParsed)); // TODO move processing here?
+          dispatch(setActiveSheetXSeedsValues(xSeedsParsed)); // TODO move processing here?
         } else {
           throw new Error('invalid input');
         }

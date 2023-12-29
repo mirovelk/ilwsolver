@@ -23,7 +23,7 @@ import BadPoints from './BadPoints';
 import InputDrawingPointsLine from './InputDrawingPointsLine';
 import PreviousSheetQn from './PreviousSheetQn';
 import QArrayLine from './QArrayLine';
-import { invalidateActiveSheetXSeedsAndStartDrawing } from '../../../redux/features/sheetInputDrawing/thunks/activeSheetStartDrawing';
+import { invalidateActiveSheetXSeedsAndStartDrawing } from '../../../redux/thunks/activeSheet/activeSheetStartDrawing';
 
 const inputLineColor = '#ff0000';
 

@@ -1,7 +1,7 @@
-import { updateResultsSelection } from '../features/results/resultsSlice';
+import { updateResultsSelection } from '../../features/results/resultsSlice';
 
-import { selectActiveSheetXSeeds } from '../selectors/selectActiveSheetXSeeds';
-import { AppThunk } from '../store';
+import { selectActiveSheetXSeeds } from '../../selectors/selectActiveSheetXSeeds';
+import { AppThunk } from '../../store';
 
 export const activeSheetSelectAllResults =
   (): AppThunk => (dispatch, getState) => {

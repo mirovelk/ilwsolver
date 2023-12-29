@@ -1,10 +1,10 @@
 import {
   ResultId,
   updateResultsSelection,
-} from '../features/results/resultsSlice';
+} from '../../features/results/resultsSlice';
 
-import { selectActiveSheetXSeeds } from '../selectors/selectActiveSheetXSeeds';
-import { AppThunk } from '../store';
+import { selectActiveSheetXSeeds } from '../../selectors/selectActiveSheetXSeeds';
+import { AppThunk } from '../../store';
 
 export const activeSheetSelectSingleResult =
   (selectedResultId: ResultId): AppThunk =>

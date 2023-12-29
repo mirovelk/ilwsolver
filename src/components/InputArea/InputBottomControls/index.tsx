@@ -6,8 +6,8 @@ import React, { useCallback, useEffect } from 'react';
 import { selectActiveSheetInputSimplifyConfig } from '../../../redux/features/sheets/sheetsSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
 import { updateActiveSheetQArray } from '../../../redux/thunks/activeSheet/updateActiveSheetQArray';
-import { setActiveSheetInputSimplifyEnabled } from '../../../redux/thunks/setActiveSheetInputSimplifyEnabled';
-import { setActiveSheetInputSimplifyTolerance } from '../../../redux/thunks/setActiveSheetInputSimplifyTolerance';
+import { setActiveSheetInputSimplifyEnabled } from '../../../redux/thunks/activeSheet/setActiveSheetInputSimplifyEnabled';
+import { setActiveSheetInputSimplifyTolerance } from '../../../redux/thunks/activeSheet/setActiveSheetInputSimplifyTolerance';
 
 import QValues from '../../QValues';
 import XSeedsEditor from '../../XSeedsEditor';

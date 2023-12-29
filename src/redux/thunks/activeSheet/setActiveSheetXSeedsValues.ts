@@ -1,5 +1,5 @@
-import { XSeedValue } from '../features/xSeeds/xSeedsSlice';
-import { AppThunk } from '../store';
+import { XSeedValue } from '../../features/xSeeds/xSeedsSlice';
+import { AppThunk } from '../../store';
 
 // setXSeedsValues: (state, action: PayloadAction<XSeedValue[]>) => {
 //     // optimized to not re-render if the values are the same and the ouput is valid
@@ -63,7 +63,7 @@ import { AppThunk } from '../store';
 //     }
 //   },
 
-export const setXSeedsValues =
+export const setActiveSheetXSeedsValues =
   (xSeedValues: XSeedValue[]): AppThunk =>
   (_dispatch, _getState) => {
     console.log('TODO :>> ', xSeedValues);

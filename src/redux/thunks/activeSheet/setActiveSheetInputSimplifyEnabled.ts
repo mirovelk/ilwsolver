@@ -1,8 +1,8 @@
 import {
   selectActiveSheetId,
   setInputSimplifyEnabled,
-} from '../features/sheets/sheetsSlice';
-import { AppThunk } from '../store';
+} from '../../features/sheets/sheetsSlice';
+import { AppThunk } from '../../store';
 
 export const setActiveSheetInputSimplifyEnabled =
   (inputSimplifyEnabled: boolean): AppThunk =>

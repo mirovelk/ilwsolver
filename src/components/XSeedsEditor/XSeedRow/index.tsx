@@ -12,7 +12,7 @@ import {
 } from '../../../redux/features/xSeeds/xSeedsSlice';
 
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
-import { removeXSeedFromActiveSheet } from '../../../redux/thunks/removeXSeedFromActiveSheet';
+import { removeXSeedFromActiveSheet } from '../../../redux/thunks/activeSheet/removeXSeedFromActiveSheet';
 
 import { Complex } from '../../../util/complex';
 import ComplexEditor from '../../ComplexEditor';

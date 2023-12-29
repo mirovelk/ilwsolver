@@ -11,7 +11,7 @@ import {
 import { selectActiveSheetXSeedHasError } from '../../redux/selectors/selectActiveSheetXSeedHasError';
 
 import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { clearActiveSheetInputOutputValues } from '../../redux/thunks/clearActiveSheetInputOutputValues';
+import { clearActiveSheetInputOutputValues } from '../../redux/thunks/activeSheet/clearActiveSheetInputOutputValues';
 
 const Wrapper = styled.div`
   display: inline-flex;

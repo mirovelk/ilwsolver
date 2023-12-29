@@ -1,11 +1,11 @@
-import { clearInputOutputValues } from '../actions';
+import { clearInputOutputValues } from '../../actions';
 import {
   selectActiveSheetId,
   selectActiveSheetInputStageId,
   selectActiveSheetOutputStageId,
-} from '../features/sheets/sheetsSlice';
-import { selectActiveSheetXSeeds } from '../selectors/selectActiveSheetXSeeds';
-import { AppThunk } from '../store';
+} from '../../features/sheets/sheetsSlice';
+import { selectActiveSheetXSeeds } from '../../selectors/selectActiveSheetXSeeds';
+import { AppThunk } from '../../store';
 
 export const clearActiveSheetInputOutputValues =
   (): AppThunk => (dispatch, getState) => {

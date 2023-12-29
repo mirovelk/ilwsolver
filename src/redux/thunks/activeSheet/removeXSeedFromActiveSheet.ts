@@ -1,10 +1,10 @@
-import { required } from '../../util/required';
+import { required } from '../../../util/required';
 import {
   removeXSeed,
   selectXSeedById,
   XSeedId,
-} from '../features/xSeeds/xSeedsSlice';
-import { AppThunk } from '../store';
+} from '../../features/xSeeds/xSeedsSlice';
+import { AppThunk } from '../../store';
 
 export const removeXSeedFromActiveSheet =
   (xSeedId: XSeedId): AppThunk =>

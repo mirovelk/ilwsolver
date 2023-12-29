@@ -12,8 +12,8 @@ import {
   toggleResultSelected,
 } from '../../../redux/features/results/resultsSlice';
 import { selectActiveSheetOutputAreaData } from '../../../redux/selectors/selectOutputAreaData';
-import { activeSheetSelectAllResults } from '../../../redux/thunks/activeSheetSelectAllResults';
-import { activeSheetSelectSingleResult } from '../../../redux/thunks/activeSheetSelectSingleResult copy';
+import { activeSheetSelectAllResults } from '../../../redux/thunks/activeSheet/activeSheetSelectAllResults';
+import { activeSheetSelectSingleResult } from '../../../redux/thunks/activeSheet/activeSheetSelectSingleResult copy';
 import { selectActiveSheetOutputStageId } from '../../../redux/features/sheets/sheetsSlice';
 
 const dashLength = 10;
